@@ -1,0 +1,7 @@
+charset,Shift_JIS
+
+descript
+{
+version,1
+}
+

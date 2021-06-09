@@ -1,0 +1,488 @@
+//ロン
+string Menu_Ron(dict ref)
+{
+	int nAgariPlayer = ref["Reference2"];
+	int nFurikomiPlayer = ref["Reference3"];
+	array hai13 = arTehai[nAgariPlayer];
+	string sute = ref["Reference4"];
+	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",agari," + playerName[nAgariPlayer] + "]";
+	s += showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
+	return s;
+}
+
+//ツモ
+string Menu_Tsumo(dict ref)
+{
+	int nAgariPlayer = ref["Reference2"];
+	int nFurikomiPlayer = -1;
+	array hai13 = arTehai[nAgariPlayer];
+	string tsumo = arYama[nYamaIndex - 1];
+	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",agari," + playerName[nAgariPlayer] + "]";
+	s += showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
+	return s;
+}
+
+//流局
+string OnRyukyokuScore(dict ref)
+{
+	array arTenpaiPlayerFlag = _strary(ref["Reference0"]);
+	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",ryukyoku]";
+	s += showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag);
+	return s;
+}
+
+//点数画面表示
+string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, array arTenpaiPlayerFlag)
+{
+	string s;
+	s += "\![set,balloontimeout,0]\![set,choicetimeout,0]\0\s[0]\b[2]\_q";
+	//王牌表示
+	array wanpaiOmote = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
+	array wanpaiUra = {"tb", "tb", "tb", "tb", uradorahyouji, "tb", "tb"};
+	s += "\f[height,+16]\_l[110,]";
+	for (int i = 0; wanpaiOmote[i] != nil; i++)
+	{
+		s += convertUnicode(wanpaiOmote[i]);
+	}
+	s += "\n\_l[110,]";
+	for (int i = 0; wanpaiUra[i] != nil; i++)
+	{
+		s += convertUnicode(wanpaiUra[i]);
+	}
+	s += "\f[height,default]\n\n";
+	s += "\_l[215,0] " + arBafu[bafu] + kyoku + "局";
+	s += "\_l[260,0]●x" + tsumibou + "\n";
+	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
+	s += "\_l[0,80]";
+	//役・点数表示
+	dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex);
+	dict dYakuman = dYakuInfo["yakuman"];
+	dict dYakuAndHan = dYakuInfo["han"];
+	int score = dYakuInfo["score"];
+	array arYakuman = _dickeyget(dYakuman);
+	for (int i = 0; arYakuman[i] != nil; i++)
+	{
+		s += arYakuman[i] + "\_l[100,]役満\n";
+	}
+	if (_aryvn(arYakuman) == 0)
+	{
+		array arYaku = _dickeyget(dYakuAndHan);
+		for (int i = 0; arYaku[i] != nil; i++)
+		{
+			s += arYaku[i] + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
+		}
+	}
+	if (score > 0)
+		s += "" + score + "点\n";
+	s += "\n";
+	//プレイヤー持ち点表示
+	int nKyotaku;
+	if (nAgariPlayer >= 0)
+	{
+		nKyotaku = kyotaku;
+		kyotaku = 0;
+	}
+	array arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag);
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		arScore[i] += arScoreAdd[i];
+		s += "<<" + playerName[i] + ">>\_l[100,]" + arScoreAdd[i] + "\_l[160,]" + arScore[i] + "\n";
+	}
+	s += "\n";
+	//牌表示
+	s += "\f[height,+16]";
+	for (int i = 0; hai13[i] != nil; i++)
+	{
+		s += convertUnicode(hai13[i]);
+	}
+	s += " " + convertUnicode(atariHai);
+	s += "\n\f[height,default]\n";
+	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
+	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
+	//通知
+	for (int i = 0; i < 3; i++)
+	{
+		string fugo = "";
+		if (arScoreAdd[i] > 0)
+			fugo = "+";
+		else if (arScoreAdd[i] < 0)
+			fugo = "-";
+		if (fugo != "")
+			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",point," + playerName[i] + "," + fugo + "," + (int)_fabs(arScoreAdd[i]) + "]";
+	}
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",kyokuend]";
+	s += "\_q\e";
+	//連荘判定
+	if (nAgariPlayer == oyaIndex)
+	{
+		tsumibou++;
+	}
+	else
+	{
+		if (nAgariPlayer >= 0)
+			tsumibou = 0;
+		else
+			tsumibou++;
+		kyoku++;
+		if (kyoku == 5)
+		{
+			kyoku = 1;
+			bafu++;
+		}
+		oyaIndex++;
+		if (oyaIndex == 4)
+			oyaIndex = 0;
+	}
+	clearStatus();
+	return s;
+}
+
+array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, array arTenpaiPlayerFlag)
+{
+	array arScoreAdd = {0, 0, 0, 0};
+	if (_aryvn(arTenpaiPlayerFlag) == 0)
+	{
+		if (nFurikomiPlayer >= 0)
+		{
+			arScoreAdd[nFurikomiPlayer] = -1 * (score + (300 * nTsumibou));
+			arScoreAdd[nAgariPlayer] = score + (300 * nTsumibou) + (1000 * nKyotaku);
+		}
+		else
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				if (nAgariPlayer == i)
+				{
+					arScoreAdd[i] = score + (300 * nTsumibou) + (1000 * nKyotaku);
+				}
+				else
+				{
+					if (nAgariPlayer == oyaIndex)
+					{
+						arScoreAdd[i] = -1 * ((score / 3) + (100 * nTsumibou));
+					}
+					else
+					{
+						if (i == oyaIndex)
+						{
+							arScoreAdd[i] = -1 * ((score / 2) + (100 * nTsumibou));
+						}
+						else
+						{
+							arScoreAdd[i] = -1 * ((score / 4) + (100 * nTsumibou));
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		int nTenpai;
+		for (int i = 0; arTenpaiPlayerFlag[i] != nil; i++)
+		{
+			nTenpai += arTenpaiPlayerFlag[i];
+		}
+		int plus;
+		int minus;
+		if (nTenpai == 0 || nTenpai == 4)
+		{
+			plus = 0;
+			minus = 0;
+		}
+		else
+		{
+			plus = 3000 / nTenpai;
+			minus = -3000 / (4 - nTenpai);
+		}
+		for (int i = 0; arTenpaiPlayerFlag[i] != nil; i++)
+		{
+			if (arTenpaiPlayerFlag[i])
+				arScoreAdd[i] = plus;
+			else
+				arScoreAdd[i] = minus;
+		}
+	}
+	return arScoreAdd;
+}
+
+dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, int nOyaPlayer)
+{
+	if (_aryvn(hai13) < 13)
+		return $();
+	array hai14 = hai13;
+	hai14 += atariHai;
+	hai14 = sortHai(hai14);
+	int isTsumo = 0;
+	if (nFurikomiPlayer == -1)
+		isTsumo = 1;
+	int isOya = 0;
+	if (nAgariPlayer == nOyaPlayer)
+		isOya = 1;
+	int isRichi = 0;
+	if (arRichiJunme[nAgariPlayer] >= 0)
+		isRichi = 1;
+	int dora = countDora(hai14, isRichi);
+	dict dHan;
+	dict dYakuman;
+	int nHan;
+	int nYakuman;
+	//役満判定
+	if (_aryvn(arKawa[nAgariPlayer]) == 0 && isTsumo && isOya)
+	{
+		dYakuman += $("天和", 1);
+		nYakuman += 1;
+	}
+	if (_aryvn(arKawa[nAgariPlayer]) == 0 && isTsumo && !isOya)//鳴きを考慮していないため注意
+	{
+		dYakuman += $("地和", 1);
+		nYakuman += 1;
+	}
+	if (_aryvn(arKawa[nAgariPlayer]) == 0 && !isTsumo)//鳴きを考慮していないため注意
+	{
+		dYakuman += $("人和", 1);
+		nYakuman += 1;
+	}
+	if (isTsuiso(hai14))
+	{
+		dYakuman += $("字一色", 1);
+		nYakuman += 1;
+	}
+	//役判定
+	if (isTsumo)//鳴き未実装のため決め打ち
+	{
+		dHan += $("門前清自摸和", 1);
+		nHan += 1;
+	}
+	if (arRichiJunme[nAgariPlayer] > 0)
+	{
+		dHan += $("立直", 1);
+		nHan += 1;
+	}
+	else if (arRichiJunme[nAgariPlayer] == 0)
+	{
+		dHan += $("W立直", 2);
+		nHan += 2;
+	}
+	if (isRichi && arRichiJunme[nAgariPlayer] == _aryvn(arKawa[nAgariPlayer]) - 1)//鳴きを考慮していないため注意
+	{
+		dHan += $("一発", 1);
+		nHan += 1;
+	}
+	if (isTanyao(hai14))
+	{
+		dHan += $("断么九", 1);
+		nHan += 1;
+	}
+	if (_aryvn(arYama) == nYamaIndex && isTsumo)
+	{
+		dHan += $("海底撈月", 1);
+		nHan += 1;
+	}
+	if (_aryvn(arYama) == nYamaIndex && !isTsumo)
+	{
+		dHan += $("河底撈魚", 1);
+		nHan += 1;
+	}
+	if (getShantenChitoitsu(hai14) == -1)
+	{
+		dHan += $("七対子", 2);
+		nHan += 2;
+	}
+	if (isHonroutou(hai14))
+	{
+		dHan += $("混老頭", 2);
+		nHan += 2;
+	}
+	if (isHonitsu(hai14))
+	{
+		dHan += $("混一色", 3);
+		nHan += 3;
+	}
+	if (isChinitsu(hai14))
+	{
+		dHan += $("清一色", 6);
+		nHan += 6;
+	}
+	if (dora > 0)
+	{
+		dHan += $("ドラ", dora);
+		nHan += dora;
+	}
+	int score = getScore(nYakuman, nHan, isOya);
+	dict dRet = ${
+		$("yakuman", dYakuman),
+		$("han", dHan),
+		$("score", score)
+	};	
+	return dRet;
+}
+
+int getScore(int nYakuman, int nHan, int isOya)
+{
+	int r;
+	if (nYakuman > 0)
+	{
+		r = 32000 * nYakuman;
+	}
+	else
+	{
+		if (nHan >= 13)
+			r = 32000;
+		else if (nHan >= 11)
+			r = 24000;
+		else if (nHan >= 8)
+			r = 16000;
+		else if (nHan >= 6)
+			r = 12000;
+		else if (nHan >= 5)
+			r = 8000;
+		else
+			r = 1600 * _pow(2, (nHan - 2));
+	}
+	if (isOya)
+		r = r * 1.5;
+	return r;
+}
+
+//槓ドラ未実装のため注意
+array countDora(array hai, int isRichi)
+{
+	int n = 0;
+	array a;
+	a += getDoraFromDorahyouji(dorahyouji);
+	if (isRichi)
+		a += getDoraFromDorahyouji(uradorahyouji);
+	for (int i = 0; a[i] != nil; i++)
+	{
+		for (int j = 0; hai[j] != nil; j++)
+		{
+			if (a[i] == hai[j])
+				n++;
+		}
+	}
+	return n;
+}
+
+string getDoraFromDorahyouji(string hai)
+{
+	dict d = ${
+		$("1m", "2m"),
+		$("2m", "3m"),
+		$("3m", "4m"),
+		$("4m", "5m"),
+		$("5m", "6m"),
+		$("6m", "7m"),
+		$("7m", "8m"),
+		$("8m", "9m"),
+		$("9m", "1m"),
+		$("1p", "2p"),
+		$("2p", "3p"),
+		$("3p", "4p"),
+		$("4p", "5p"),
+		$("5p", "6p"),
+		$("6p", "7p"),
+		$("7p", "8p"),
+		$("8p", "9p"),
+		$("9p", "1p"),
+		$("1s", "2s"),
+		$("2s", "3s"),
+		$("3s", "4s"),
+		$("4s", "5s"),
+		$("5s", "6s"),
+		$("6s", "7s"),
+		$("7s", "8s"),
+		$("8s", "9s"),
+		$("9s", "1s"),
+		$("1z", "2z"),
+		$("2z", "3z"),
+		$("3z", "4z"),
+		$("4z", "1z"),
+		$("5z", "6z"),
+		$("6z", "7z"),
+		$("7z", "5z")
+	};
+	return d[hai];
+}
+
+//断么九判定
+int isTanyao(array hai14)
+{
+	string strYaochuhai = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (_strstr(strYaochuhai, hai14[i]) >= 0)
+			return 0; 
+	}
+	return 1;
+}
+
+//混老頭判定
+int isHonroutou(array hai14)
+{
+	string strYaochuhai = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (_strstr(strYaochuhai, hai14[i]) == -1)
+			return 0; 
+	}
+	return 1;
+}
+
+array getUsedHaiGroup(array hai)
+{
+	array a = {0, 0, 0, 0};
+	for (int i = 0; hai[i] != nil; i++)
+	{
+		switch (_substr(hai[i], 1, 1))
+		{
+		case "m":
+			a[0] = 1;
+			break;
+		case "p":
+			a[1] = 1;
+			break;
+		case "s":
+			a[2] = 1;
+			break;
+		case "z":
+			a[3] = 1;
+			break;
+		default:
+			break;
+		}
+	}
+	return a;
+}
+
+//混一色判定
+int isHonitsu(array hai14)
+{
+	array a = getUsedHaiGroup(hai14);
+	if (a[0] && a[1] || a[1] && a[2] || a[2] && a[0] || !a[3])
+		return 0;
+	return 1;
+}
+
+//清一色判定
+int isChinitsu(array hai14)
+{
+	array a = getUsedHaiGroup(hai14);
+	if (a[0] && a[1] || a[1] && a[2] || a[2] && a[0] || a[3])
+		return 0;
+	return 1;
+}
+
+//字一色判定
+int isTsuiso(array hai14)
+{
+	array a = getUsedHaiGroup(hai14);
+	if (!a[0] && !a[1] && !a[2])
+		return 1;
+	return 0;
+}

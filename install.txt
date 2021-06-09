@@ -1,0 +1,4 @@
+charset,Shift_JIS
+type,ghost
+name,XBARIBARI
+directory,jong-bari

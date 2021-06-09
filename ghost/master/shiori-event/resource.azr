@@ -1,0 +1,31 @@
+//******************************************************************************
+// network update
+//******************************************************************************
+string homeurl()    { return "https://raw.githubusercontent.com/nikolat/jong-bari/main/"; }
+string useorigin1() { return "1"; }
+
+//******************************************************************************
+// recommend sites
+//******************************************************************************
+string sakura.portalsites()
+{
+	string s = "";
+	s += "Disc-2" + _bytechar(1)
+		+ "http://disc2.s56.xrea.com/" + _bytechar(1)
+		+ "http://disc2.s56.xrea.com/image/disc_2.gif" + _bytechar(1)
+		+ _bytechar(2);
+	return s;
+}
+string sakura.recommendsites()
+{
+	string s = "";
+	s += "シャンテン数計算アルゴリズム" + _bytechar(1)
+		+ "http://ara.moo.jp/mjhmr/shanten.htm" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "向聴数を求めるアルゴリズム - あらの（一人）麻雀研究所" + _bytechar(1)
+		+ "https://mahjong.ara.black/etc/shanten/index.htm" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	return s;
+}

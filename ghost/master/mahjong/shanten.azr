@@ -1,0 +1,29 @@
+//haiはソートされてる前提
+int getShanten(array hai)
+{
+    //今は七対子のみ
+    return getShantenChitoitsu(hai);
+}
+
+int getShantenChitoitsu(array hai)
+{
+	int nToitsu = 0;
+	int nType = 0;
+	string baseHai = "";
+	for (int i = 0; hai[i] != nil; i++)
+	{
+		if (baseHai != hai[i])
+		{
+			nType++;
+			baseHai = hai[i];
+			if (baseHai == hai[i + 1])
+			{
+				i++;
+				nToitsu++;
+			}
+		}
+	}
+	if (nType >= 7)
+		nType = 7;
+	return 6 - nToitsu + (7 - nType);
+}

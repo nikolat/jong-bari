@@ -1,0 +1,934 @@
+//******************************************************************************
+// 設定
+//******************************************************************************
+//手牌オープン
+int openTehai = 0;
+
+//******************************************************************************
+// グローバル変数
+//******************************************************************************
+//ゲームで使用する変数
+array arYama;
+array arTehai = {{}, {}, {}, {}};
+array arKawa = {{}, {}, {}, {}};
+array arScore = {25000, 25000, 25000, 25000};
+array arRichiJunme = {-1, -1, -1, -1};
+string dorahyouji;
+string uradorahyouji;
+int nYamaIndex;
+int isGameStarted = 0;
+int bafu = 0;//東:0, 南:1
+array arBafu = {"東", "南"};
+int kyoku = 0;//1 - 4
+int oyaIndex = -1;
+int tsumibou;
+int kyotaku;
+array playerName;
+int isSoloMode;
+//バルーン表示保存用
+string lastScript;
+//クライアントからのレスポンス保存用
+string reservedSutehai;
+int reservedRichi;
+int reservedTsumo;
+dict reservedNaku;
+dict reservedTenpai;
+string reservedScript;
+dict dResponseNeed;
+int isRecievedResponse;
+
+//******************************************************************************
+// OnMahjongResponse
+//******************************************************************************
+string OnMahjongResponse(dict ref)
+{
+	string version = ref["Reference0"];
+	if (version != getVersion())
+		return "";
+	string command = ref["Reference1"];
+	switch (command)
+	{
+	case "hello":
+		array a = _strsplit(ref["Reference3"], "=");
+		string name;
+		if (a[0] == "name")
+			name = a[1];
+		else
+			return "";
+		if (_aryvn(playerName) >= 3)
+			return "";//定員オーバー
+		if (existElement(playerName, name))
+			return "";//同名のキャラが参加済
+		playerName += name;
+		if (_aryvn(playerName) == 3)
+		{
+			playerName += "user";
+			return showBalloon();
+		}
+		else
+		{
+			return "";
+		}
+		break;
+	case "sutehai?":
+		string action = ref["Reference2"];
+		switch (action)
+		{
+		case ""://お任せモード
+			break;
+		case "sutehai":
+			reservedSutehai = ref["Reference3"];
+			break;
+		case "richi":
+			reservedSutehai = ref["Reference3"];
+			reservedRichi = 1;
+			break;
+		case "tsumo":
+			reservedTsumo = 1;
+			break;
+		default:
+			break;
+		}
+		isRecievedResponse = 1;
+		break;
+	case "naku?":
+		string action = ref["Reference2"];
+		string name = ref["Sender"];
+		reservedNaku[name] = action;
+		dResponseNeed[name] = 0;
+		int count = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			count += dResponseNeed[playerName[i]];
+		}
+		if (count == 0)
+			isRecievedResponse = 1;
+		break;
+	case "tenpai?":
+		string action = ref["Reference2"];
+		string name = ref["Sender"];
+		reservedTenpai[name] = action;
+		dResponseNeed[name] = 0;
+		int count = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			count += dResponseNeed[playerName[i]];
+		}
+		if (count == 0)
+			isRecievedResponse = 1;
+		break;
+	default:
+		break;
+	}
+	return "";
+}
+
+TH_WaitResponse()
+{
+	double wait = 0.125;
+	int nLoop = 8;
+	for (int i = 0; i < nLoop; i++)
+	{
+		if (isSoloMode)
+			break;
+		_sleep(wait);
+		if (isRecievedResponse)
+		{
+			isRecievedResponse = 0;
+			break;
+		}
+	}
+	string s = reservedScript;
+	reservedScript = "";
+	_speak(s);
+}
+
+string getVersion()
+{
+	return "UKAJONG/0.2";
+}
+
+//******************************************************************************
+// 表示
+//******************************************************************************
+string showBalloon()
+{
+	//接続確認
+	if (_aryvn(playerName) < 3)
+	{
+		string s;
+		s += "\0\s[0]\_q";
+		s += "\![*]\__q[Menu_SearchPlayer]対局相手を探す\__q\n";
+		s += "\![*]\__q[Menu_StartWithoutPlayer]対局相手無しで始める\__q\n\n";
+		s += "\![*]\__q[Menu_CANSEL]閉じる\__q\_q\e";
+		return s;
+	}
+	//gamestart通知
+	if (!isGameStarted)
+	{
+		isGameStarted = 1;
+		bafu = 0;
+		kyoku = 1;
+		oyaIndex = _randselect({0, 1, 2, 3});
+		array seki = {"東", "南", "西", "北"};
+		dict dSeki;
+		array pNames;
+		for (int i = 0; playerName[i] != nil; i++)
+		{
+			pNames += playerName[(i + oyaIndex) % 4];
+		}
+		for (int i = 0; pNames[i] != nil; i++)
+		{
+			dSeki += $(pNames[i], seki[i]);
+		}
+		string s;
+		s += "\0\s[0]";
+		for (int i = 0; i < 3; i++)
+		{
+			s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+				+ ",gamestart," + dSeki[playerName[i]] + "," + pNames[0] + "," + pNames[1] + "," + pNames[2] + "," + pNames[3] + "]";
+		}
+		s += "\_w[2000]\![raise,showBalloon]\e";
+		return s;
+	}
+	string s;
+	if (nYamaIndex > 0)
+		s += lastScript;
+	else
+		s += startKyoku();
+	return s;
+}
+
+string Menu_SearchPlayer(dict ref)
+{
+	isSoloMode = 0;
+	return "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion() + ",hello]";
+}
+string Menu_StartWithoutPlayer(dict ref)
+{
+	isSoloMode = 1;
+	playerName = {"エミリ", "テディ", "エミリオ", "user"};
+	isGameStarted = 1;
+	bafu = 0;
+	kyoku = 1;
+	oyaIndex = _randselect({0, 1, 2, 3});
+	return startKyoku();
+}
+
+string Menu_StartKyoku(dict ref)
+{
+	if (bafu < 2)//東場、南場
+		return startKyoku();
+	else
+		return endGame();
+}
+
+string endGame()
+{
+	//gameend通知
+	string s = "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion() + ",gameend";
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		s += "," + playerName[i] + _bytechar(1) + arScore[i];
+	}
+	s += "]\e";
+	isGameStarted = 0;
+	playerName = {};
+	arScore = {25000, 25000, 25000, 25000};
+	return s;
+}
+
+string startKyoku()
+{
+	arYama = shuffleArray(getAllHai());
+	arTehai[0] = sortHai(getArrayRange(arYama, 0, 12));
+	arTehai[1] = sortHai(getArrayRange(arYama, 13, 25));
+	arTehai[2] = sortHai(getArrayRange(arYama, 26, 38));
+	arTehai[3] = sortHai(getArrayRange(arYama, 39, 51));
+	arKawa = {{}, {}, {}, {}};
+	arRichiJunme = {-1, -1, -1, -1};
+	dorahyouji = arYama[52];
+	uradorahyouji = arYama[53];
+	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
+	reservedNaku = ${
+		$(playerName[0], ""),
+		$(playerName[1], ""),
+		$(playerName[2], "")
+	};
+	reservedTenpai = ${
+		$(playerName[0], ""),
+		$(playerName[1], ""),
+		$(playerName[2], "")
+	};
+	dResponseNeed = ${
+		$(playerName[0], 0),
+		$(playerName[1], 0),
+		$(playerName[2], 0)
+	};
+	string tsumo = arYama[nYamaIndex++];
+	string s;
+	//kyokustart通知
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",kyokustart," + arBafu[bafu] + "," + playerName[oyaIndex] + "," + tsumibou + "," + kyotaku + "]";
+	//haipai通知
+	for (int i = 0; i < 3; i++)
+	{
+		s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+			+ ",haipai," + playerName[i] + "," + _arystr(arTehai[i]) + "]";
+	}
+	//dora通知
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",dora," + dorahyouji + "]";
+
+	s += "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0});
+	//userがツモ
+	if (oyaIndex == 3)
+	{
+		s += "\_q\e";
+		lastScript = s;
+		return s;
+	}
+	//user以外がツモ
+	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
+		+ ",tsumo," + playerName[oyaIndex] + "," + getLeftYama() + "," + tsumo + "]";
+	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
+		+ ",sutehai?]";
+	s += "\_q\e";
+	reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + oyaIndex + "]";
+	_create_thread("TH_WaitResponse");
+	return s;
+}
+
+int getLeftYama()
+{
+	return _aryvn(arYama) - nYamaIndex;
+}
+
+string OnSuteSelect(dict ref)
+{
+	int selectPlayer = ref["Reference0"];
+	string tsumo = arYama[nYamaIndex - 1];
+	//捨て
+	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	string sute;
+	array tehai;
+	tehai = arTehai[selectPlayer];
+	tehai += tsumo;
+	if (reservedTsumo)
+	{
+		reservedTsumo = 0;
+		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
+		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			+ ",say," + playerName[selectPlayer] + ",tsumo]";
+		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
+		return s;
+	}
+	else if (reservedSutehai != "")
+	{
+		sute = reservedSutehai;
+		reservedSutehai = "";
+		int richi = arRichiJunme[selectPlayer];
+		if (reservedRichi && richi == -1)
+		{
+			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
+			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",say," + playerName[selectPlayer] + ",richi]";
+			s += "\_w[2000]";
+		}
+		reservedRichi = 0;
+	}
+	else//auto
+	{
+		int shanten = getShanten(sortHai(tehai));//ソートされていないといけない
+		if (shanten == -1)
+		{
+			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
+			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",say," + playerName[selectPlayer] + ",tsumo]";
+			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
+			return s;
+		}
+		int richi = arRichiJunme[selectPlayer];
+		if (richi >= 0)
+			sute = tsumo;
+		else
+			sute = naniwokiru(tehai, arKawa[selectPlayer]);//ソートされていてはいけない
+		if (shanten == 0 && richi == -1)
+		{
+			//即リー
+			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
+			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",say," + playerName[selectPlayer] + ",richi]";
+			s += "\_w[2000]";
+		}
+	}
+	arKawa[selectPlayer] += sute;
+	tehai = sortHai(removeElement(tehai, getIndex(tehai, sute)));
+	arTehai[selectPlayer] = tehai;
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
+	//userが鳴く、ロンするのが可能な場合、\xを挟んで通知を一時停止する
+	array hai14 = arTehai[3];
+	hai14 += sute;
+	hai14 = sortHai(hai14);
+	int shanten = getShanten(hai14);
+	if (shanten == -1)
+		s += "\x";
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
+	isRecievedResponse = 1;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		if (playerName[i] != playerName[selectPlayer])
+		{
+			hai14 = arTehai[i];
+			hai14 += sute;
+			hai14 = sortHai(hai14);
+			shanten = getShanten(hai14);
+			if (shanten == -1)
+			{
+				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+					+ ",naku?," + sute + ",ron]";
+				dResponseNeed[playerName[i]] = 1;
+				isRecievedResponse = 0;
+			}
+		}
+	}
+
+	s += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + sute + "]";
+
+	s += "\_q\e";
+	return s;
+}
+
+string OnNotifyPrepareSuteComplete(dict ref)
+{
+	int selectPlayer = ref["Reference0"];
+	string sute = ref["Reference1"];
+	reservedScript = "\C\0\s[0]\b[2]\![raise,OnSuteComplete," + selectPlayer + "," + sute + "]";
+	_create_thread("TH_WaitResponse");
+	return "";
+}
+
+string OnSuteComplete(dict ref)
+{
+	int completePlayer = ref["Reference0"];
+	string sute = ref["Reference1"];
+	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	//AIがロンすることを選択した場合(ダブロンどうしよう)
+	for (int i = 0; i < 3; i++)
+	{
+		string action = reservedNaku[playerName[i]];
+		if (action != "")
+		{
+			if (action == "ron")
+			{
+				s += showStatus("", sute, completePlayer, i, {0, 0, 0});
+				s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+					+ ",say," + playerName[i] + ",ron]";
+				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
+				return s;
+			}
+		}
+		else//お任せモードの場合ロン可能ならロンする
+		{
+			if (i != completePlayer)
+			{
+				array hai14 = arTehai[i];
+				hai14 += sute;
+				hai14 = sortHai(hai14);
+				int shanten = getShanten(hai14);
+				if (shanten == -1)
+				{
+					s += showStatus("", sute, completePlayer, i, {0, 0, 0});
+					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+						+ ",say," + playerName[i] + ",ron]";
+					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
+					return s;
+				}
+			}
+		}
+	}
+	reservedNaku = ${
+		$(playerName[0], ""),
+		$(playerName[1], ""),
+		$(playerName[2], "")
+	};
+	//供託
+	if (arRichiJunme[completePlayer] == _aryvn(arKawa[completePlayer]) - 1)
+	{
+		kyotaku++;
+		arScore[completePlayer] -= 1000;
+	}
+	//流局
+	if (_aryvn(arYama) == nYamaIndex)
+	{
+		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+		s += "\x";
+		isRecievedResponse = 1;
+		for (int i = 0; i < 3; i++)
+		{
+			array hai13 = arTehai[i];
+			int shanten = getShanten(hai13);
+			if (shanten == 0)
+			{
+				reservedTenpai[playerName[i]] = "yes";//デフォルトでyes
+				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+					+ ",tenpai?]";
+				dResponseNeed[playerName[i]] = 1;
+				isRecievedResponse = 0;
+			}
+		}
+		s += "\![notify,OnNotifyPrepareRyukyoku]";
+		s += "\_q\e";
+		return s;
+	}
+	int nextPlayer = completePlayer + 1;
+	if (nextPlayer == 4)
+		nextPlayer = 0;
+	string tsumo;
+	//userがツモ
+	if (nextPlayer == 3)
+	{
+		tsumo = arYama[nYamaIndex++];
+		s += showStatus(tsumo, "", 3, -1, {0, 0, 0});
+		s += "\_q\e";
+		lastScript = s;
+		return s;
+	}
+	//user以外がツモ
+	tsumo = arYama[nYamaIndex++];
+	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0});
+	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
+		+ ",tsumo," + playerName[nextPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
+		+ ",sutehai?]";
+	s += "\_q\e";
+	reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + nextPlayer + "]";
+	_create_thread("TH_WaitResponse");
+	return s;
+}
+
+string OnNotifyPrepareRyukyoku(dict ref)
+{
+	reservedScript = "\C\0\s[0]\b[2]\![raise,OnRyukyoku]";
+	_create_thread("TH_WaitResponse");
+	return "";
+}
+
+string OnRyukyoku(dict ref)
+{
+	string m;
+	array arTenpaiPlayerFlag = {0, 0, 0};
+	for (int i = 0; i < 3; i++)
+	{
+		string action = reservedTenpai[playerName[i]];
+		if (action == "yes")
+		{
+			arTenpaiPlayerFlag[i] = 1;
+			m += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",say," + playerName[i] + ",tenpai]";
+			m += "\_w[1000]";
+		}
+	}
+	int shanten = getShanten(arTehai[3]);
+	if (shanten == 0)
+		arTenpaiPlayerFlag += 1;
+	else
+		arTenpaiPlayerFlag += 0;
+	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag);
+	s += m;
+	s += "\x\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]\e";
+	return s;
+}
+
+string Menu_Sutehai(dict ref)
+{
+	int selectPlayer = 3;
+	int index = ref["Reference2"];
+	string tsumo = arYama[nYamaIndex - 1];
+	arTehai[selectPlayer] += tsumo;
+	string sute = arTehai[selectPlayer][index];
+	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	//userが捨て
+	arKawa[selectPlayer] += sute;
+	arTehai[selectPlayer] = sortHai(removeElement(arTehai[selectPlayer], index));
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
+	isRecievedResponse = 1;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		if (playerName[i] != playerName[selectPlayer])
+		{
+			array hai14 = arTehai[i];
+			hai14 += sute;
+			hai14 = sortHai(hai14);
+			int shanten = getShanten(hai14);
+			if (shanten == -1)
+			{
+				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+					+ ",naku?," + sute + ",ron]";
+				dResponseNeed[playerName[i]] = 1;
+				isRecievedResponse = 0;
+			}
+		}
+	}
+	s += "\_q\e";
+	reservedScript = "\C\0\s[0]\b[2]\![raise,OnSuteComplete," + selectPlayer + "," + sute + "]";
+	_create_thread("TH_WaitResponse");
+	return s;
+}
+
+string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag)
+{
+	string s;
+	array uramen = getUramen();
+	array wanpai = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
+	array seki = {"東", "南", "西", "北"};
+	dict dSeki;
+	array pNames;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		pNames += playerName[(i + oyaIndex) % 4];
+	}
+	for (int i = 0; pNames[i] != nil; i++)
+	{
+		dSeki += $(pNames[i], seki[i]);
+	}
+	//王牌
+	s += "\f[height,+16]\_l[110,-15]";
+	for (int i = 0; wanpai[i] != nil; i++)
+	{
+		s += convertUnicode(wanpai[i]);
+	}
+	s += "\f[height,default]";
+	//場風、局数、積み棒、供託棒
+	s += "\_l[,0] " + arBafu[bafu] + kyoku + "局";
+	s += "\_l[260,0]●x" + tsumibou + "\n";
+	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
+	//0-2
+	for (int p = 0; p < 3; p++)
+	{
+		s += "\_l[0," + (80 * p) + "]\f[height,default]" + dSeki[playerName[p]] + "家<<" + playerName[p] + ">>\n";
+		s += "\f[height,+16]";
+		if (openTehai || (p == agariPlayer) || arTenpaiPlayerFlag[p])
+		{
+			for (int i = 0; arTehai[p][i] != nil; i++)
+			{
+				s += convertUnicode(arTehai[p][i]);
+			}
+			if (nPlayer == p && tsumo != "")
+				s += " " + convertUnicode(tsumo);
+		}
+		else
+		{
+			for (int i = 0; uramen[i] != nil; i++)
+			{
+				s += convertUnicode(uramen[i]);
+			}
+			if (nPlayer == p && tsumo != "")
+				s += " " + convertUnicode(uramen[0]);
+		}
+		s += "\n";
+		for (int i = 0; arKawa[p][i] != nil; i++)
+		{
+			if (i == arRichiJunme[p])
+				s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+			else
+				s += convertUnicode(arKawa[p][i]);
+		}
+	}
+	//3
+	s += "\_l[0,240]\f[height,default]" + dSeki[playerName[3]] + "家<<" + playerName[3] + ">>\n";
+	s += "\f[height,+16]";
+	for (int i = 0; arKawa[3][i] != nil; i++)
+	{
+		if (i == arRichiJunme[3])
+			s += "\f[color,red]" + convertUnicode(arKawa[3][i]) + "\f[color,default]";
+		else
+			s += convertUnicode(arKawa[3][i]);
+	}
+	s += "\n";
+	for (int i = 0; arTehai[3][i] != nil; i++)
+	{
+		if (nPlayer == 3 && tsumo != "")
+		{
+			if (arRichiJunme[3] == -1)
+			{
+				s += "\__q[Menu_Sutehai," + i + "]" + convertUnicode(arTehai[3][i]) + "\__q";
+			}
+			else if (arRichiJunme[3] == _aryvn(arKawa[3]))
+			{
+				array hai13 = arTehai[3];
+				hai13 += tsumo;
+				hai13 = removeElement(hai13, i);
+				hai13 = sortHai(hai13);
+				int shanten = getShanten(hai13);
+				if (shanten == 0)
+					s += "\__q[Menu_Sutehai," + i + "]" + convertUnicode(arTehai[3][i]) + "\__q";
+				else
+					s += "\f[color,gray]" + convertUnicode(arTehai[3][i]) + "\f[color,default]";
+			}
+			else
+			{
+				s += convertUnicode(arTehai[3][i]);
+			}
+		}
+		else
+		{
+			s += convertUnicode(arTehai[3][i]);
+		}
+	}
+	if (nPlayer == 3 && tsumo != "")
+	{
+		s += " ";
+		if (arRichiJunme[3] == _aryvn(arKawa[3]))
+		{
+			int shanten = getShanten(arTehai[3]);
+			if (shanten == 0)
+				s += "\__q[Menu_Sutehai,13]" + convertUnicode(tsumo) + "\__q";
+			else
+				s += "\f[color,gray]" + convertUnicode(tsumo) + "\f[color,default]";
+		}
+		else
+		{
+			s += "\__q[Menu_Sutehai,13]" + convertUnicode(tsumo) + "\__q";
+		}
+	}
+	s += "\f[height,default]";
+	int n = getLeftYama();
+	if (n > 0 || tsumo != "")
+		s += "\n[half]\_l[225,]残り: " + n + "枚";
+	else
+		s += "\n[half]\_l[225,]流局";
+	s += "\n\n";
+	if (nPlayer == 3 && tsumo != "")
+	{
+		array hai14 = arTehai[3];
+		hai14 += tsumo;
+		hai14 = sortHai(hai14);
+		int shanten = getShanten(hai14);
+		if (shanten == -1)
+			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
+		else if (shanten == 0 && arRichiJunme[3] == -1)
+			s += "\![*]\__q[Menu_Richi]リーチ\__q";
+	}
+	if (nPlayer != 3 && sute != "" && agariPlayer == -1)
+	{
+		array hai14 = arTehai[3];
+		hai14 += sute;
+		hai14 = sortHai(hai14);
+		int shanten = getShanten(hai14);
+		if (shanten == -1)
+			s += "\![*]\__q[Menu_Ron,3," + nPlayer + "," + sute + "]ロン\__q";
+	}
+	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
+	return s;
+}
+
+string Menu_Richi(dict ref)
+{	
+	arRichiJunme[3] = _aryvn(arKawa[3]);
+	string tsumo = arYama[nYamaIndex - 1];
+	string s;
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",say,user,richi]";
+	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}) + "\_q\e";
+	return s;
+}
+
+string Menu_CANCEL(dict ref)
+{
+	return "\e";
+}
+
+clearStatus()
+{
+	arYama = {};
+	arTehai = {{}, {}, {}, {}};
+	arKawa = {{}, {}, {}, {}};
+	arRichiJunme = {-1, -1, -1, -1};
+	dorahyouji = "";
+	uradorahyouji = "";
+	nYamaIndex = 0;
+	lastScript = "";
+}
+
+//全牌
+array getAllHai()
+{
+	array a = {
+		"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+		"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+		"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+		"1z", "2z", "3z", "4z", "5z", "6z", "7z",
+		"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+		"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+		"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+		"1z", "2z", "3z", "4z", "5z", "6z", "7z",
+		"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+		"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+		"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+		"1z", "2z", "3z", "4z", "5z", "6z", "7z",
+		"1m", "2m", "3m", "4m", "5m", "6m", "7m", "8m", "9m",
+		"1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p",
+		"1s", "2s", "3s", "4s", "5s", "6s", "7s", "8s", "9s",
+		"1z", "2z", "3z", "4z", "5z", "6z", "7z"
+	};//n = 136
+	return a;
+}
+
+array shuffleArray(array a)
+{
+	array arRet;
+	while (_aryvn(a) > 0)
+	{
+		int n = _aryvn(a);
+		int index = _rand() * n / 10000;
+		array an = {};
+		for (int i = 0; i < n; i++)
+		{
+			if (i == index)
+				arRet += a[i];
+			else
+				an += a[i];
+		}
+		a = an;
+	}
+	return arRet;
+}
+
+array removeElement(array a, int index)
+{
+	array arRet;
+	int n = _aryvn(a);
+	for (int i = 0; i < n; i++)
+	{
+		if (i != index)
+			arRet += a[i];
+	}
+	return arRet;
+}
+
+int getIndex(array a, string s)
+{
+	for (int i = 0; a[i] != nil; i++)
+	{
+		if (a[i] == s)
+			return i;
+	}
+	return -1;
+}
+
+array getArrayRange(array a, int start, int end)
+{
+	array arRet;
+	int x;
+	int y;
+	if (start <= end)
+	{
+		x = start;
+		y = end;
+	}
+	else
+	{
+		x = end;
+		y = start;
+	}
+	for (int i = x; i <= y; i++)
+	{
+		arRet += a[i];
+	}
+	return arRet;
+}
+
+//ソート
+array sortHai(array a)
+{
+	array arRet;
+	//バブルソートでいいや…
+	while (_aryvn(a) > 0)
+	{
+		int n = _aryvn(a);
+		int index = -1;
+		int minValue = 99;
+		array an = {};
+		for (int i = 0; i < n; i++)
+		{
+			int v = getSortCode(a[i]);
+			if (v < minValue) {
+				if (index >= 0)
+					an += a[index];
+				index = i;
+				minValue = v;
+			}
+			else
+			{
+				an += a[i];
+			}
+		}
+		arRet += a[index];
+		a = an;
+	}
+	return arRet;
+}
+
+//\_u[0xXXXXX]形式に変換
+string convertUnicode(string hai)
+{
+	dict d = ${
+		$("1m", "1F007"),//一萬
+		$("2m", "1F008"),
+		$("3m", "1F009"),
+		$("4m", "1F00A"),
+		$("5m", "1F00B"),
+		$("6m", "1F00C"),
+		$("7m", "1F00D"),
+		$("8m", "1F00E"),
+		$("9m", "1F00F"),
+		$("1p", "1F019"),//一筒
+		$("2p", "1F01A"),
+		$("3p", "1F01B"),
+		$("4p", "1F01C"),
+		$("5p", "1F01D"),
+		$("6p", "1F01E"),
+		$("7p", "1F01F"),
+		$("8p", "1F020"),
+		$("9p", "1F021"),
+		$("1s", "1F010"),//一索
+		$("2s", "1F011"),
+		$("3s", "1F012"),
+		$("4s", "1F013"),
+		$("5s", "1F014"),
+		$("6s", "1F015"),
+		$("7s", "1F016"),
+		$("8s", "1F017"),
+		$("9s", "1F018"),
+		$("1z", "1F000"),//東
+		$("2z", "1F001"),//南
+		$("3z", "1F002"),//西
+		$("4z", "1F003"),//北
+		$("5z", "1F006"),//白
+		$("6z", "1F005"),//発
+		$("7z", "1F004"),//中
+		$("tb", "1F02B")//Tile Back
+	};
+	return "\_u[0x" + d[hai] + "]";
+}
+
+//ソート順定義
+int getSortCode(string hai)
+{
+	string s = "1m2m3m4m5m6m7m8m9m1p2p3p4p5p6p7p8p9p1s2s3s4s5s6s7s8s9s1z2z3z4z5z6z7z";
+	int index = _strstr(s, hai);
+	int r = index / 2;
+	return r;
+}
+
+array getUramen()
+{
+	array a = {"tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb"};
+	return a;
+}

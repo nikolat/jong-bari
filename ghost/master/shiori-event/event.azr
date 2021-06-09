@@ -1,0 +1,70 @@
+//******************************************************************************
+// required event
+//******************************************************************************
+string OnFirstBoot()          { return "\0\s[0]\1\s[10]\e"; }
+string OnBoot()               { return "\0\s[0]\1\s[10]\e"; }
+string OnGhostChanged()       { return "\0\s[0]\1\s[10]\e"; }
+string OnShellChanged()       { return "\0\s[0]\1\s[10]\e"; }
+string OnWindowStateRestore() { return "\0\s[0]\1\s[10]\e"; }
+string OnSurfaceRestore()     { return "\0\s[0]\1\s[10]\e"; }
+string OnClose()              { return "\-\e"; }
+
+//******************************************************************************
+// update event
+//******************************************************************************
+string OnUpdateBegin()            { return "\0\s[0]\_qUpdate Begin.\_q\e"; }
+string OnUpdateReady()            { return "\0\s[0]\_qUpdating...\_q\e"; }
+string OnUpdateComplete(dict ref) { return "\0\s[0]\_q" + ref["Reference0"] + ".\_q\e"; }
+string OnUpdateFailure(dict ref)  { return "\0\s[0]\_q" + ref["Reference0"] + ".\_q\e"; }
+
+//******************************************************************************
+// mouse event
+//******************************************************************************
+//------------------------------------------------------------------------------
+// ダブルクリック
+//------------------------------------------------------------------------------
+string OnMouseDoubleClick(dict ref)
+{
+	return showBalloon();
+}
+
+//******************************************************************************
+// UI event
+//******************************************************************************
+//------------------------------------------------------------------------------
+// ショートカットキー
+//------------------------------------------------------------------------------
+string OnKeyPress(dict ref)
+{
+	string s;
+	switch (ref["Reference0"])
+	{
+	  case "r":
+		s = "\![reload,shiori]\0\s[0]\_qReloaded.\_q\e";
+		break;
+	  default:
+		s = "";
+		break;
+	}
+	return s;
+}
+
+//------------------------------------------------------------------------------
+// 選択肢・アンカー
+//------------------------------------------------------------------------------
+string OnChoiceSelect(dict ref)
+{
+	return _fncstr(ref["Reference0"], ref);
+}
+string OnChoiceSelectEx(dict ref)
+{
+	return _fncstr(ref["Reference1"], ref);
+}
+string OnAnchorSelect(dict ref)
+{
+	return _fncstr(ref["Reference0"], ref);
+}
+string OnAnchorSelectEx(dict ref)
+{
+	return _fncstr(ref["Reference1"], ref);
+}

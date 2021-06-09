@@ -1,0 +1,13 @@
+load()
+{
+	//辞書読み込み
+	_script_load("shiori-event\event");
+	_script_load("shiori-event\resource");
+	_script_load("mahjong\ai");
+	_script_load("mahjong\score");
+	_script_load("mahjong\shanten");
+	_script_load("mahjong\util");
+}
+unload()
+{
+}

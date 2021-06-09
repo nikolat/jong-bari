@@ -1,0 +1,15 @@
+charset,Shift_JIS
+version,1
+
+group,‘ì
+{
+	scope,0
+
+	0,‘f
+}
+
+group,‚»‚Ì‘¼
+{
+	10,–³‚µ
+}
+
