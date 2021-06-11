@@ -10,6 +10,26 @@ string useorigin1() { return "1"; }
 string sakura.portalsites()
 {
 	string s = "";
+	s += "GitHub - nikolat/jong-bari: 麻雀サーバーゴースト" + _bytechar(1)
+		+ "https://github.com/nikolat/jong-bari" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "GitHub - nikolat/jong-rinrin: 麻雀クライアントゴースト" + _bytechar(1)
+		+ "https://github.com/nikolat/jong-rinrin" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "GitHub - nikolat/jong-chunchun: 麻雀クライアントゴースト" + _bytechar(1)
+		+ "https://github.com/nikolat/jong-chunchun" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "GitHub - nikolat/jong-whanwhan: 麻雀クライアントゴースト" + _bytechar(1)
+		+ "https://github.com/nikolat/jong-whanwhan" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "-" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
 	s += "Disc-2" + _bytechar(1)
 		+ "http://disc2.s56.xrea.com/" + _bytechar(1)
 		+ "http://disc2.s56.xrea.com/image/disc_2.gif" + _bytechar(1)
@@ -19,12 +39,28 @@ string sakura.portalsites()
 string sakura.recommendsites()
 {
 	string s = "";
+	s += "UMP - オープンネットワーク麻雀 Wiki - オープンネットワーク麻雀 - OSDN" + _bytechar(1)
+		+ "https://osdn.net/projects/openmj/wiki/UMP" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "-" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
 	s += "シャンテン数計算アルゴリズム" + _bytechar(1)
 		+ "http://ara.moo.jp/mjhmr/shanten.htm" + _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(2);
 	s += "向聴数を求めるアルゴリズム - あらの（一人）麻雀研究所" + _bytechar(1)
 		+ "https://mahjong.ara.black/etc/shanten/index.htm" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "-" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "麻雀のアガリ判定アルゴリズムで苦戦したこと - ホンモノのエンジニアになりたい" + _bytechar(1)
+		+ "https://www.engineer-log.com/entry/2018/06/14/mahjong-algorithm" + _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(2);
 	return s;

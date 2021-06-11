@@ -530,6 +530,13 @@ string OnRyukyoku(dict ref)
 				+ ",say," + playerName[i] + ",tenpai]";
 			m += "\_w[1000]";
 		}
+		else
+		{
+			arTenpaiPlayerFlag[i] = 0;
+			m += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				+ ",say," + playerName[i] + ",noten]";
+			m += "\_w[1000]";
+		}
 	}
 	int shanten = getShanten(arTehai[3]);
 	if (shanten == 0)
