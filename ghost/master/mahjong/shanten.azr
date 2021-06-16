@@ -1,10 +1,8 @@
 //haiはソートされてる前提
 int getShanten(array hai)
 {
-    int r1 = getShantenChitoitsu(hai);
-	int r2 = getShantenKokushi(hai);
-	int r3 = getShantenNormal(hai);
-	return getMin({r1, r2, r3});
+	int shanten = _saorirequest("MahjongUtil", "shanten", _arystr(hai))["Result"];
+	return shanten;
 }
 
 int getMin(array a)

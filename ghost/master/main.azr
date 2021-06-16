@@ -7,7 +7,10 @@ load()
 	_script_load("mahjong\score");
 	_script_load("mahjong\shanten");
 	_script_load("mahjong\util");
+
+	_saoriload("saori\MahjongUtil\MahjongUtil.dll", "MahjongUtil");
 }
 unload()
 {
+	_saoriunload("MahjongUtil");
 }
