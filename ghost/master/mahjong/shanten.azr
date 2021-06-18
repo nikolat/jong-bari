@@ -18,11 +18,20 @@ int getMin(array a)
 
 int getShantenNormal(array hai)
 {
+	array a = getShantenNormalWithMentsu(hai);
+	int r = a[0];
+	return r;
+}
+
+array getShantenNormalWithMentsu(array hai)
+{
 	//孤立牌の除去
 	hai = removeKoritsuHai(hai);
 	//雀頭候補
 	array arAtamaKouho = getToitsu(hai);
+	string atama;
 	int shanten = 99;
+	array arMentsu;
 	for (int i = 0; arAtamaKouho[i] != nil; i++)
 	{
 		array haiWithoutAtama = removeElementByName(hai, arAtamaKouho[i], 2);
@@ -55,9 +64,17 @@ int getShantenNormal(array hai)
 		int shantenKouhoB = 8 - (2 * nMentsuB) - nMentsuKouhoB - 1;
 		//より小さい方を選択
 		if (shantenKouhoA < shanten)
+		{
 			shanten = shantenKouhoA;
+			atama = arAtamaKouho[i];
+			arMentsu = makeMenstu(arKouhoAman[2], arKouhoApin[2], arKouhoAsou[2], arKouhojihai[2]);
+		}
 		if (shantenKouhoB < shanten)
+		{
 			shanten = shantenKouhoB;
+			atama = arAtamaKouho[i];
+			arMentsu = makeMenstu(arKouhoBman[2], arKouhoBpin[2], arKouhoBsou[2], arKouhojihai[2]);
+		}
 	}
 	//雀頭無しの場合
 	array a = getSupai(hai);
@@ -89,10 +106,60 @@ int getShantenNormal(array hai)
 	int shantenKouhoB = 8 - (2 * nMentsuB) - nMentsuKouhoB;
 	//より小さい方を選択
 	if (shantenKouhoA < shanten)
+	{
 		shanten = shantenKouhoA;
+		atama = "";
+		arMentsu = makeMenstu(arKouhoAman[2], arKouhoApin[2], arKouhoAsou[2], arKouhojihai[2]);
+	}
 	if (shantenKouhoB < shanten)
+	{
 		shanten = shantenKouhoB;
-	return shanten;
+		atama = "";
+		arMentsu = makeMenstu(arKouhoAman[2], arKouhoApin[2], arKouhoAsou[2], arKouhojihai[2]);
+	}
+	return {shanten, atama, arMentsu};
+}
+
+array makeMenstu(array arMenstuMan, array arMenstuPin, array arMenstuSou, array arMenstuJihai)
+{
+	array arMenstuRet;
+	for (int i = 0; arMenstuMan[i] != nil; i++)
+	{
+		array arMenstuTempRet = {};
+		for (int j = 0; arMenstuMan[i][j] != nil; j++)
+		{
+			arMenstuTempRet += "" + arMenstuMan[i][j] + "m";
+		}
+		arMenstuRet += arMenstuTempRet;
+	}
+	for (int i = 0; arMenstuPin[i] != nil; i++)
+	{
+		array arMenstuTempRet = {};
+		for (int j = 0; arMenstuPin[i][j] != nil; j++)
+		{
+			arMenstuTempRet += "" + arMenstuPin[i][j] + "p";
+		}
+		arMenstuRet += arMenstuTempRet;
+	}
+	for (int i = 0; arMenstuSou[i] != nil; i++)
+	{
+		array arMenstuTempRet = {};
+		for (int j = 0; arMenstuSou[i][j] != nil; j++)
+		{
+			arMenstuTempRet += "" + arMenstuSou[i][j] + "s";
+		}
+		arMenstuRet += arMenstuTempRet;
+	}
+	for (int i = 0; arMenstuJihai[i] != nil; i++)
+	{
+		array arMenstuTempRet = {};
+		for (int j = 0; arMenstuJihai[i][j] != nil; j++)
+		{
+			arMenstuTempRet += "" + arMenstuJihai[i][j] + "z";
+		}
+		arMenstuRet += arMenstuTempRet;
+	}
+	return arMenstuRet;
 }
 
 //孤立牌の除去
@@ -131,7 +198,7 @@ array removeKoritsuHai(array hai)
 
 array getMentsu(array hai)
 {
-	array arHai = hai;
+	array arHai = convertNumArray(hai);
 	array arKotsu = getKotsu(arHai);
 	array arKotsuPattern;
 	switch (_aryvn(arKotsu))
@@ -155,8 +222,8 @@ array getMentsu(array hai)
 	}
 	int pointA = -1;
 	int pointB = -1;
-	array arRetA = {0, 0};
-	array arRetB = {0, 0};
+	array arRetA = {0, 0, {}};
+	array arRetB = {0, 0, {}};
 	for (int i = 0; arKotsuPattern[i] != nil; i++)
 	{
 		array arKotsulessHai = arHai;
@@ -165,11 +232,22 @@ array getMentsu(array hai)
 		{
 			arKotsulessHai = removeElementByName(arKotsulessHai, arKotsuPattern[i][j], 3);
 		}
-		array nHai = convertNumArray(arKotsulessHai);
-
-		array arShuntsu = getMaxShuntsu(nHai, 0);
-		int nShuntsu = arShuntsu[0];
-		array leftHai = arShuntsu[1];
+		array arShuntsuRes = getMaxShuntsu(arKotsulessHai, 0, {});
+		int nShuntsu = arShuntsuRes[0];
+		array leftHai = arShuntsuRes[1];
+		array arShuntsu = arShuntsuRes[2];
+		//面子の配列を作成
+		array arMentsu = {};
+		for (int j = 0; arKotsuPattern[i][j] != nil; j++)
+		{
+			int n = arKotsuPattern[i][j];
+			arMentsu += {n, n, n};
+		}
+		for (int j = 0; arShuntsu[j] != nil; j++)
+		{
+			int n = arShuntsu[j];
+			arMentsu += {n, n + 1, n + 2};
+		}
 
 		array arMentsuKouho = getMaxMentsuKouho(leftHai, 0);
 		int nMentsuKouho = arMentsuKouho[0];
@@ -180,12 +258,12 @@ array getMentsu(array hai)
 		if (pointA < pointKouhoA)
 		{
 			pointA = pointKouhoA;
-			arRetA = {nMentsu, nMentsuKouho};
+			arRetA = {nMentsu, nMentsuKouho, arMentsu};
 		}
 		if (pointB < pointKouhoB)
 		{
 			pointB = pointKouhoB;
-			arRetB = {nMentsu, nMentsuKouho};
+			arRetB = {nMentsu, nMentsuKouho, arMentsu};
 		}
 	}
 	return {arRetA, arRetB};
@@ -193,9 +271,16 @@ array getMentsu(array hai)
 
 array getMentsuJihai(array hai)
 {
-	array arHai = hai;
+	array arHai = convertNumArray(hai);
 	array arKotsu = getKotsu(arHai);
 	int nKotsu = _aryvn(arKotsu);
+	//面子の配列を作成
+	array arMentsu = {};
+	for (int i = 0; arKotsu[i] != nil; i++)
+	{
+		int n = arKotsu[i];
+		arMentsu += {n, n, n};
+	}
 	for (int i = 0; arKotsu[i] != nil; i++)
 	{
 		arHai = removeElementByName(arHai, arKotsu[i], 3);
@@ -203,33 +288,39 @@ array getMentsuJihai(array hai)
 	int nKotsuKouho = _aryvn(getToitsu(arHai));
 	int nMentsu = nKotsu;
 	int nMentsuKouho = nKotsuKouho;
-	return {nMentsu, nMentsuKouho};
+	return {nMentsu, nMentsuKouho, arMentsu};
 }
 
-array getMaxShuntsu(array nHai, int nShuntsu)
+array getMaxShuntsu(array nHai, int nShuntsu, array arShuntsu)
 {
-	array arShuntsu = getShuntsu(nHai);
-	if (_aryvn(arShuntsu) > 0)
+	array arShuntsuKouho = getShuntsuKouho(nHai);
+	if (_aryvn(arShuntsuKouho) > 0)
 	{
 		int nShuntsuMax = nShuntsu;
 		array rHai = nHai;
-		for (int i = 0; arShuntsu[i] != nil; i++)
+		array rShuntsu = arShuntsu;
+		for (int i = 0; arShuntsuKouho[i] != nil; i++)
 		{
-			array tmpHai = removeShuntsu(nHai, arShuntsu[i]);
-			array arNext = getMaxShuntsu(tmpHai, nShuntsu + 1);
+			int n = arShuntsuKouho[i];
+			array tmpHai = removeShuntsu(nHai, n);
+			array tmpShuntsu = arShuntsu;
+			tmpShuntsu += n;
+			array arNext = getMaxShuntsu(tmpHai, nShuntsu + 1, tmpShuntsu);
 			int nextShuntsu = arNext[0];
 			array nextHai = arNext[1];
+			array arNextShuntsu = arNext[2];
 			if (nShuntsuMax < nextShuntsu)
 			{
 				nShuntsuMax = nextShuntsu;
 				rHai = nextHai;
+				rShuntsu = arNextShuntsu;
 			}
 		}
-		return {nShuntsuMax, rHai};
+		return {nShuntsuMax, rHai, rShuntsu};
 	}
 	else
 	{
-		return {nShuntsu, nHai};
+		return {nShuntsu, nHai, arShuntsu};
 	}
 }
 
@@ -303,7 +394,7 @@ array convertNumArray(array hai)
 }
 
 //7,8,9が存在すれば7を含める
-array getShuntsu(array ary)
+array getShuntsuKouho(array ary)
 {
 	array arRet;
 	for (int i = 1; i <= 7; i++)

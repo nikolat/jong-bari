@@ -58,11 +58,36 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
 	s += "\_l[0,80]";
 	//役・点数表示
-	dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex);
+	string bafuHai = "1z";
+	if (bafu == 1)
+		bafuHai = "2z";
+	array seki = {"1z", "2z", "3z", "4z"};
+	dict dSeki;
+	array pNames;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		pNames += playerName[(i + oyaIndex) % 4];
+	}
+	for (int i = 0; pNames[i] != nil; i++)
+	{
+		dSeki += $(pNames[i], seki[i]);
+	}
+	string jifuHai = dSeki[playerName[nAgariPlayer]];
+	int isLastHai = 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		isLastHai = 1;
+	array hai14 = hai13;
+	hai14 += atariHai;
+	int isRichi = 0;
+	if (arRichiJunme[nAgariPlayer] >= 0)
+		isRichi = 1;
+	int dora = countDora(hai14, isRichi);
+	dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex, arRichiJunme[nAgariPlayer], arKawa[nAgariPlayer], bafuHai, jifuHai, isLastHai, dora);
 	dict dYakuman = dYakuInfo["yakuman"];
 	dict dYakuAndHan = dYakuInfo["han"];
 	int score = dYakuInfo["score"];
 	array arYakuman = _dickeyget(dYakuman);
+	int nHan;
 	for (int i = 0; arYakuman[i] != nil; i++)
 	{
 		s += arYakuman[i] + "\_l[100,]役満\n";
@@ -73,8 +98,11 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 		for (int i = 0; arYaku[i] != nil; i++)
 		{
 			s += arYaku[i] + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
+			nHan += dYakuAndHan[arYaku[i]];
 		}
 	}
+	if (nHan > 0)
+		s += "" + nHan + "翻\n";
 	if (score > 0)
 		s += "" + score + "点\n";
 	s += "\n";
@@ -211,7 +239,7 @@ array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibo
 	return arScoreAdd;
 }
 
-dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, int nOyaPlayer)
+dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, int nOyaPlayer, int nRichiJunme, array arKawaAgariPlayer, string bafuHai, string jifuHai, int isLastHai, int dora)
 {
 	if (_aryvn(hai13) < 13)
 		return $();
@@ -225,32 +253,102 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	if (nAgariPlayer == nOyaPlayer)
 		isOya = 1;
 	int isRichi = 0;
-	if (arRichiJunme[nAgariPlayer] >= 0)
+	if (nRichiJunme >= 0)
 		isRichi = 1;
-	int dora = countDora(hai14, isRichi);
+	array a = getShantenNormalWithMentsu(hai14);
+	int shantenNormal = a[0];
+	string atamaHai = a[1];
+	array arMentsu = a[2];
+
 	dict dHan;
 	dict dYakuman;
 	int nHan;
 	int nYakuman;
 	//役満判定
-	if (_aryvn(arKawa[nAgariPlayer]) == 0 && isTsumo && isOya)
+	if (_aryvn(arKawaAgariPlayer) == 0 && isTsumo && isOya)
 	{
 		dYakuman += $("天和", 1);
 		nYakuman += 1;
 	}
-	if (_aryvn(arKawa[nAgariPlayer]) == 0 && isTsumo && !isOya)//鳴きを考慮していないため注意
+	if (_aryvn(arKawaAgariPlayer) == 0 && isTsumo && !isOya)//鳴きを考慮していないため注意
 	{
 		dYakuman += $("地和", 1);
 		nYakuman += 1;
 	}
-	if (_aryvn(arKawa[nAgariPlayer]) == 0 && !isTsumo)//鳴きを考慮していないため注意
+	if (_aryvn(arKawaAgariPlayer) == 0 && !isTsumo)//鳴きを考慮していないため注意
 	{
 		dYakuman += $("人和", 1);
+		nYakuman += 1;
+	}
+	if (isRyuiso(hai14))
+	{
+		dYakuman += $("緑一色", 1);
 		nYakuman += 1;
 	}
 	if (isTsuiso(hai14))
 	{
 		dYakuman += $("字一色", 1);
+		nYakuman += 1;
+	}
+	if (isDaisangen(hai14))
+	{
+		dYakuman += $("大三元", 1);
+		nYakuman += 1;
+	}
+	if (isShousushi(hai14))
+	{
+		dYakuman += $("小四喜", 1);
+		nYakuman += 1;
+	}
+	if (isDaisushi(hai14))
+	{
+		dYakuman += $("大四喜", 2);
+		nYakuman += 2;
+	}
+	if (getShantenKokushi(hai14) == -1)
+	{
+		if (ASEARCH(atariHai, hai13) >= 0)
+		{
+			dYakuman += $("国士無双", 2);
+			nYakuman += 2;
+		}
+		else
+		{
+			dYakuman += $("国士無双", 1);
+			nYakuman += 1;
+		}
+	}
+	int nAnkou = countAnkou(shantenNormal, arMentsu, isTsumo, hai13);
+	if (nAnkou == 4)
+	{
+		if (atariHai == atamaHai)
+		{
+			dYakuman += $("四暗刻", 2);
+			nYakuman += 2;
+		}
+		else
+		{
+			dYakuman += $("四暗刻", 1);
+			nYakuman += 1;
+		}
+	}
+	if (isChuren(shantenNormal, hai14))
+	{
+		int n = _aryvn(ASEARCHEX(atariHai, hai13));
+		if (n == 1 || n == 3)
+		{
+			dYakuman += $("九蓮宝燈", 2);
+			nYakuman += 2;
+		}
+		else
+		{
+			dYakuman += $("九蓮宝燈", 1);
+			nYakuman += 1;
+		}
+	}
+	if (isChinroutou(shantenNormal, hai14))
+	{
+		dYakuman += $("清老頭", 1);
 		nYakuman += 1;
 	}
 	//役判定
@@ -259,17 +357,17 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("門前清自摸和", 1);
 		nHan += 1;
 	}
-	if (arRichiJunme[nAgariPlayer] > 0)
+	if (nRichiJunme > 0)
 	{
 		dHan += $("立直", 1);
 		nHan += 1;
 	}
-	else if (arRichiJunme[nAgariPlayer] == 0)
+	else if (nRichiJunme == 0)
 	{
 		dHan += $("W立直", 2);
 		nHan += 2;
 	}
-	if (isRichi && arRichiJunme[nAgariPlayer] == _aryvn(arKawa[nAgariPlayer]) - 1)//鳴きを考慮していないため注意
+	if (isRichi && nRichiJunme == _aryvn(arKawaAgariPlayer) - 1)//鳴きを考慮していないため注意
 	{
 		dHan += $("一発", 1);
 		nHan += 1;
@@ -279,29 +377,92 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("断么九", 1);
 		nHan += 1;
 	}
-	if (_aryvn(arYama) == nYamaIndex && isTsumo)
+	if (isPinfu(hai13, atariHai, bafuHai, jifuHai))
+	{
+		dHan += $("平和", 1);
+		nHan += 1;
+	}
+	int nPeko = countPeko(shantenNormal, arMentsu);
+	if (nPeko == 1)
+	{
+		dHan += $("一盃口", 1);
+		nHan += 1;
+	}
+	int nYakuhai = countYakuhai(hai14, bafuHai, jifuHai);
+	if (nYakuhai >= 1)
+	{
+		dHan += $("役牌", nYakuhai);
+		nHan += nYakuhai;
+	}
+	if (isLastHai && isTsumo)
 	{
 		dHan += $("海底撈月", 1);
 		nHan += 1;
 	}
-	if (_aryvn(arYama) == nYamaIndex && !isTsumo)
+	if (isLastHai && !isTsumo)
 	{
 		dHan += $("河底撈魚", 1);
 		nHan += 1;
 	}
-	if (getShantenChitoitsu(hai14) == -1)
+	if (nPeko != 2 && getShantenChitoitsu(hai14) == -1)
 	{
 		dHan += $("七対子", 2);
 		nHan += 2;
 	}
-	if (isHonroutou(hai14))
+	if (isToitoi(shantenNormal, arMentsu))
+	{
+		dHan += $("対々和", 2);
+		nHan += 2;
+	}
+	if (nAnkou == 3)
+	{
+		dHan += $("三暗刻", 2);
+		nHan += 2;
+	}
+	if (isSanshokudoukou(shantenNormal, arMentsu))
+	{
+		dHan += $("三色同刻", 2);
+		nHan += 2;
+	}
+	if (isSanshokudoujun(shantenNormal, arMentsu))
+	{
+		dHan += $("三色同順", 2);
+		nHan += 2;
+	}
+	int isHonrou = isHonroutou(hai14);
+	if (isHonrou)
 	{
 		dHan += $("混老頭", 2);
+		nHan += 2;
+	}
+	if (isIkkitsuukan(shantenNormal, arMentsu))
+	{
+		dHan += $("一気通貫", 2);
+		nHan += 2;
+	}
+	if (!isHonrou && isChanta(shantenNormal, arMentsu, atamaHai))
+	{
+		dHan += $("混全帯么九", 2);
+		nHan += 2;
+	}
+	if (isShousangen(hai14))
+	{
+		dHan += $("小三元", 2);
 		nHan += 2;
 	}
 	if (isHonitsu(hai14))
 	{
 		dHan += $("混一色", 3);
+		nHan += 3;
+	}
+	if (!isHonrou && isJunchan(shantenNormal, arMentsu, atamaHai))
+	{
+		dHan += $("純全帯么九", 3);
+		nHan += 3;
+	}
+	if (nPeko == 2)
+	{
+		dHan += $("二盃口", 3);
 		nHan += 3;
 	}
 	if (isChinitsu(hai14))
@@ -422,6 +583,186 @@ int isTanyao(array hai14)
 	return 1;
 }
 
+//平和判定
+int isPinfu(array hai13, string atariHai, string bafuHai, string jifuHai)
+{
+	array hai14 = hai13;
+	hai14 += atariHai;
+	hai14 = sortHai(hai14);
+	array a = getShantenNormalWithMentsu(hai14);
+	int shanten = a[0];
+	string atama = a[1];
+	//一般手の和了でない
+	if (shanten != -1)
+		return 0;
+	//雀頭は役牌以外でないといけない
+	if (atama == bafuHai || atama == jifuHai || atama == "5z" || atama == "6z" || atama == "7z")
+		return 0;
+	//雀頭は13枚の中に無いといけない
+	if (_aryvn(ASEARCHEX(atama, hai13)) < 2)
+		return 0;
+	array haiWithoutAtama = removeElementByName(hai13, atama, 2);
+	array a = getSupai(haiWithoutAtama);
+	array man = convertNumArray(a[0]);
+	array pin = convertNumArray(a[1]);
+	array sou = convertNumArray(a[2]);
+	array arShuntsuMan = getMaxShuntsu(man, 0);
+	array arShuntsuPin = getMaxShuntsu(pin, 0);
+	array arShuntsuSou = getMaxShuntsu(sou, 0);
+	//順子は3つ無いといけない
+	if (arShuntsuMan[0] + arShuntsuPin[0] + arShuntsuSou[0] != 3)
+		return 0;
+	array leftHaiMan = arShuntsuMan[1];
+	array leftHaiPin = arShuntsuPin[1];
+	array leftHaiSou = arShuntsuSou[1];
+	array leftHai;
+	if (_aryvn(leftHaiMan) > 0)
+		leftHai = leftHaiMan;
+	else if (_aryvn(leftHaiPin) > 0)
+		leftHai = leftHaiPin;
+	else if (_aryvn(leftHaiSou) > 0)
+		leftHai = leftHaiSou;
+	if (leftHai[0] != 1 && leftHai[0] + 1 == leftHai[1] && leftHai[1] != 9)//両面待ち
+		return 1;
+	else
+		return 0;
+}
+
+int countPeko(int shantenNormal, array arMentsu)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	int nPeko = 0;
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		array arPrev = arMentsu[i];
+		for (int j = i + 1; arMentsu[j] != nil; j++)
+		{
+			array arNext = arMentsu[j];
+			if (arPrev[0] == arNext[0] && arPrev[1] == arNext[1] && arPrev[2] == arNext[2])
+				nPeko++;
+		}
+	}
+	return nPeko;
+}
+
+int countYakuhai(array hai14, string bafuHai, string jifuHai)
+{
+	int nYakuhai;
+	if (_aryvn(ASEARCHEX(bafuHai, hai14)) == 3)
+		nYakuhai++;
+	if (_aryvn(ASEARCHEX(jifuHai, hai14)) == 3)
+		nYakuhai++;
+	if (_aryvn(ASEARCHEX("5z", hai14)) == 3)
+		nYakuhai++;
+	if (_aryvn(ASEARCHEX("6z", hai14)) == 3)
+		nYakuhai++;
+	if (_aryvn(ASEARCHEX("7z", hai14)) == 3)
+		nYakuhai++;
+	return nYakuhai;
+}
+
+//対々和判定
+int isToitoi(int shantenNormal, array arMentsu)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	//すべて刻子
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		if (!(arMentsu[i][0] == arMentsu[i][1] && arMentsu[i][0] == arMentsu[i][2]))
+			return 0;
+	}
+	return 1;
+}
+
+int countAnkou(int shantenNormal, array arMentsu, int isTsumo, array hai13)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	//暗刻をカウント
+	int nAnkou;
+	if (isTsumo)
+	{
+		for (int i = 0; arMentsu[i] != nil; i++)
+		{
+			if (arMentsu[i][0] == arMentsu[i][1] && arMentsu[i][0] == arMentsu[i][2])
+				nAnkou++;
+		}
+	}
+	else
+	{
+		array a = getShantenNormalWithMentsu(hai13);
+		array arMentsu13 = a[2];
+		for (int i = 0; arMentsu13[i] != nil; i++)
+		{
+			if (arMentsu13[i][0] == arMentsu13[i][1] && arMentsu13[i][0] == arMentsu13[i][2])
+				nAnkou++;
+		}
+	}
+	return nAnkou;
+}
+
+//三色同刻判定
+int isSanshokudoukou(int shantenNormal, array arMentsu)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	array arKotsuNumber;
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		if (arMentsu[i][0] == arMentsu[i][1] && arMentsu[i][0] == arMentsu[i][2])
+		{
+			int n = _substr(arMentsu[i][0], 0, 1);
+			string color = _substr(arMentsu[i][0], 1, 1);
+			if (color != "z")
+				arKotsuNumber += n;
+		}
+	}
+	if (_aryvn(arKotsuNumber) < 3)
+		return 0;
+	for (int i = 0; arKotsuNumber[i + 2] != nil; i++)
+	{
+		if (_aryvn(ASEARCHEX(arKotsuNumber[i], arKotsuNumber)) == 3)
+			return 1;
+	}
+	return 0;
+}
+
+//三色同順判定
+int isSanshokudoujun(int shantenNormal, array arMentsu)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	array arShuntsuStr;
+	array arShuntsuNumber;
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		if (arMentsu[i][0] != arMentsu[i][1])
+		{
+			int n = _substr(arMentsu[i][0], 0, 1);
+			if (ASEARCH(arMentsu[i][0], arShuntsuStr) == -1)
+			{
+				arShuntsuStr += arMentsu[i][0];
+				arShuntsuNumber += n;
+			}
+		}
+	}
+	if (_aryvn(arShuntsuNumber) < 3)
+		return 0;
+	for (int i = 0; arShuntsuNumber[i + 2] != nil; i++)
+	{
+		if (_aryvn(ASEARCHEX(arShuntsuNumber[i], arShuntsuNumber)) == 3)
+			return 1;
+	}
+	return 0;
+}
+
 //混老頭判定
 int isHonroutou(array hai14)
 {
@@ -432,6 +773,120 @@ int isHonroutou(array hai14)
 			return 0; 
 	}
 	return 1;
+}
+
+//一気通貫判定
+int isIkkitsuukan(int shantenNormal, array arMentsu)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	array arShuntsuStr;
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		if (arMentsu[i][0] != arMentsu[i][1])
+		{
+			int n = _substr(arMentsu[i][0], 0, 1);
+			if (ASEARCH(arMentsu[i][0], arShuntsuStr) == -1 && (n == 1 || n == 4 || n == 7))
+			{
+				arShuntsuStr += arMentsu[i][0];
+			}
+		}
+	}
+	if (_aryvn(arShuntsuStr) < 3)
+		return 0;
+	if (ASEARCH("1m", arShuntsuStr) >= 0 && ASEARCH("4m", arShuntsuStr) >= 0 && ASEARCH("7m", arShuntsuStr) >= 0)
+		return 1;
+	if (ASEARCH("1p", arShuntsuStr) >= 0 && ASEARCH("4p", arShuntsuStr) >= 0 && ASEARCH("7p", arShuntsuStr) >= 0)
+		return 1;
+	if (ASEARCH("1s", arShuntsuStr) >= 0 && ASEARCH("4s", arShuntsuStr) >= 0 && ASEARCH("7s", arShuntsuStr) >= 0)
+		return 1;
+	return 0;
+}
+
+int subChanta(int shantenNormal, array arMentsu, string atamaHai)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	string strYaochuhai = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
+	string strJihai = "1z2z3z4z5z6z7z";
+	int hasJihai = 0;
+	if (_strstr(strYaochuhai, atamaHai) >= 0)
+	{
+		if (_strstr(strJihai, atamaHai) >= 0)
+			hasJihai = 1;
+	}
+	else
+	{
+		return 0;
+	}
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		int hasYaochu = 0;
+		for (int j = 0; arMentsu[i][j] != nil; j++)
+		{
+			if (_strstr(strYaochuhai, arMentsu[i][j]) >= 0)
+			{
+				if (_strstr(strJihai, arMentsu[i][j]) >= 0)
+					hasJihai = 1;
+				hasYaochu = 1;
+				break;
+			}
+		}
+		if (!hasYaochu)
+			return 0;
+	}
+	if (hasJihai)
+		return 1;//混全帯么九
+	else
+		return 2;//純全帯么九
+}
+
+//混全帯么九判定
+int isChanta(int shantenNormal, array arMentsu, string atamaHai)
+{
+	int r = subChanta(shantenNormal, arMentsu, atamaHai);
+	if (r == 1)
+		return 1;
+	return 0;
+}
+
+//純全帯么九判定
+int isJunchan(int shantenNormal, array arMentsu, string atamaHai)
+{
+	int r = subChanta(shantenNormal, arMentsu, atamaHai);
+	if (r == 2)
+		return 1;
+	return 0;
+}
+
+//小三元判定
+int isShousangen(array hai14)
+{
+	int nSangenpai;
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (hai14[i] == "5z" || hai14[i] == "6z" || hai14[i] == "7z")
+			nSangenpai++;
+	}
+	if (nSangenpai == 8)
+		return 1;
+	return 0;
+}
+
+//大三元判定
+int isDaisangen(array hai14)
+{
+	int nSangenpai;
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (hai14[i] == "5z" || hai14[i] == "6z" || hai14[i] == "7z")
+			nSangenpai++;
+	}
+	if (nSangenpai == 9)
+		return 1;
+	return 0;
 }
 
 array getUsedHaiGroup(array hai)
@@ -485,4 +940,86 @@ int isTsuiso(array hai14)
 	if (!a[0] && !a[1] && !a[2])
 		return 1;
 	return 0;
+}
+
+//緑一色判定
+int isRyuiso(array hai14)
+{
+	string strYaochuhai = "2s3s4s6s8s6z";
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (_strstr(strYaochuhai, hai14[i]) == -1)
+			return 0; 
+	}
+	return 1;
+}
+
+//小四喜判定
+int isShousushi(array hai14)
+{
+	int nFupai;
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (hai14[i] == "1z" || hai14[i] == "2z" || hai14[i] == "3z" || hai14[i] == "4z")
+			nFupai++;
+	}
+	if (nFupai == 11)
+		return 1;
+	return 0;
+}
+
+//大四喜判定
+int isDaisushi(array hai14)
+{
+	int nFupai;
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (hai14[i] == "1z" || hai14[i] == "2z" || hai14[i] == "3z" || hai14[i] == "4z")
+			nFupai++;
+	}
+	if (nFupai == 12)
+		return 1;
+	return 0;
+}
+
+//九蓮宝燈判定
+int isChuren(int shantenNormal, array hai14)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	//清一色でない
+	if (!isChinitsu(hai14))
+		return 0;
+	array arHai = convertNumArray(hai14);
+	string strHai = _arystr(arHai);
+	array arChuren = {
+		"11112345678999",
+		"11122345678999",
+		"11123345678999",
+		"11123445678999",
+		"11123455678999",
+		"11123456678999",
+		"11123456778999",
+		"11123456788999",
+		"11123456789999"
+	};
+	if (ASEARCH(strHai, arChuren) >= 0)
+		return 1;
+	return 0;
+}
+
+//清老頭判定
+int isChinroutou(int shantenNormal, array hai14)
+{
+	//一般手の和了でない
+	if (shantenNormal != -1)
+		return 0;
+	string strRoutouhai = "1m9m1p9p1s9s";
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (_strstr(strRoutouhai, hai14[i]) == -1)
+			return 0; 
+	}
+	return 1;
 }
