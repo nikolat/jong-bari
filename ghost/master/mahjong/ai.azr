@@ -1,6 +1,105 @@
 //本来は他家の捨て牌とか諸々の情報が必要
-//今はシステムの都合上、七対子をひたすら目指す
 string naniwokiru(array hai, array kawa)
+{
+	return getDahaiForNormal(hai);
+}
+
+//一般手でテンパイに近づける
+string getDahaiForNormal(array hai)
+{
+	array arDahai;
+	//孤立牌を優先的に切る
+	arDahai = getKoritsuHai(hai);
+	if (_aryvn(arDahai) > 0)
+		return _randselect(arDahai);
+	int point = 0;
+	array hai14 = sortHai(hai);
+	for (int i = 0; hai14[i] != nil; i++)
+	{
+		if (ASEARCH(hai14[i], arDahai) == -1)
+		{
+			array hai13 = removeElementByName(hai14, hai14[i], 1);
+			array a = getShantenNormalWithMentsu(hai13);
+			int shanten13 = a[0];
+			string atama13 = a[1];
+			array arMentsu13 = a[2];
+			array arMentsuKouho13 = a[3];
+			int tmpPoint;
+			if (shanten13 == 0)
+			{
+				tmpPoint = 100000;
+			}
+			else
+			{
+				tmpPoint = (10000 / shanten13) + (100 * _aryvn(arMentsu13)) + (10 * _aryvn(arMentsuKouho13));
+				for (int j = 0; arMentsuKouho13[j] != nil; j++)
+				{
+					if (isRyanmen(arMentsuKouho13[j]))
+						tmpPoint += 30;
+				}
+				if (atama13 != "")
+					tmpPoint += 10;
+			}
+			if (point < tmpPoint)
+			{
+				point = tmpPoint;
+				arDahai = {hai14[i]};
+			}
+			else if (point == tmpPoint)
+			{
+				arDahai += hai14[i];
+			}
+		}
+	}
+	return _randselect(arDahai);
+}
+
+//孤立牌の探索
+array getKoritsuHai(array hai)
+{
+	array arRet;
+	for (int i = 0; hai[i] != nil; i++)
+	{
+		int num = _substr(hai[i], 0, 1);
+		string color = _substr(hai[i], 1, 1);
+		if (color == "m" || color == "p" || color == "s")
+		{
+			string haiP2 = "" + (num - 2) + color;
+			string haiP1 = "" + (num - 1) + color;
+			string haiN1 = "" + (num + 1) + color;
+			string haiN2 = "" + (num + 2) + color;
+			if (!(ASEARCH(haiP2, hai) >= 0
+				|| ASEARCH(haiP1, hai) >= 0
+				|| _aryvn(ASEARCHEX(hai[i], hai)) > 1
+				|| ASEARCH(haiN1, hai) >= 0
+				|| ASEARCH(haiN2, hai) >= 0))
+			{
+				arRet += hai[i];
+			}
+		}
+		else if (color == "z")
+		{
+			if (_aryvn(ASEARCHEX(hai[i], hai)) == 1)
+			{
+				arRet += hai[i];
+			}
+		}
+	}
+	return arRet;
+}
+
+//両面
+isRyanmen(array hai)
+{
+	array arHai = convertNumArray(hai);
+	if (arHai + 1 == arHai)
+		return 1;
+	return 0;
+}
+
+//============================================================
+//七対子をひたすら目指す
+string getDahaiForChitoitsu(array hai, array kawa)
 {
 	array hai14 = sortHai(hai);
 	//3枚同じ牌があれば切る
@@ -9,7 +108,7 @@ string naniwokiru(array hai, array kawa)
 		return dahai;
 	//過去に切った牌をツモ切り フリテン防止(配列の最後の要素がツモである前提のため注意)
 	dahai = hai[_aryvn(hai)-1];
-	if (existElement(kawa, dahai))
+	if (ASEARCH(dahai, kawa) >= 0)
 		return dahai;
 	//1枚のみの牌を切る
 	dahai = getSoloElement(shuffleArray(hai14));//ランダム性が無いと待ちが字牌に偏る
@@ -17,16 +116,6 @@ string naniwokiru(array hai, array kawa)
 		return dahai;
 	else
 		return "";//それは和了である
-}
-
-int existElement(array a, string e)
-{
-	for (int i = 0; a[i] != nil; i++)
-	{
-		if (a[i] == e)
-			return 1;
-	}
-	return 0;
 }
 
 string get3SameElement(array elements)

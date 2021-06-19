@@ -57,7 +57,7 @@ string OnMahjongResponse(dict ref)
 			return "";
 		if (_aryvn(playerName) >= 3)
 			return "";//定員オーバー
-		if (existElement(playerName, name))
+		if (ASEARCH(name, playerName) >= 0)
 			return "";//同名のキャラが参加済
 		playerName += name;
 		if (_aryvn(playerName) == 3)
