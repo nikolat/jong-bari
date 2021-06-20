@@ -5,10 +5,7 @@ string Menu_Ron(dict ref)
 	int nFurikomiPlayer = ref["Reference3"];
 	array hai13 = arTehai[nAgariPlayer];
 	string sute = ref["Reference4"];
-	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
-		+ ",agari," + playerName[nAgariPlayer] + "]";
-	s += showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
-	return s;
+	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
 }
 
 //ツモ
@@ -18,20 +15,14 @@ string Menu_Tsumo(dict ref)
 	int nFurikomiPlayer = -1;
 	array hai13 = arTehai[nAgariPlayer];
 	string tsumo = arYama[nYamaIndex - 1];
-	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
-		+ ",agari," + playerName[nAgariPlayer] + "]";
-	s += showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
-	return s;
+	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
 }
 
 //流局
 string OnRyukyokuScore(dict ref)
 {
 	array arTenpaiPlayerFlag = _strary(ref["Reference0"]);
-	string s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
-		+ ",ryukyoku]";
-	s += showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag);
-	return s;
+	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag);
 }
 
 //点数画面表示
@@ -134,6 +125,22 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
 	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
 	//通知
+	if (nAgariPlayer >= 0)
+	{
+		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			+ ",agari," + playerName[nAgariPlayer] + "," + nFu;
+		array arYaku = _dickeyget(dYakuAndHan);
+		for (int i = 0; arYaku[i] != nil; i++)
+		{
+			s += ",\"" + arYaku[i] + "," + dYakuAndHan[arYaku[i]] + "\"";
+		}
+		s += "]";
+	}
+	else
+	{
+		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			+ ",ryukyoku]";
+	}
 	for (int i = 0; i < 3; i++)
 	{
 		string fugo = "";
