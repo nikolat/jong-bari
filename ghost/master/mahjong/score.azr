@@ -304,8 +304,8 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	int isRichi = 0;
 	if (nRichiJunme >= 0)
 		isRichi = 1;
-	array a = getShantenNormalWithMentsu(hai14);
-	int shantenNormal = a[0];
+	int shantenNormal = getShantenNormal(hai14);
+	array a = getShantenWithMentsu(hai14);
 	string atamaHai = a[1];
 	array arMentsu = a[2];
 
@@ -551,7 +551,7 @@ int getFu(array hai13, string atariHai, string bafuHai, string jifuHai, string a
 	else
 		nFu += 10;
 	//(3)各面子
-	array a = getShantenNormalWithMentsu(hai13);
+	array a = getShantenNormalWithMentsuByAkari(hai13);
 	int shanten13 = a[0];
 	string atama13 = a[1];
 	array arMentsu13 = a[2];
@@ -767,7 +767,7 @@ int isPinfu(array hai13, string atariHai, string bafuHai, string jifuHai)
 	array hai14 = hai13;
 	hai14 += atariHai;
 	hai14 = sortHai(hai14);
-	array a = getShantenNormalWithMentsu(hai14);
+	array a = getShantenNormalWithMentsuByAkari(hai14);
 	int shanten = a[0];
 	string atama = a[1];
 	//一般手の和了でない
@@ -873,7 +873,7 @@ int countAnkou(int shantenNormal, array arMentsu, int isTsumo, array hai13)
 	}
 	else
 	{
-		array a = getShantenNormalWithMentsu(hai13);
+		array a = getShantenNormalWithMentsuByAkari(hai13);
 		array arMentsu13 = a[2];
 		for (int i = 0; arMentsu13[i] != nil; i++)
 		{

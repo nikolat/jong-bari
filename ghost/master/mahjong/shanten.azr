@@ -5,6 +5,38 @@ int getShanten(array hai)
 	return shanten;
 }
 
+array getShantenWithMentsu(array hai)
+{
+	dict d = _saorirequest("MahjongUtil", "shanten", _arystr(hai));
+	int shanten = d["Result"];
+	string atama = d["Value0"];
+	string strMentsu = d["Value1"];
+	string strTatsu = d["Value2"];
+	array a1 = _strsplit(strMentsu, ",");
+	array arMentsu;
+	for (int i = 0; a1[i] != nil; i++)
+	{
+		arMentsu += strHaiToArray(a1[i]);
+	}
+	array a2 = _strsplit(strTatsu, ",");
+	array arTatsu;
+	for (int i = 0; a2[i] != nil; i++)
+	{
+		arTatsu += strHaiToArray(a2[i]);
+	}
+	return {shanten, atama, arMentsu, arTatsu};
+}
+
+array strHaiToArray(string strHai)
+{
+	array arRet;
+	for (int i = 0; i < _strlen(strHai); i += 2)
+	{
+		arRet += _substr(strHai, i, 2);
+	}
+	return arRet;
+}
+
 int getMin(array a)
 {
 	int r = 99;
@@ -18,12 +50,12 @@ int getMin(array a)
 
 int getShantenNormal(array hai)
 {
-	array a = getShantenNormalWithMentsu(hai);
+	array a = getShantenNormalWithMentsuByAkari(hai);
 	int r = a[0];
 	return r;
 }
 
-array getShantenNormalWithMentsu(array hai)
+array getShantenNormalWithMentsuByAkari(array hai)
 {
 	//孤立牌の除去
 	hai = removeKoritsuHai(hai);

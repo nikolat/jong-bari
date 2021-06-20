@@ -1,11 +1,11 @@
 //本来は他家の捨て牌とか諸々の情報が必要
 string naniwokiru(array hai, array kawa)
 {
-	return getDahaiForNormal(hai);
+	return getDahai(hai);
 }
 
-//一般手でテンパイに近づける
-string getDahaiForNormal(array hai)
+//テンパイに近づける
+string getDahai(array hai)
 {
 	array arDahai;
 	//孤立牌を優先的に切る
@@ -19,7 +19,7 @@ string getDahaiForNormal(array hai)
 		if (ASEARCH(hai14[i], arDahai) == -1)
 		{
 			array hai13 = removeElementByName(hai14, hai14[i], 1);
-			array a = getShantenNormalWithMentsu(hai13);
+			array a = getShantenWithMentsu(hai13);
 			int shanten13 = a[0];
 			string atama13 = a[1];
 			array arMentsu13 = a[2];
