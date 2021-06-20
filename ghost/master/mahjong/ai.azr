@@ -23,7 +23,7 @@ string getDahaiForNormal(array hai)
 			int shanten13 = a[0];
 			string atama13 = a[1];
 			array arMentsu13 = a[2];
-			array arMentsuKouho13 = a[3];
+			array arTatsu13 = a[3];
 			int tmpPoint;
 			if (shanten13 == 0)
 			{
@@ -31,10 +31,10 @@ string getDahaiForNormal(array hai)
 			}
 			else
 			{
-				tmpPoint = (10000 / shanten13) + (100 * _aryvn(arMentsu13)) + (10 * _aryvn(arMentsuKouho13));
-				for (int j = 0; arMentsuKouho13[j] != nil; j++)
+				tmpPoint = (10000 / shanten13) + (100 * _aryvn(arMentsu13)) + (10 * _aryvn(arTatsu13));
+				for (int j = 0; arTatsu13[j] != nil; j++)
 				{
-					if (isRyanmen(arMentsuKouho13[j]))
+					if (isRyanmen(arTatsu13[j]))
 						tmpPoint += 30;
 				}
 				if (atama13 != "")
