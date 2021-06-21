@@ -529,7 +529,7 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		nFu = 20;
 	else if (dHan["七対子"] == 2)
 		nFu = 25;
-	else
+	else if (dYakuman["国士無双"] == nil)
 		nFu = getFu(hai13, atariHai, bafuHai, jifuHai, atamaHai, isTsumo);
 	int score = getScore(nYakuman, nHan, nFu, isOya);
 	dict dRet = ${
@@ -551,7 +551,7 @@ int getFu(array hai13, string atariHai, string bafuHai, string jifuHai, string a
 	else
 		nFu += 10;
 	//(3)各面子
-	array a = getShantenNormalWithMentsuByAkari(hai13);
+	array a = getShantenWithMentsu(hai13);
 	int shanten13 = a[0];
 	string atama13 = a[1];
 	array arMentsu13 = a[2];
@@ -767,11 +767,12 @@ int isPinfu(array hai13, string atariHai, string bafuHai, string jifuHai)
 	array hai14 = hai13;
 	hai14 += atariHai;
 	hai14 = sortHai(hai14);
-	array a = getShantenNormalWithMentsuByAkari(hai14);
+	array a = getShantenWithMentsu(hai14);
 	int shanten = a[0];
 	string atama = a[1];
+	array arMentsu = a[2];
 	//一般手の和了でない
-	if (shanten != -1)
+	if (atama == "")
 		return 0;
 	//雀頭は役牌以外でないといけない
 	if (atama == bafuHai || atama == jifuHai || atama == "5z" || atama == "6z" || atama == "7z")
@@ -779,31 +780,22 @@ int isPinfu(array hai13, string atariHai, string bafuHai, string jifuHai)
 	//雀頭は13枚の中に無いといけない
 	if (_aryvn(ASEARCHEX(atama, hai13)) < 2)
 		return 0;
-	array haiWithoutAtama = removeElementByName(hai13, atama, 2);
-	array asu = getSupai(haiWithoutAtama);
-	array man = convertNumArray(asu[0]);
-	array pin = convertNumArray(asu[1]);
-	array sou = convertNumArray(asu[2]);
-	array arShuntsuMan = getMaxShuntsu(man, 0, {});
-	array arShuntsuPin = getMaxShuntsu(pin, 0, {});
-	array arShuntsuSou = getMaxShuntsu(sou, 0, {});
-	//順子は3つ無いといけない
-	if (arShuntsuMan[0] + arShuntsuPin[0] + arShuntsuSou[0] != 3)
-		return 0;
-	array leftHaiMan = arShuntsuMan[1];
-	array leftHaiPin = arShuntsuPin[1];
-	array leftHaiSou = arShuntsuSou[1];
-	array leftHai;
-	if (_aryvn(leftHaiMan) > 0)
-		leftHai = leftHaiMan;
-	else if (_aryvn(leftHaiPin) > 0)
-		leftHai = leftHaiPin;
-	else if (_aryvn(leftHaiSou) > 0)
-		leftHai = leftHaiSou;
-	if (leftHai[0] != 1 && leftHai[0] + 1 == leftHai[1] && leftHai[1] != 9)//両面待ち
-		return 1;
-	else
-		return 0;
+	//待ちの形を再現する
+	array arMachiTatsu;
+	for (int i = 0; arMentsu[i] != nil; i++)
+	{
+		//面子はすべて順子でなければならない
+		if (arMentsu[i][0] == arMentsu[i][1])
+			return 0;
+		if (ASEARCH(atariHai, arMentsu[i]) >= 0)
+			arMachiTatsu += convertNumArray(removeElementByName(arMentsu[i], atariHai, 1));
+	}
+	for (int i = 0; arMachiTatsu[i] != nil; i++)
+	{
+		if ((arMachiTatsu[i][0] != 1) && (arMachiTatsu[i][0] + 1 == arMachiTatsu[i][1]) && (arMachiTatsu[i][1] != 9))//両面待ち
+			return 1;
+	}
+	return 0;
 }
 
 int countPeko(int shantenNormal, array arMentsu)
@@ -873,7 +865,7 @@ int countAnkou(int shantenNormal, array arMentsu, int isTsumo, array hai13)
 	}
 	else
 	{
-		array a = getShantenNormalWithMentsuByAkari(hai13);
+		array a = getShantenWithMentsu(hai13);
 		array arMentsu13 = a[2];
 		for (int i = 0; arMentsu13[i] != nil; i++)
 		{
