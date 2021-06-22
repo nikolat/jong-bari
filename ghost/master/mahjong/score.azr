@@ -49,57 +49,64 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
 	s += "\_l[0,80]";
 	//役・点数表示
-	string bafuHai = "1z";
-	if (bafu == 1)
-		bafuHai = "2z";
-	array seki = {"1z", "2z", "3z", "4z"};
-	dict dSeki;
-	array pNames;
-	for (int i = 0; playerName[i] != nil; i++)
+	int score;
+	int nFu;
+	dict dYakuman;
+	dict dYakuAndHan;
+	if (nAgariPlayer > 0)
 	{
-		pNames += playerName[(i + oyaIndex) % 4];
-	}
-	for (int i = 0; pNames[i] != nil; i++)
-	{
-		dSeki += $(pNames[i], seki[i]);
-	}
-	string jifuHai = dSeki[playerName[nAgariPlayer]];
-	int isLastHai = 0;
-	if (_aryvn(arYama) == nYamaIndex)
-		isLastHai = 1;
-	array hai14 = hai13;
-	hai14 += atariHai;
-	int isRichi = 0;
-	if (arRichiJunme[nAgariPlayer] >= 0)
-		isRichi = 1;
-	int dora = countDora(hai14, isRichi);
-	dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex, arRichiJunme[nAgariPlayer], arKawa[nAgariPlayer], bafuHai, jifuHai, isLastHai, dora);
-	dict dYakuman = dYakuInfo["yakuman"];
-	dict dYakuAndHan = dYakuInfo["han"];
-	int nFu = dYakuInfo["fu"];
-	int score = dYakuInfo["score"];
-	array arYakuman = _dickeyget(dYakuman);
-	int nHan;
-	for (int i = 0; arYakuman[i] != nil; i++)
-	{
-		s += arYakuman[i] + "\_l[100,]役満\n";
-	}
-	if (_aryvn(arYakuman) == 0)
-	{
-		array arYaku = _dickeyget(dYakuAndHan);
-		for (int i = 0; arYaku[i] != nil; i++)
+		string bafuHai = "1z";
+		if (bafu == 1)
+			bafuHai = "2z";
+		array seki = {"1z", "2z", "3z", "4z"};
+		dict dSeki;
+		array pNames;
+		for (int i = 0; playerName[i] != nil; i++)
 		{
-			s += arYaku[i] + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
-			nHan += dYakuAndHan[arYaku[i]];
+			pNames += playerName[(i + oyaIndex) % 4];
 		}
+		for (int i = 0; pNames[i] != nil; i++)
+		{
+			dSeki += $(pNames[i], seki[i]);
+		}
+		string jifuHai = dSeki[playerName[nAgariPlayer]];
+		int isLastHai = 0;
+		if (_aryvn(arYama) == nYamaIndex)
+			isLastHai = 1;
+		array hai14 = hai13;
+		hai14 += atariHai;
+		int isRichi = 0;
+		if (arRichiJunme[nAgariPlayer] >= 0)
+			isRichi = 1;
+		int dora = countDora(hai14, isRichi);
+		dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex, arRichiJunme[nAgariPlayer], arKawa[nAgariPlayer], bafuHai, jifuHai, isLastHai, dora);
+		dYakuman = dYakuInfo["yakuman"];
+		dYakuAndHan = dYakuInfo["han"];
+		nFu = dYakuInfo["fu"];
+		score = dYakuInfo["score"];
+		array arYakuman = _dickeyget(dYakuman);
+		int nHan;
+		for (int i = 0; arYakuman[i] != nil; i++)
+		{
+			s += arYakuman[i] + "\_l[100,]役満\n";
+		}
+		if (_aryvn(arYakuman) == 0)
+		{
+			array arYaku = _dickeyget(dYakuAndHan);
+			for (int i = 0; arYaku[i] != nil; i++)
+			{
+				s += arYaku[i] + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
+				nHan += dYakuAndHan[arYaku[i]];
+			}
+		}
+		if (nHan > 0)
+		{
+			s += "" + nHan + "翻 " + nFu + "符\n";
+		}
+		if (score > 0)
+			s += "" + score + "点\n";
+		s += "\n";
 	}
-	if (nHan > 0)
-	{
-		s += "" + nHan + "翻 " + nFu + "符\n";
-	}
-	if (score > 0)
-		s += "" + score + "点\n";
-	s += "\n";
 	//プレイヤー持ち点表示
 	int nKyotaku;
 	if (nAgariPlayer >= 0)
@@ -290,8 +297,6 @@ array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibo
 
 dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, int nOyaPlayer, int nRichiJunme, array arKawaAgariPlayer, string bafuHai, string jifuHai, int isLastHai, int dora)
 {
-	if (_aryvn(hai13) < 13)
-		return $();
 	array hai14 = hai13;
 	hai14 += atariHai;
 	hai14 = sortHai(hai14);
@@ -304,10 +309,16 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	int isRichi = 0;
 	if (nRichiJunme >= 0)
 		isRichi = 1;
-	int shantenNormal = getShantenNormal(hai14);
-	array a = getShantenWithMentsu(hai14);
-	string atamaHai = a[1];
-	array arMentsu = a[2];
+	array a = getShantenNormalWithMentsuByAkari(hai14);
+	int shantenNormal = a[0];
+	array arMentsuAndTatsu = a[1];
+	array arMentsuTemp = _strsplit(arMentsuAndTatsu[0], ",");//仮に最初の面子セットで役判定
+	string atamaHai = strHaiToArray(arMentsuTemp[0])[0];
+	array arMentsu;
+	for (int i = 1; arMentsuTemp[i] != nil; i++)
+	{
+		arMentsu += strHaiToArray(arMentsuTemp[i]);
+	}
 
 	dict dHan;
 	dict dYakuman;
@@ -367,20 +378,6 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 			nYakuman += 1;
 		}
 	}
-	int nAnkou = countAnkou(shantenNormal, arMentsu, isTsumo, hai13);
-	if (nAnkou == 4)
-	{
-		if (atariHai == atamaHai)
-		{
-			dYakuman += $("四暗刻", 2);
-			nYakuman += 2;
-		}
-		else
-		{
-			dYakuman += $("四暗刻", 1);
-			nYakuman += 1;
-		}
-	}
 	if (isChuren(shantenNormal, hai14))
 	{
 		int n = _aryvn(ASEARCHEX(atariHai, hai13));
@@ -426,17 +423,6 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("断么九", 1);
 		nHan += 1;
 	}
-	if (isPinfu(hai13, atariHai, bafuHai, jifuHai))
-	{
-		dHan += $("平和", 1);
-		nHan += 1;
-	}
-	int nPeko = countPeko(shantenNormal, arMentsu);
-	if (nPeko == 1)
-	{
-		dHan += $("一盃口", 1);
-		nHan += 1;
-	}
 	int nYakuhai = countYakuhai(hai14, bafuHai, jifuHai);
 	if (nYakuhai >= 1)
 	{
@@ -453,6 +439,7 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("河底撈魚", 1);
 		nHan += 1;
 	}
+	int nPeko = countPeko(shantenNormal, arMentsu);
 	if (nPeko != 2 && getShantenChitoitsu(hai14) == -1)
 	{
 		dHan += $("七対子", 2);
@@ -463,30 +450,10 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("対々和", 2);
 		nHan += 2;
 	}
-	if (nAnkou == 3)
-	{
-		dHan += $("三暗刻", 2);
-		nHan += 2;
-	}
-	if (isSanshokudoukou(shantenNormal, arMentsu))
-	{
-		dHan += $("三色同刻", 2);
-		nHan += 2;
-	}
-	if (isSanshokudoujun(shantenNormal, arMentsu))
-	{
-		dHan += $("三色同順", 2);
-		nHan += 2;
-	}
 	int isHonrou = isHonroutou(hai14);
 	if (isHonrou)
 	{
 		dHan += $("混老頭", 2);
-		nHan += 2;
-	}
-	if (isIkkitsuukan(shantenNormal, arMentsu))
-	{
-		dHan += $("一気通貫", 2);
 		nHan += 2;
 	}
 	if (!isHonrou && isChanta(shantenNormal, arMentsu, atamaHai))
@@ -509,11 +476,6 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("純全帯么九", 3);
 		nHan += 3;
 	}
-	if (nPeko == 2)
-	{
-		dHan += $("二盃口", 3);
-		nHan += 3;
-	}
 	if (isChinitsu(hai14))
 	{
 		dHan += $("清一色", 6);
@@ -524,13 +486,56 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		dHan += $("ドラ", dora);
 		nHan += dora;
 	}
+	//面子の形によって変わる役の判定
+	int nHanSubMax = -1;
+	int nFuSubMax = -1;
+	dict dYakumanSub;
+	dict dHanSub;
+	for (int i = 0; arMentsuAndTatsu[i] != nil; i++)
+	{
+		arMentsuTemp = _strsplit(arMentsuAndTatsu[i], ",");
+		atamaHai = strHaiToArray(arMentsuTemp[0])[0];
+		arMentsu = {};
+		for (int j = 1; arMentsuTemp[j] != nil; j++)
+		{
+			arMentsu += strHaiToArray(arMentsuTemp[j]);
+		}
+		dict dSub = getYakuInfoSub(isTsumo, hai13, atariHai, bafuHai, jifuHai, atamaHai, arMentsu);
+		int nHanSub = dSub["han"];
+		int nFuSub = dSub["fu"];
+		if (nHanSubMax < nHanSub)
+		{
+			nHanSubMax = nHanSub;
+			nFuSubMax = nFuSub;
+			dYakumanSub = dSub["dYakuman"];
+			dHanSub = dSub["dHan"];
+		}
+		else if (nHanSubMax == nHanSub && nFuSubMax < nFuSub)
+		{
+			nFuSubMax = nFuSub;
+		}
+	}
+	//役の合成
+	array arKeyYakumanSub = _dickeyget(dYakumanSub);
+	for (int i = 0; arKeyYakumanSub[i] != nil; i++)
+	{
+		dYakuman += $(arKeyYakumanSub[i], dYakumanSub[arKeyYakumanSub[i]]);
+		nYakuman += dYakumanSub[arKeyYakumanSub[i]];
+	}
+	array arKeyHanSub = _dickeyget(dHanSub);
+	for (int i = 0; arKeyHanSub[i] != nil; i++)
+	{
+		dHan += $(arKeyHanSub[i], dHanSub[arKeyHanSub[i]]);
+		nHan += dHanSub[arKeyHanSub[i]];
+	}
+
 	int nFu;
 	if (dHan["平和"] == 1 && dHan["門前清自摸和"] == 1)
 		nFu = 20;
 	else if (dHan["七対子"] == 2)
 		nFu = 25;
 	else if (dYakuman["国士無双"] == nil)
-		nFu = getFu(hai13, atariHai, bafuHai, jifuHai, atamaHai, isTsumo);
+		nFu = nFuSubMax;
 	int score = getScore(nYakuman, nHan, nFu, isOya);
 	dict dRet = ${
 		$("yakuman", dYakuman),
@@ -541,7 +546,80 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	return dRet;
 }
 
-int getFu(array hai13, string atariHai, string bafuHai, string jifuHai, string atamaHai, int isTsumo)
+dict getYakuInfoSub(int isTsumo, array hai13, string atariHai, string bafuHai, string jifuHai, string atamaHai, array arMentsu)
+{
+	int shantenNormal = -1;
+	dict dHan;
+	dict dYakuman;
+	int nHan;
+	int nYakuman;
+	//役満判定
+	int nAnkou = countAnkou(shantenNormal, arMentsu, isTsumo, hai13);
+	if (nAnkou == 4)
+	{
+		if (atariHai == atamaHai)
+		{
+			dYakuman += $("四暗刻", 2);
+			nYakuman += 2;
+		}
+		else
+		{
+			dYakuman += $("四暗刻", 1);
+			nYakuman += 1;
+		}
+	}
+	//役判定
+	if (isPinfu(atamaHai, arMentsu, atariHai, bafuHai, jifuHai))
+	{
+		dHan += $("平和", 1);
+		nHan += 1;
+	}
+	int nPeko = countPeko(shantenNormal, arMentsu);
+	if (nPeko == 1)
+	{
+		dHan += $("一盃口", 1);
+		nHan += 1;
+	}
+	if (nAnkou == 3)
+	{
+		dHan += $("三暗刻", 2);
+		nHan += 2;
+	}
+	if (isSanshokudoukou(shantenNormal, arMentsu))
+	{
+		dHan += $("三色同刻", 2);
+		nHan += 2;
+	}
+	if (isSanshokudoujun(shantenNormal, arMentsu))
+	{
+		dHan += $("三色同順", 2);
+		nHan += 2;
+	}
+	if (isIkkitsuukan(shantenNormal, arMentsu))
+	{
+		dHan += $("一気通貫", 2);
+		nHan += 2;
+	}
+	if (nPeko == 2)
+	{
+		dHan += $("二盃口", 3);
+		nHan += 3;
+	}
+	int nFu;
+	if (dHan["平和"] == 1 && isTsumo)
+		nFu = 20;
+	else
+		nFu = getFu(atamaHai, arMentsu, atariHai, bafuHai, jifuHai, isTsumo);
+	dict dRet = ${
+		$("dYakuman", dYakuman),
+		$("dHan", dHan),
+		$("han", nHan),
+		$("fu", nFu)
+	};	
+	return dRet;
+}
+
+int getFu(string atamaHai, array arMentsu, string atariHai, string bafuHai, string jifuHai, int isTsumo)
 {
 	//(1)副底20符
 	int nFu = 20;
@@ -551,17 +629,12 @@ int getFu(array hai13, string atariHai, string bafuHai, string jifuHai, string a
 	else
 		nFu += 10;
 	//(3)各面子
-	array a = getShantenWithMentsu(hai13);
-	int shanten13 = a[0];
-	string atama13 = a[1];
-	array arMentsu13 = a[2];
-	array arMentsuKouho13 = a[3];
 	string strYaochu = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
-	for (int i = 0; arMentsu13[i] != nil; i++)
+	for (int i = 0; arMentsu[i] != nil; i++)
 	{
-		if (arMentsu13[i][0] == arMentsu13[i][1])
+		if (arMentsu[i][0] == arMentsu[i][1])
 		{
-			if (_strstr(strYaochu, arMentsu13[i][0]) >= 0)
+			if (_strstr(strYaochu, arMentsu[i][0]) >= 0)
 				nFu += 8;
 			else
 				nFu += 4;
@@ -575,40 +648,67 @@ int getFu(array hai13, string atariHai, string bafuHai, string jifuHai, string a
 	if (atamaHai == "5z" || atamaHai == "6z" || atamaHai == "7z")
 		nFu += 2;
 	//(5)待ち
-	array arMachi = convertNumArray(arMentsuKouho13[0]);
-	if (arMachi[0] != 1 && arMachi[0] + 1 == arMachi[1] && arMachi[1] != 9)//両面待ち
+	//待ちの形を再現する
+	array arMachiTatsu;
+	int nFu5;
+	int nFu5add = -99;
+	for (int i = 0; arMentsu[i] != nil; i++)
 	{
-		nFu += 0;
+		if (ASEARCH(atariHai, arMentsu[i]) >= 0)
+			arMachiTatsu += convertNumArray(removeElementByName(arMentsu[i], atariHai, 1));
 	}
-	else if (arMachi[0] == arMachi[1])//シャボ待ち
+	for (int i = 0; arMachiTatsu[i] != nil; i++)
 	{
-		if (isTsumo)
+		if ((arMachiTatsu[i][0] != 1) && (arMachiTatsu[i][0] + 1 == arMachiTatsu[i][1]) && (arMachiTatsu[i][1] != 9))//両面待ち
 		{
-			if (_strstr(strYaochu, atariHai) >= 0)
-				nFu += 8;
-			else
-				nFu += 4;
+			nFu5 = 0;
+			if (nFu5add < nFu5)
+				nFu5add = nFu5;
 		}
-		else
+		else if (arMachiTatsu[i][0] == arMachiTatsu[i][1])//シャボ待ち
 		{
-			if (_strstr(strYaochu, atariHai) >= 0)
-				nFu += 4;
+			if (isTsumo)
+			{
+				nFu5 = 0;
+				if (nFu5add < nFu5)
+					nFu5add = nFu5;
+			}
 			else
-				nFu += 2;
+			{
+				if (_strstr(strYaochu, atariHai) >= 0)
+				{
+					nFu5 = -4;
+					if (nFu5add < nFu5)
+						nFu5add = nFu5;
+				}
+				else
+				{
+					nFu5 = -2;
+					if (nFu5add < nFu5)
+						nFu5add = nFu5;
+				}
+			}
+		}
+		else if (arMachiTatsu[i][0] == 1 && arMachiTatsu[i][1] == 2 || arMachiTatsu[i][0] == 8 && arMachiTatsu[i][1] == 9)//ペンチャン待ち
+		{
+			nFu5 = 2;
+			if (nFu5add < nFu5)
+				nFu5add = nFu5;
+		}
+		else if (arMachiTatsu[i][0] + 2 == arMachiTatsu[i][1])//カンチャン待ち
+		{
+			nFu5 = 2;
+			if (nFu5add < nFu5)
+				nFu5add = nFu5;
+		}
+		else if (_aryvn(arMachiTatsu[i]) == 0 && atamaHai == atariHai)//単騎待ち
+		{
+			nFu5 = 2;
+			if (nFu5add < nFu5)
+				nFu5add = nFu5;
 		}
 	}
-	else if (arMachi[0] == 1 && arMachi[1] == 2 || arMachi[0] == 8 && arMachi[1] == 9)//ペンチャン待ち
-	{
-		nFu += 2;
-	}
-	else if (arMachi[0] + 2 == arMachi[1])//カンチャン待ち
-	{
-		nFu += 2;
-	}
-	else if (_aryvn(arMachi) == 0 && atama13 == "")//単騎待ち
-	{
-		nFu += 2;
-	}
+	nFu += nFu5add;
 	//切り上げ
 	int nShou = nFu / 10;
 	int nAmari = nFu % 10;
@@ -762,23 +862,13 @@ int isTanyao(array hai14)
 }
 
 //平和判定
-int isPinfu(array hai13, string atariHai, string bafuHai, string jifuHai)
+int isPinfu(string atamaHai, array arMentsu, string atariHai, string bafuHai, string jifuHai)
 {
-	array hai14 = hai13;
-	hai14 += atariHai;
-	hai14 = sortHai(hai14);
-	array a = getShantenWithMentsu(hai14);
-	int shanten = a[0];
-	string atama = a[1];
-	array arMentsu = a[2];
 	//一般手の和了でない
-	if (atama == "")
+	if (atamaHai == "")
 		return 0;
 	//雀頭は役牌以外でないといけない
-	if (atama == bafuHai || atama == jifuHai || atama == "5z" || atama == "6z" || atama == "7z")
-		return 0;
-	//雀頭は13枚の中に無いといけない
-	if (_aryvn(ASEARCHEX(atama, hai13)) < 2)
+	if (atamaHai == bafuHai || atamaHai == jifuHai || atamaHai == "5z" || atamaHai == "6z" || atamaHai == "7z")
 		return 0;
 	//待ちの形を再現する
 	array arMachiTatsu;

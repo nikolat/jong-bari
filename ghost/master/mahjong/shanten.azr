@@ -61,13 +61,17 @@ array getShantenNormalWithMentsuByAkari(array hai)
 	hai = removeKoritsuHai(hai);
 	//雀頭候補
 	array arAtamaKouho = getToitsu(hai);
-	string atama;
-	int shanten = 99;
-	array arMentsu;
-	array arTatsu;
+	arAtamaKouho += "";//雀頭無しの場合
+	int shanten;
+	int shantenA = 99;
+	int shantenB = 99;
+	array arMentsuAndTatsu;
+	array arMentsuAndTatsuA;
+	array arMentsuAndTatsuB;
 	for (int i = 0; arAtamaKouho[i] != nil; i++)
 	{
-		array haiWithoutAtama = removeElementByName(hai, arAtamaKouho[i], 2);
+		string atama = arAtamaKouho[i];
+		array haiWithoutAtama = removeElementByName(hai, atama, 2);
 		array a = getSupai(haiWithoutAtama);
 		array man = a[0];
 		array pin = a[1];
@@ -84,119 +88,164 @@ array getShantenNormalWithMentsuByAkari(array hai)
 		array arKouhoBpin = arKouhoPin[1];
 		array arKouhoBsou = arKouhoSou[1];
 		//Patern A
-		int nMentsuA = arKouhoAman[0] + arKouhoApin[0] + arKouhoAsou[0] + arKouhojihai[0];
-		int nTatsuA = arKouhoAman[1] + arKouhoApin[1] + arKouhoAsou[1] + arKouhojihai[1];
+		int nMentsuA = _aryvn(arKouhoAman[0][0]) + _aryvn(arKouhoApin[0][0]) + _aryvn(arKouhoAsou[0][0]) + _aryvn(arKouhojihai[0][0]);
+		int nTatsuA = _aryvn(arKouhoAman[0][1]) + _aryvn(arKouhoApin[0][1]) + _aryvn(arKouhoAsou[0][1]) + _aryvn(arKouhojihai[0][1]);
 		if (nMentsuA + nTatsuA > 4)
 			nTatsuA = 4 - nMentsuA;
-		int shantenKouhoA = 8 - (2 * nMentsuA) - nTatsuA - 1;
+		int shantenKouhoA = 8 - (2 * nMentsuA) - nTatsuA;
 		//Patern B
-		int nMentsuB = arKouhoBman[0] + arKouhoBpin[0] + arKouhoBsou[0] + arKouhojihai[0];
-		int nTatsuB = arKouhoBman[1] + arKouhoBpin[1] + arKouhoBsou[1] + arKouhojihai[1];
+		int nMentsuB = _aryvn(arKouhoBman[0][0]) + _aryvn(arKouhoBpin[0][0]) + _aryvn(arKouhoBsou[0][0]) + _aryvn(arKouhojihai[0][0]);
+		int nTatsuB = _aryvn(arKouhoBman[0][1]) + _aryvn(arKouhoBpin[0][1]) + _aryvn(arKouhoBsou[0][1]) + _aryvn(arKouhojihai[0][1]);
 		if (nMentsuB + nTatsuB > 4)
 			nTatsuB = 4 - nMentsuB;
-		int shantenKouhoB = 8 - (2 * nMentsuB) - nTatsuB - 1;
+		int shantenKouhoB = 8 - (2 * nMentsuB) - nTatsuB;
+		if (atama != "")
+		{
+			shantenKouhoA--;
+			shantenKouhoB--;
+		}
 		//より小さい方を選択
-		if (shantenKouhoA < shanten)
+		if (shantenKouhoA < shantenA)
 		{
-			shanten = shantenKouhoA;
-			atama = arAtamaKouho[i];
-			arMentsu = makeMenstu(arKouhoAman[2], arKouhoApin[2], arKouhoAsou[2], arKouhojihai[2]);
-			arTatsu = makeMenstu(arKouhoAman[3], arKouhoApin[3], arKouhoAsou[3], arKouhojihai[3]);
+			shantenA = shantenKouhoA;
+			arMentsuAndTatsuA = makeMentsu(atama, arKouhoAman, arKouhoApin, arKouhoAsou, arKouhojihai);
 		}
-		if (shantenKouhoB < shanten)
+		else if (shantenKouhoA == shantenA)
 		{
-			shanten = shantenKouhoB;
-			atama = arAtamaKouho[i];
-			arMentsu = makeMenstu(arKouhoBman[2], arKouhoBpin[2], arKouhoBsou[2], arKouhojihai[2]);
-			arTatsu = makeMenstu(arKouhoBman[3], arKouhoBpin[3], arKouhoBsou[3], arKouhojihai[3]);
+			arMentsuAndTatsuA = arrayAppend(arMentsuAndTatsuA, makeMentsu(atama, arKouhoAman, arKouhoApin, arKouhoAsou, arKouhojihai));
+		}
+		if (shantenKouhoB < shantenB)
+		{
+			shantenB = shantenKouhoB;
+			arMentsuAndTatsuB = makeMentsu(atama, arKouhoBman, arKouhoBpin, arKouhoBsou, arKouhojihai);
+		}
+		else if (shantenKouhoB == shantenB)
+		{
+			arMentsuAndTatsuB = arrayAppend(arMentsuAndTatsuB, makeMentsu(atama, arKouhoBman, arKouhoBpin, arKouhoBsou, arKouhojihai));
 		}
 	}
-	//雀頭無しの場合
-	array a = getSupai(hai);
-	array man = a[0];
-	array pin = a[1];
-	array sou = a[2];
-	array jihai = a[3];
-	array arKouhoMan = getMentsu(man);
-	array arKouhoPin = getMentsu(pin);
-	array arKouhoSou = getMentsu(sou);
-	array arKouhojihai = getMentsuJihai(jihai);
-	array arKouhoAman = arKouhoMan[0];
-	array arKouhoApin = arKouhoPin[0];
-	array arKouhoAsou = arKouhoSou[0];
-	array arKouhoBman = arKouhoMan[1];
-	array arKouhoBpin = arKouhoPin[1];
-	array arKouhoBsou = arKouhoSou[1];
-	//Patern A
-	int nMentsuA = arKouhoAman[0] + arKouhoApin[0] + arKouhoAsou[0] + arKouhojihai[0];
-	int nTatsuA = arKouhoAman[1] + arKouhoApin[1] + arKouhoAsou[1] + arKouhojihai[1];
-	if (nMentsuA + nTatsuA > 4)
-		nTatsuA = 4 - nMentsuA;
-	int shantenKouhoA = 8 - (2 * nMentsuA) - nTatsuA;
-	//Patern B
-	int nMentsuB = arKouhoBman[0] + arKouhoBpin[0] + arKouhoBsou[0] + arKouhojihai[0];
-	int nTatsuB = arKouhoBman[1] + arKouhoBpin[1] + arKouhoBsou[1] + arKouhojihai[1];
-	if (nMentsuB + nTatsuB > 4)
-		nTatsuB = 4 - nMentsuB;
-	int shantenKouhoB = 8 - (2 * nMentsuB) - nTatsuB;
-	//より小さい方を選択
-	if (shantenKouhoA < shanten)
+	if (shantenA < shantenB)
 	{
-		shanten = shantenKouhoA;
-		atama = "";
-		arMentsu = makeMenstu(arKouhoAman[2], arKouhoApin[2], arKouhoAsou[2], arKouhojihai[2]);
-		arTatsu = makeMenstu(arKouhoAman[3], arKouhoApin[3], arKouhoAsou[3], arKouhojihai[3]);
+		shanten = shantenA;
+		arMentsuAndTatsu = arMentsuAndTatsuA;
 	}
-	if (shantenKouhoB < shanten)
+	else if (shantenA > shantenB)
 	{
-		shanten = shantenKouhoB;
-		atama = "";
-		arMentsu = makeMenstu(arKouhoBman[2], arKouhoBpin[2], arKouhoBsou[2], arKouhojihai[2]);
-		arTatsu = makeMenstu(arKouhoBman[3], arKouhoBpin[3], arKouhoBsou[3], arKouhojihai[3]);
+		shanten = shantenB;
+		arMentsuAndTatsu = arMentsuAndTatsuB;
 	}
-	return {shanten, atama, arMentsu, arTatsu};
+	else
+	{
+		shanten = shantenA;
+		arMentsuAndTatsu = arMentsuAndTatsuA;
+		//TODO: 重複を排除しつつ合成
+	}
+	return {shanten, arMentsuAndTatsu};
 }
 
-array makeMenstu(array arMenstuMan, array arMenstuPin, array arMenstuSou, array arMenstuJihai)
+array arrayAppend(array a1, array a2)
 {
-	array arMenstuRet;
-	for (int i = 0; arMenstuMan[i] != nil; i++)
+	for (int i = 0; a2[i] != nil; i++)
 	{
-		array arMenstuTempRet = {};
-		for (int j = 0; arMenstuMan[i][j] != nil; j++)
-		{
-			arMenstuTempRet += "" + arMenstuMan[i][j] + "m";
-		}
-		arMenstuRet += arMenstuTempRet;
+		a1 += a2[i];
 	}
-	for (int i = 0; arMenstuPin[i] != nil; i++)
+	return a1;
+}
+
+array makeMentsu(string atama, array arMentsuMan, array arMentsuPin, array arMentsuSou, array arMentsuJihai)
+{
+	array arMentsuRet;
+	string sAtama = atama + atama;
+	for (int im = 0; arMentsuMan[im] != nil; im++)
 	{
-		array arMenstuTempRet = {};
-		for (int j = 0; arMenstuPin[i][j] != nil; j++)
+		array arMentsuM = arMentsuMan[im][0];
+		array arTatsuM = arMentsuMan[im][1];
+		string sm;
+		for (int jm = 0; arMentsuM[jm] != nil; jm++)
 		{
-			arMenstuTempRet += "" + arMenstuPin[i][j] + "p";
+			sm += ",";
+			for (int km = 0; arMentsuM[jm][km] != nil; km++)
+			{
+				sm += "" + arMentsuM[jm][km] + "m";
+			}
 		}
-		arMenstuRet += arMenstuTempRet;
-	}
-	for (int i = 0; arMenstuSou[i] != nil; i++)
-	{
-		array arMenstuTempRet = {};
-		for (int j = 0; arMenstuSou[i][j] != nil; j++)
+		for (int jm = 0; arTatsuM[jm] != nil; jm++)
 		{
-			arMenstuTempRet += "" + arMenstuSou[i][j] + "s";
+			sm += ",";
+			for (int km = 0; arTatsuM[jm][km] != nil; km++)
+			{
+				sm += "" + arTatsuM[jm][km] + "m";
+			}
 		}
-		arMenstuRet += arMenstuTempRet;
-	}
-	for (int i = 0; arMenstuJihai[i] != nil; i++)
-	{
-		array arMenstuTempRet = {};
-		for (int j = 0; arMenstuJihai[i][j] != nil; j++)
+		for (int ip = 0; arMentsuPin[ip] != nil; ip++)
 		{
-			arMenstuTempRet += "" + arMenstuJihai[i][j] + "z";
+			array arMentsuP = arMentsuPin[ip][0];
+			array arTatsuP = arMentsuPin[ip][1];
+			string sp;
+			for (int jp = 0; arMentsuP[jp] != nil; jp++)
+			{
+				sp += ",";
+				for (int kp = 0; arMentsuP[jp][kp] != nil; kp++)
+				{
+					sp += "" + arMentsuP[jp][kp] + "p";
+				}
+			}
+			for (int jp = 0; arTatsuP[jp] != nil; jp++)
+			{
+				sp += ",";
+				for (int kp = 0; arTatsuP[jp][kp] != nil; kp++)
+				{
+					sp += "" + arTatsuP[jp][kp] + "p";
+				}
+			}
+			for (int is = 0; arMentsuSou[is] != nil; is++)
+			{
+				array arMentsuS = arMentsuSou[is][0];
+				array arTatsuS = arMentsuSou[is][1];
+				string ss;
+				for (int js = 0; arMentsuS[js] != nil; js++)
+				{
+					ss += ",";
+					for (int ks = 0; arMentsuS[js][ks] != nil; ks++)
+					{
+						ss += "" + arMentsuS[js][ks] + "s";
+					}
+				}
+				for (int js = 0; arTatsuS[js] != nil; js++)
+				{
+					ss += ",";
+					for (int ks = 0; arTatsuS[js][ks] != nil; ks++)
+					{
+						ss += "" + arTatsuS[js][ks] + "s";
+					}
+				}
+				for (int ij = 0; arMentsuJihai[ij] != nil; ij++)
+				{
+					array arMentsuZ = arMentsuJihai[ij][0];
+					array arTatsuZ = arMentsuJihai[ij][1];
+					string sj;
+					for (int jj = 0; arMentsuZ[jj] != nil; jj++)
+					{
+						sj += ",";
+						for (int kj = 0; arMentsuZ[jj][kj] != nil; kj++)
+						{
+							sj += "" + arMentsuZ[jj][kj] + "z";
+						}
+					}
+					for (int jj = 0; arTatsuZ[jj] != nil; jj++)
+					{
+						sj += ",";
+						for (int kj = 0; arTatsuZ[jj][kj] != nil; kj++)
+						{
+							sj += "" + arTatsuZ[jj][kj] + "z";
+						}
+					}
+					arMentsuRet += sAtama + sm + sp + ss + sj;
+				}
+			}
 		}
-		arMenstuRet += arMenstuTempRet;
 	}
-	return arMenstuRet;
+	return arMentsuRet;
 }
 
 //孤立牌の除去
@@ -253,14 +302,19 @@ array getMentsu(array hai)
 		arKotsuPattern = {{}, {arKotsu[0]}, {arKotsu[1]}, {arKotsu[2]}, {arKotsu[0], arKotsu[1]}, {arKotsu[0], arKotsu[2]}, {arKotsu[1], arKotsu[2]}, {arKotsu[0], arKotsu[1], arKotsu[2]}};
 		break;
 	case 4://四暗刻
-		return {4, 0};
+		array arMentsu = {};
+		for (int i = 0; arKotsu[i] != nil; i++)
+		{
+			arMentsu += {arKotsu[i], arKotsu[i], arKotsu[i]};
+		}
+		return {{{arMentsu, {}}}, {{arMentsu, {}}}};
 	default:
 		break;
 	}
 	int pointA = -1;
 	int pointB = -1;
-	array arRetA = {0, 0, {}};
-	array arRetB = {0, 0, {}};
+	array arRetA;
+	array arRetB;
 	for (int i = 0; arKotsuPattern[i] != nil; i++)
 	{
 		array arKotsulessHai = arHai;
@@ -296,12 +350,20 @@ array getMentsu(array hai)
 		if (pointA < pointKouhoA)
 		{
 			pointA = pointKouhoA;
-			arRetA = {nMentsu, nTatsu, arMentsu, arRetTatsu};
+			arRetA = {{arMentsu, arRetTatsu}};
+		}
+		else if (pointA == pointKouhoA)
+		{
+			arRetA += {arMentsu, arRetTatsu};
 		}
 		if (pointB < pointKouhoB)
 		{
 			pointB = pointKouhoB;
-			arRetB = {nMentsu, nTatsu, arMentsu, arRetTatsu};
+			arRetB = {{arMentsu, arRetTatsu}};
+		}
+		else if (pointB == pointKouhoB)
+		{
+			arRetB += {arMentsu, arRetTatsu};
 		}
 	}
 	return {arRetA, arRetB};
@@ -311,7 +373,6 @@ array getMentsuJihai(array hai)
 {
 	array arHai = convertNumArray(hai);
 	array arKotsu = getKotsu(arHai);
-	int nKotsu = _aryvn(arKotsu);
 	//面子の配列を作成
 	array arMentsu = {};
 	for (int i = 0; arKotsu[i] != nil; i++)
@@ -324,15 +385,12 @@ array getMentsuJihai(array hai)
 		arHai = removeElementByName(arHai, arKotsu[i], 3);
 	}
 	array arToitsu = getToitsu(arHai);
-	int nKotsuKouho = _aryvn(arToitsu);
 	array arKotsuKouho;
 	for (int i = 0; arToitsu[i] != nil; i++)
 	{
 		arKotsuKouho += {arToitsu[i], arToitsu[i]};
 	}
-	int nMentsu = nKotsu;
-	int nTatsu = nKotsuKouho;
-	return {nMentsu, nTatsu, arMentsu, arKotsuKouho};
+	return {{arMentsu, arKotsuKouho}};
 }
 
 array getMaxShuntsu(array nHai, int nShuntsu, array arShuntsu)
