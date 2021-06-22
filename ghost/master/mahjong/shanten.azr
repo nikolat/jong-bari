@@ -137,8 +137,7 @@ array getShantenNormalWithMentsuByAkari(array hai)
 	else
 	{
 		shanten = shantenA;
-		arMentsuAndTatsu = arMentsuAndTatsuA;
-		//TODO: 重複を排除しつつ合成
+		arMentsuAndTatsu = uniq(arrayAppend(arMentsuAndTatsuA, arMentsuAndTatsuB));
 	}
 	return {shanten, arMentsuAndTatsu};
 }
