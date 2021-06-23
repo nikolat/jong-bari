@@ -9,22 +9,24 @@ array getShantenWithMentsu(array hai)
 {
 	dict d = _saorirequest("MahjongUtil", "shanten", _arystr(hai));
 	int shanten = d["Result"];
-	string atama = d["Value0"];
-	string strMentsu = d["Value1"];
-	string strTatsu = d["Value2"];
-	array a1 = _strsplit(strMentsu, ",");
-	array arMentsu;
-	for (int i = 0; a1[i] != nil; i++)
+	array arPattern;
+	for (int i = 0; d["Value" + i] != nil; i++)
 	{
-		arMentsu += strHaiToArray(a1[i]);
+		arPattern += d["Value" + i];
 	}
-	array a2 = _strsplit(strTatsu, ",");
-	array arTatsu;
-	for (int i = 0; a2[i] != nil; i++)
+	return {shanten, arPattern};
+}
+
+array getShantenNormalWithMentsu(array hai)
+{
+	dict d = _saorirequest("MahjongUtil", "shanten_normal", _arystr(hai));
+	int shanten = d["Result"];
+	array arPattern;
+	for (int i = 0; d["Value" + i] != nil; i++)
 	{
-		arTatsu += strHaiToArray(a2[i]);
+		arPattern += d["Value" + i];
 	}
-	return {shanten, atama, arMentsu, arTatsu};
+	return {shanten, arPattern};
 }
 
 array strHaiToArray(string strHai)
@@ -45,13 +47,6 @@ int getMin(array a)
 		if (a[i] < r)
 			r = a[i];
 	}
-	return r;
-}
-
-int getShantenNormal(array hai)
-{
-	array a = getShantenNormalWithMentsuByAkari(hai);
-	int r = a[0];
 	return r;
 }
 

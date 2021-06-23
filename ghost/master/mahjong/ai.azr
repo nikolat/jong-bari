@@ -8,12 +8,10 @@ string naniwokiru(array hai, array kawa)
 string getDahai(array hai)
 {
 	array arDahai;
-	//孤立牌を優先的に切る
-	arDahai = getKoritsuHai(hai);
-	if (_aryvn(arDahai) > 0)
-		return _randselect(arDahai);
-	int point = 0;
+	int point = -1;
 	array hai14 = sortHai(hai);
+	//孤立牌を優先的に切る
+	array arKoritsuhai = getKoritsuHai(hai14);
 	for (int i = 0; hai14[i] != nil; i++)
 	{
 		if (ASEARCH(hai14[i], arDahai) == -1)
@@ -21,31 +19,65 @@ string getDahai(array hai)
 			array hai13 = removeElementByName(hai14, hai14[i], 1);
 			array a = getShantenWithMentsu(hai13);
 			int shanten13 = a[0];
-			string atama13 = a[1];
-			array arMentsu13 = a[2];
-			array arTatsu13 = a[3];
-			int tmpPoint;
+			array arPattern = a[1];
+			int shantenPoint = 0;
 			if (shanten13 == 0)
-			{
-				tmpPoint = 100000;
-			}
+				shantenPoint = 100000;
 			else
+				shantenPoint = 10000 / (shanten13 + 1);
+			int mentsuPoint = 0;
+			for (int j = 0; arPattern[j] != nil; j++)
 			{
-				tmpPoint = (10000 / shanten13) + (100 * _aryvn(arMentsu13)) + (10 * _aryvn(arTatsu13));
-				for (int j = 0; arTatsu13[j] != nil; j++)
+				int tmpPoint = 0;
+				if (arPattern[j] == "chitoitsu" || arPattern[j] == "kokushimusou")
 				{
-					if (isRyanmen(arTatsu13[j]))
-						tmpPoint += 30;
+					tmpPoint = 0;
 				}
-				if (atama13 != "")
-					tmpPoint += 10;
+				else
+				{
+					array ap = _strsplit(arPattern[j], ",");
+					array arTatsu13 = {};
+					if (ap[0] != "")
+					{
+						tmpPoint += 10;//雀頭
+					}
+					for (int k = 1; ap[k] != nil; k++)
+					{
+						if (_strlen(ap[k]) == 6)
+						{
+							tmpPoint += 100;//面子
+						}
+						else if (_strlen(ap[k]) == 4)
+						{
+							arTatsu13 += ap[k];
+						}
+					}
+					for (int k = 0; arTatsu13[k] != nil; k++)
+					{
+						array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
+						if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
+							tmpPoint += 50;//両面
+						else if (arTatsuNum[0] == arTatsuNum[1])
+							tmpPoint += 10;//対子
+						else
+							tmpPoint += 30;
+					}
+				}
+				if (mentsuPoint < tmpPoint)
+					mentsuPoint = tmpPoint;
 			}
-			if (point < tmpPoint)
+			int koritsuPoint = 0;
+			if (ASEARCH(hai14[i], arKoritsuhai) >= 0)
 			{
-				point = tmpPoint;
+				koritsuPoint += 500;
+			}
+			int dahaiPoint = shantenPoint + mentsuPoint + koritsuPoint;
+			if (point < dahaiPoint)
+			{
+				point = dahaiPoint;
 				arDahai = {hai14[i]};
 			}
-			else if (point == tmpPoint)
+			else if (point == dahaiPoint)
 			{
 				arDahai += hai14[i];
 			}

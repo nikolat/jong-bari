@@ -309,7 +309,7 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	int isRichi = 0;
 	if (nRichiJunme >= 0)
 		isRichi = 1;
-	array a = getShantenNormalWithMentsuByAkari(hai14);
+	array a = getShantenNormalWithMentsu(hai14);
 	int shantenNormal = a[0];
 	array arMentsuAndTatsu = a[1];
 	array arMentsuTemp = _strsplit(arMentsuAndTatsu[0], ",");//仮に最初の面子セットで役判定
@@ -319,7 +319,6 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	{
 		arMentsu += strHaiToArray(arMentsuTemp[i]);
 	}
-
 	dict dHan;
 	dict dYakuman;
 	int nHan;
@@ -700,12 +699,10 @@ int getFu(string atamaHai, array arMentsu, string atariHai, string bafuHai, stri
 			if (nFu5add < nFu5)
 				nFu5add = nFu5;
 		}
-		else if (_aryvn(arMachiTatsu[i]) == 0 && atamaHai == atariHai)//単騎待ち
-		{
-			nFu5 = 2;
-			if (nFu5add < nFu5)
-				nFu5add = nFu5;
-		}
+	}
+	if (_aryvn(arMachiTatsu) == 0 && atamaHai == atariHai)//単騎待ち
+	{
+		nFu5add = 2;
 	}
 	nFu += nFu5add;
 	//切り上げ
