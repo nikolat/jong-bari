@@ -606,6 +606,8 @@ dict getYakuInfoSub(int isTsumo, array hai13, string atariHai, string bafuHai, s
 	int nFu;
 	if (dHan["平和"] == 1 && isTsumo)
 		nFu = 20;
+	else if (dHan["平和"] == 1 && !isTsumo)
+		nFu = 30;
 	else
 		nFu = getFu(atamaHai, arMentsu, atariHai, bafuHai, jifuHai, isTsumo);
 	dict dRet = ${
