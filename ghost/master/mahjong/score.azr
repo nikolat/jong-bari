@@ -55,37 +55,57 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	dict dYakuAndHan;
 	if (nAgariPlayer > 0)
 	{
-		string bafuHai = "1z";
-		if (bafu == 1)
-			bafuHai = "2z";
-		array seki = {"1z", "2z", "3z", "4z"};
-		dict dSeki;
-		array pNames;
-		for (int i = 0; playerName[i] != nil; i++)
-		{
-			pNames += playerName[(i + oyaIndex) % 4];
-		}
-		for (int i = 0; pNames[i] != nil; i++)
-		{
-			dSeki += $(pNames[i], seki[i]);
-		}
-		string jifuHai = dSeki[playerName[nAgariPlayer]];
-		int isLastHai = 0;
-		if (_aryvn(arYama) == nYamaIndex)
-			isLastHai = 1;
-		array hai14 = hai13;
-		hai14 += atariHai;
+		string bafuHai = getBafuHai();
+		string jifuHai = getJifuHai(nAgariPlayer);
 		int isRichi = 0;
 		if (arRichiJunme[nAgariPlayer] >= 0)
 			isRichi = 1;
-		int dora = countDora(hai14, isRichi);
-		dict dYakuInfo = getYakuInfo(nAgariPlayer, nFurikomiPlayer, hai13, atariHai, oyaIndex, arRichiJunme[nAgariPlayer], arKawa[nAgariPlayer], bafuHai, jifuHai, isLastHai, dora);
-		dYakuman = dYakuInfo["yakuman"];
-		dYakuAndHan = dYakuInfo["han"];
-		nFu = dYakuInfo["fu"];
-		score = dYakuInfo["score"];
-		array arYakuman = _dickeyget(dYakuman);
+		string strDora = getDoraFromDorahyouji(dorahyouji);
+		if (isRichi)
+			strDora += getDoraFromDorahyouji(uradorahyouji);
+		int isTsumo = 0;
+		if (nFurikomiPlayer == -1)
+			isTsumo = 1;
+		int isWRichi = 0;
+		if (arRichiJunme[nAgariPlayer] == 0)
+			isWRichi = 1;
+		int isIppatsu = 0;
+		if (isRichi && arRichiJunme[nAgariPlayer] == _aryvn(arKawa[nAgariPlayer]) - 1)//鳴きを考慮していないため注意
+			isIppatsu = 1;
+		int is1stRound = 0;
+		if (_aryvn(arKawa[nAgariPlayer]) == 0)//鳴きを考慮していないため注意
+			is1stRound = 1;
+		int isFinalTileWin = 0;
+		if (_aryvn(arYama) == nYamaIndex)
+			isFinalTileWin = 1;
+		int isOya = 0;
+		if (nAgariPlayer == oyaIndex)
+			isOya = 1;
+		dict d = _saorirequest("MahjongUtil", "score", _arystr(hai13), atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
+		score = d["Result"];
+		int isYakuman = 0;
+		if (score >= 32000 && !isOya || score >= 48000 && isOya)
+			isYakuman = 1;
 		int nHan;
+		if (isYakuman)
+		{
+			for (int i = 1; d["Value" + i] != nil; i++)
+			{
+				array a = _strsplit(d["Value" + i], ",");
+				dYakuman += $(a[0], (int)a[1]);
+			}
+		}
+		else
+		{
+			nFu = d["Value0"];
+			nHan = d["Value1"];
+			for (int i = 2; d["Value" + i] != nil; i++)
+			{
+				array a = _strsplit(d["Value" + i], ",");
+				dYakuAndHan += $(a[0], (int)a[1]);
+			}
+		}
+		array arYakuman = _dickeyget(dYakuman);
 		for (int i = 0; arYakuman[i] != nil; i++)
 		{
 			s += arYakuman[i] + "\_l[100,]役満\n";
@@ -95,8 +115,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 			array arYaku = _dickeyget(dYakuAndHan);
 			for (int i = 0; arYaku[i] != nil; i++)
 			{
-				s += arYaku[i] + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
-				nHan += dYakuAndHan[arYaku[i]];
+				s += _strreplace(arYaku[i], "ヤオ", "么") + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
 			}
 		}
 		if (nHan > 0)
@@ -185,6 +204,30 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	}
 	clearStatus();
 	return s;
+}
+
+string getBafuHai()
+{
+	string bafuHai = "1z";
+	if (bafu == 1)
+		bafuHai = "2z";
+	return bafuHai;
+}
+
+string getJifuHai(int nPlayer)
+{
+	array seki = {"1z", "2z", "3z", "4z"};
+	dict dSeki;
+	array pNames;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		pNames += playerName[(i + oyaIndex) % 4];
+	}
+	for (int i = 0; pNames[i] != nil; i++)
+	{
+		dSeki += $(pNames[i], seki[i]);
+	}
+	return dSeki[playerName[nPlayer]];
 }
 
 array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, array arTenpaiPlayerFlag)
@@ -499,7 +542,7 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 		{
 			arMentsu += strHaiToArray(arMentsuTemp[j]);
 		}
-		dict dSub = getYakuInfoSub(isTsumo, hai13, atariHai, bafuHai, jifuHai, atamaHai, arMentsu);
+		dict dSub = getYakuInfoSub(isTsumo, atariHai, bafuHai, jifuHai, atamaHai, arMentsu);
 		int nHanSub = dSub["han"];
 		int nFuSub = dSub["fu"];
 		if (nHanSubMax < nHanSub)
@@ -545,7 +588,7 @@ dict getYakuInfo(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atar
 	return dRet;
 }
 
-dict getYakuInfoSub(int isTsumo, array hai13, string atariHai, string bafuHai, string jifuHai, string atamaHai, array arMentsu)
+dict getYakuInfoSub(int isTsumo, string atariHai, string bafuHai, string jifuHai, string atamaHai, array arMentsu)
 {
 	dict dHan;
 	dict dYakuman;
@@ -1189,10 +1232,10 @@ int isTsuiso(array hai14)
 //緑一色判定
 int isRyuiso(array hai14)
 {
-	string strYaochuhai = "2s3s4s6s8s6z";
+	string strGreenhai = "2s3s4s6s8s6z";
 	for (int i = 0; hai14[i] != nil; i++)
 	{
-		if (_strstr(strYaochuhai, hai14[i]) == -1)
+		if (_strstr(strGreenhai, hai14[i]) == -1)
 			return 0; 
 	}
 	return 1;
