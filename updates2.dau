@@ -1,12 +1,12 @@
 ghost/master/akari.dll604e9d9fa66b8ad367d22ccd682a74e4size=889856
 ghost/master/descript.txt395c1acee7d52997d0603a72b9351162size=267
 ghost/master/icon.ico9266143a2761a3f70a01997a73adde39size=1406
-ghost/master/mahjong/ai.azr1fd1be8ca3989cb7cffbe13716e2223esize=4449
-ghost/master/mahjong/score.azr9e79acede44996d90cd33be5d844069dsize=29975
-ghost/master/mahjong/shanten.azrff257b312b63bea12dd72369a1e695d5size=15324
+ghost/master/mahjong/ai.azr600efb9e5d1e851782513a61fbe08948size=2928
+ghost/master/mahjong/score.azr3fee02e58215a7e095da8edd61adfd6asize=9967
+ghost/master/mahjong/shanten.azr3ae92ebc605f35d089088f516f6769a4size=2387
 ghost/master/mahjong/util.azr71c2a6a3d3399233ac7ddce8180804e4size=25711
 ghost/master/main.azr475b31ac8e3ca0f881608df0a0d25390size=361
-ghost/master/saori/MahjongUtil/MahjongUtil.dllf51efec69cc586b1677c8522f0cc9734size=166912
+ghost/master/saori/MahjongUtil/MahjongUtil.dll61035a626929fba9cf9d6fe4a972fffbsize=163840
 ghost/master/shiori-event/event.azr3dba0a8476568ef5614b8b3b29926c1bsize=2673
 ghost/master/shiori-event/resource.azr25196bc184bd921b5defadd232b360f1size=2641
 install.txta0d11a76be23dce6100086d101193655size=71
