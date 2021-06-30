@@ -53,7 +53,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	int nFu;
 	dict dYakuman;
 	dict dYakuAndHan;
-	if (nAgariPlayer > 0)
+	if (nAgariPlayer >= 0)
 	{
 		string bafuHai = getBafuHai();
 		string jifuHai = getJifuHai(nAgariPlayer);
