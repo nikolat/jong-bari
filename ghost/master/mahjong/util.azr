@@ -11,7 +11,8 @@ int openTehai = 0;
 array arYama;
 array arTehai = {{}, {}, {}, {}};
 array arKawa = {{}, {}, {}, {}};
-array arFuritenCheck = {{}, {}, {}, {}};
+array arFuritenCheckRichi = {{}, {}, {}, {}};
+array arFuritenCheckTurn = {{}, {}, {}, {}};
 array arScore = {25000, 25000, 25000, 25000};
 array arRichiJunme = {-1, -1, -1, -1};
 string dorahyouji;
@@ -247,7 +248,8 @@ string startKyoku()
 	arTehai[2] = sortHai(getArrayRange(arYama, 26, 38));
 	arTehai[3] = sortHai(getArrayRange(arYama, 39, 51));
 	arKawa = {{}, {}, {}, {}};
-	arFuritenCheck = {{}, {}, {}, {}};
+	arFuritenCheckRichi = {{}, {}, {}, {}};
+	arFuritenCheckTurn = {{}, {}, {}, {}};
 	arRichiJunme = {-1, -1, -1, -1};
 	dorahyouji = arYama[52];
 	uradorahyouji = arYama[53];
@@ -406,16 +408,27 @@ string OnSuteSelect(dict ref)
 int canRon(int nPlayer, string atariHai)
 {
 	//フリテンかどうか検証する
-	if (ASEARCH(atariHai, arKawa[nPlayer]) >= 0)
-		return 0;
+	array arMachi = strHaiToArray(_saorirequest("MahjongUtil", "machi", _arystr(arTehai[nPlayer]))["Result"]);
 	int isRichi = 0;
 	if (arRichiJunme[nPlayer] >= 0)
 		isRichi = 1;
-	if (isRichi)
+	for (int i = 0; arMachi[i] != nil; i++)
 	{
-		int index = ASEARCH(atariHai, arFuritenCheck[nPlayer]);
-		if (index >= 0 && index != _aryvn(arFuritenCheck[nPlayer]) - 1)
+		string strMachi = arMachi[i];
+		if (ASEARCH(strMachi, arKawa[nPlayer]) >= 0)
 			return 0;
+		if (isRichi)
+		{
+			int index = ASEARCH(strMachi, arFuritenCheckRichi[nPlayer]);
+			if (index >= 0 && index != _aryvn(arFuritenCheckRichi[nPlayer]) - 1)
+				return 0;
+		}
+		if (ASEARCH(strMachi, arFuritenCheckTurn[nPlayer]) >= 0)
+		{
+			int index = ASEARCH(strMachi, arFuritenCheckTurn[nPlayer]);
+			if (index >= 0 && index != _aryvn(arFuritenCheckTurn[nPlayer]) - 1)
+				return 0;
+		}
 	}
 	//役があるかどうか検証する
 	string bafuHai = getBafuHai();
@@ -593,7 +606,11 @@ setSutehai(string sute, int nPlayer)
 	for (int i = 0; i < 4; i++)
 	{
 		if (arRichiJunme[i] >= 0)
-			arFuritenCheck[i] += sute;
+			arFuritenCheckRichi[i] += sute;
+		if (nPlayer == i)
+			arFuritenCheckTurn[i] = {};
+		else
+			arFuritenCheckTurn[i] += sute;
 	}
 }
 
@@ -803,7 +820,8 @@ clearStatus()
 	arYama = {};
 	arTehai = {{}, {}, {}, {}};
 	arKawa = {{}, {}, {}, {}};
-	arFuritenCheck = {{}, {}, {}, {}};
+	arFuritenCheckRichi = {{}, {}, {}, {}};
+	arFuritenCheckTurn = {{}, {}, {}, {}};
 	arRichiJunme = {-1, -1, -1, -1};
 	dorahyouji = "";
 	uradorahyouji = "";
