@@ -372,11 +372,7 @@ string OnSuteSelect(dict ref)
 	arTehai[selectPlayer] = tehai;
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで通知を一時停止する
-	array hai14 = arTehai[3];
-	hai14 += sute;
-	hai14 = sortHai(hai14);
-	int shanten = getShanten(hai14);
-	if (shanten == -1 && canRon(3, sute))
+	if (canRon(3, sute))
 		s += "\x";
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
@@ -385,11 +381,7 @@ string OnSuteSelect(dict ref)
 	{
 		if (playerName[i] != playerName[selectPlayer])
 		{
-			hai14 = arTehai[i];
-			hai14 += sute;
-			hai14 = sortHai(hai14);
-			shanten = getShanten(hai14);
-			if (shanten == -1 && canRon(i, sute))
+			if (canRon(i, sute))
 			{
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",naku?," + sute + ",ron]";
@@ -407,6 +399,13 @@ string OnSuteSelect(dict ref)
 
 int canRon(int nPlayer, string atariHai)
 {
+	//和了かどうか(シャンテン数が-1かどうか)検証する
+	array hai14 = arTehai[nPlayer];
+	hai14 += atariHai;
+	hai14 = sortHai(hai14);
+	int shanten = getShanten(hai14);
+	if (shanten != -1)
+		return 0;
 	//フリテンかどうか検証する
 	array arMachi = strHaiToArray(_saorirequest("MahjongUtil", "machi", _arystr(arTehai[nPlayer]))["Result"]);
 	int isRichi = 0;
@@ -484,11 +483,7 @@ string OnSuteComplete(dict ref)
 		{
 			if (i != completePlayer)
 			{
-				array hai14 = arTehai[i];
-				hai14 += sute;
-				hai14 = sortHai(hai14);
-				int shanten = getShanten(hai14);
-				if (shanten == -1 && canRon(i, sute))
+				if (canRon(i, sute))
 				{
 					s += showStatus("", sute, completePlayer, i, {0, 0, 0});
 					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
@@ -533,9 +528,7 @@ string OnSuteComplete(dict ref)
 		s += "\_q\e";
 		return s;
 	}
-	int nextPlayer = completePlayer + 1;
-	if (nextPlayer == 4)
-		nextPlayer = 0;
+	int nextPlayer = (completePlayer + 1) % 4;
 	string tsumo;
 	//userがツモ
 	if (nextPlayer == 3)
@@ -633,11 +626,7 @@ string Menu_Sutehai(dict ref)
 	{
 		if (playerName[i] != playerName[selectPlayer])
 		{
-			array hai14 = arTehai[i];
-			hai14 += sute;
-			hai14 = sortHai(hai14);
-			int shanten = getShanten(hai14);
-			if (shanten == -1 && canRon(i, sute))
+			if (canRon(i, sute))
 			{
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",naku?," + sute + ",ron]";
@@ -788,11 +777,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	}
 	if (nPlayer != 3 && sute != "" && agariPlayer == -1)
 	{
-		array hai14 = arTehai[3];
-		hai14 += sute;
-		hai14 = sortHai(hai14);
-		int shanten = getShanten(hai14);
-		if (shanten == -1 && canRon(3, sute))
+		if (canRon(3, sute))
 			s += "\![*]\__q[Menu_Ron,3," + nPlayer + "," + sute + "]ロン\__q";
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
