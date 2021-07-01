@@ -333,7 +333,7 @@ string OnSuteSelect(dict ref)
 		sute = reservedSutehai;
 		reservedSutehai = "";
 		int richi = arRichiJunme[selectPlayer];
-		if (reservedRichi && richi == -1)
+		if (reservedRichi && richi == -1 && getLeftYama() >= 4)
 		{
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
 			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
@@ -358,7 +358,7 @@ string OnSuteSelect(dict ref)
 			sute = tsumo;
 		else
 			sute = naniwokiru(tehai, arKawa[selectPlayer]);//ソートされていてはいけない
-		if (shanten == 0 && richi == -1)
+		if (shanten == 0 && richi == -1 && getLeftYama() >= 4)
 		{
 			//即リー
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
@@ -772,7 +772,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		int shanten = getShanten(hai14);
 		if (shanten == -1)
 			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
-		else if (shanten == 0 && arRichiJunme[3] == -1)
+		else if (shanten == 0 && arRichiJunme[3] == -1 && getLeftYama() >= 4)
 			s += "\![*]\__q[Menu_Richi]リーチ\__q";
 	}
 	if (nPlayer != 3 && sute != "" && agariPlayer == -1)
