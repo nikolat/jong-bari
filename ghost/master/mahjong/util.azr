@@ -787,39 +787,56 @@ string showHai(string strHai, string tsumoShowing, int nPlayer)
 	array arHai = strHaiToArray(strHai);
 	if (nPlayer != 3)
 	{
+		string sFuro;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
-			s += convertUnicode(arHai[i]);
+			if (_strlen(arHai[i]) == 2)
+				s += convertUnicode(arHai[i]);
+			else
+				sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
 		}
 		if (tsumoShowing != "")
 			s += " " + convertUnicode(tsumoShowing);
+		if (sFuro != "")
+			s += "\_l[180,]" + sFuro;
 	}
 	else
 	{
+		string sFuro;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (tsumoShowing != "")
 			{
-				if (arRichiJunme[3] == -1)
+				if (_strlen(arHai[i]) == 2)
 				{
-					s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
-				}
-				else if (arRichiJunme[3] == _aryvn(arKawa[3]))
-				{
-					int shanten = getShanten(removeHai(addHai(arTehai[3], tsumoShowing), arHai[i]));
-					if (shanten == 0)
+					if (arRichiJunme[3] == -1)
+					{
 						s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+					}
+					else if (arRichiJunme[3] == _aryvn(arKawa[3]))
+					{
+						int shanten = getShanten(removeHai(addHai(arTehai[3], tsumoShowing), arHai[i]));
+						if (shanten == 0)
+							s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+						else
+							s += "\f[color,gray]" + convertUnicode(arHai[i]) + "\f[color,default]";
+					}
 					else
-						s += "\f[color,gray]" + convertUnicode(arHai[i]) + "\f[color,default]";
+					{
+						s += convertUnicode(arHai[i]);
+					}
 				}
 				else
 				{
-					s += convertUnicode(arHai[i]);
+					sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
 				}
 			}
 			else
 			{
-				s += convertUnicode(arHai[i]);
+				if (_strlen(arHai[i]) == 2)
+					s += convertUnicode(arHai[i]);
+				else
+					sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
 			}
 		}
 		if (tsumoShowing != "")
@@ -838,6 +855,8 @@ string showHai(string strHai, string tsumoShowing, int nPlayer)
 				s += "\__q[Menu_Sutehai," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
 			}
 		}
+		if (sFuro != "")
+			s += "\_l[180,]" + sFuro;
 	}
 	return s;
 }
@@ -846,13 +865,23 @@ string addHai(string strHai1, string strHai2)
 {
 	array arHai1 = strHaiToArray(strHai1);
 	array arHai2 = strHaiToArray(strHai2);
-	array arRet = arHai1;
+	array arRet;
+	for (int i = 0; arHai1[i] != nil; i++)
+	{
+		if (_strlen(arHai1[i]) == 2)
+			arRet += arHai1[i];
+	}
 	for (int i = 0; arHai2[i] != nil; i++)
 	{
 		arRet += arHai2[i];
 	}
 	arRet = sortHai(arRet);
-	return _arystr(arRet);
+	for (int i = 0; arHai1[i] != nil; i++)
+	{
+		if (_strlen(arHai1[i]) != 2)
+			arRet += arHai1[i];
+	}
+	return arrayToStrHai(arRet);
 }
 
 string removeHai(string strHai1, string strHai2)
@@ -864,7 +893,7 @@ string removeHai(string strHai1, string strHai2)
 	{
 		arRet = removeElementByName(arRet, arHai2[i], 1);
 	}
-	return _arystr(arRet);
+	return arrayToStrHai(arRet);
 }
 
 array removeElementByName(array ary, string name, int count)
@@ -888,11 +917,33 @@ array removeElementByName(array ary, string name, int count)
 array strHaiToArray(string strHai)
 {
 	array arRet;
-	for (int i = 0; i < _strlen(strHai); i += 2)
+	for (int i = 0; i < _strlen(strHai); i++)
 	{
-		arRet += _substr(strHai, i, 2);
+		if (_substr(strHai, i, 1) == "<")
+		{
+			arRet += _substr(strHai, i + 1, 6);
+			i += 7;
+		}
+		else
+		{
+			arRet += _substr(strHai, i, 2);
+			i++;
+		}
 	}
 	return arRet;
+}
+
+string arrayToStrHai(array a)
+{
+	string s;
+	for (int i = 0; a[i] != nil; i++)
+	{
+		if (_strlen(a[i]) == 2)
+			s += a[i];
+		else
+			s += "<" + a[i] + ">";
+	}
+	return s;
 }
 
 array shuffleArray(array a)
