@@ -1,15 +1,15 @@
 //本来は他家の捨て牌とか諸々の情報が必要
-string naniwokiru(array hai, array kawa)
+string naniwokiru(string hai, array kawa)
 {
 	return getDahai(hai);
 }
 
 //テンパイに近づける
-string getDahai(array hai)
+string getDahai(string hai)
 {
 	array arDahai;
 	int point = -1;
-	array hai14 = sortHai(hai);
+	array hai14 = strHaiToArray(hai);
 	//孤立牌を優先的に切る
 	array arKoritsuhai = getKoritsuHai(hai14);
 	for (int i = 0; hai14[i] != nil; i++)
@@ -17,7 +17,7 @@ string getDahai(array hai)
 		if (ASEARCH(hai14[i], arDahai) == -1)
 		{
 			array hai13 = removeElementByName(hai14, hai14[i], 1);
-			array a = getShantenWithMentsu(hai13);
+			array a = getShantenWithMentsu(_arystr(hai13));
 			int shanten13 = a[0];
 			array arPattern = a[1];
 			int shantenPoint = 0;
@@ -118,4 +118,14 @@ array getKoritsuHai(array hai)
 		}
 	}
 	return arRet;
+}
+
+array convertNumArray(array hai)
+{
+	array arNum;
+	for (int i = 0; hai[i] != nil; i++)
+	{
+		arNum += (int)_substr(hai[i], 0, 1);
+	}
+	return arNum;
 }

@@ -9,7 +9,7 @@ int openTehai = 0;
 //******************************************************************************
 //ゲームで使用する変数
 array arYama;
-array arTehai = {{}, {}, {}, {}};
+array arTehai = {"", "", "", ""};
 array arKawa = {{}, {}, {}, {}};
 array arFuritenCheckRichi = {{}, {}, {}, {}};
 array arFuritenCheckTurn = {{}, {}, {}, {}};
@@ -243,10 +243,10 @@ string endGame()
 string startKyoku()
 {
 	arYama = shuffleArray(getAllHai());
-	arTehai[0] = sortHai(getArrayRange(arYama, 0, 12));
-	arTehai[1] = sortHai(getArrayRange(arYama, 13, 25));
-	arTehai[2] = sortHai(getArrayRange(arYama, 26, 38));
-	arTehai[3] = sortHai(getArrayRange(arYama, 39, 51));
+	arTehai[0] = _arystr(sortHai(getArrayRange(arYama, 0, 12)));
+	arTehai[1] = _arystr(sortHai(getArrayRange(arYama, 13, 25)));
+	arTehai[2] = _arystr(sortHai(getArrayRange(arYama, 26, 38)));
+	arTehai[3] = _arystr(sortHai(getArrayRange(arYama, 39, 51)));
 	arKawa = {{}, {}, {}, {}};
 	arFuritenCheckRichi = {{}, {}, {}, {}};
 	arFuritenCheckTurn = {{}, {}, {}, {}};
@@ -278,7 +278,7 @@ string startKyoku()
 	for (int i = 0; i < 3; i++)
 	{
 		s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-			+ ",haipai," + playerName[i] + "," + _arystr(arTehai[i]) + "]";
+			+ ",haipai," + playerName[i] + "," + arTehai[i] + "]";
 	}
 	//dora通知
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
@@ -316,9 +316,7 @@ string OnSuteSelect(dict ref)
 	//捨て
 	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
 	string sute;
-	array tehai;
-	tehai = arTehai[selectPlayer];
-	tehai += tsumo;
+	string tehai = addHai(arTehai[selectPlayer], tsumo);
 	if (reservedTsumo)
 	{
 		reservedTsumo = 0;
@@ -344,7 +342,7 @@ string OnSuteSelect(dict ref)
 	}
 	else//auto
 	{
-		int shanten = getShanten(sortHai(tehai));//ソートされていないといけない
+		int shanten = getShanten(tehai);
 		if (shanten == -1)
 		{
 			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
@@ -357,7 +355,7 @@ string OnSuteSelect(dict ref)
 		if (richi >= 0)
 			sute = tsumo;
 		else
-			sute = naniwokiru(tehai, arKawa[selectPlayer]);//ソートされていてはいけない
+			sute = naniwokiru(tehai, arKawa[selectPlayer]);
 		if (shanten == 0 && richi == -1 && getLeftYama() >= 4)
 		{
 			//即リー
@@ -368,8 +366,7 @@ string OnSuteSelect(dict ref)
 		}
 	}
 	setSutehai(sute, selectPlayer);
-	tehai = sortHai(removeElement(tehai, getIndex(tehai, sute)));
-	arTehai[selectPlayer] = tehai;
+	arTehai[selectPlayer] = removeHai(tehai, sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで通知を一時停止する
 	if (canRon(3, sute))
@@ -400,14 +397,12 @@ string OnSuteSelect(dict ref)
 int canRon(int nPlayer, string atariHai)
 {
 	//和了かどうか(シャンテン数が-1かどうか)検証する
-	array hai14 = arTehai[nPlayer];
-	hai14 += atariHai;
-	hai14 = sortHai(hai14);
+	string hai14 = addHai(arTehai[nPlayer], atariHai);
 	int shanten = getShanten(hai14);
 	if (shanten != -1)
 		return 0;
 	//フリテンかどうか検証する
-	array arMachi = strHaiToArray(_saorirequest("MahjongUtil", "machi", _arystr(arTehai[nPlayer]))["Result"]);
+	array arMachi = strHaiToArray(_saorirequest("MahjongUtil", "machi", arTehai[nPlayer])["Result"]);
 	int isRichi = 0;
 	if (arRichiJunme[nPlayer] >= 0)
 		isRichi = 1;
@@ -443,7 +438,7 @@ int canRon(int nPlayer, string atariHai)
 	if (_aryvn(arYama) == nYamaIndex)
 		isFinalTileWin = 1;
 	int isOya = 0;
-	dict d = _saorirequest("MahjongUtil", "score", _arystr(arTehai[nPlayer]), atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
+	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
 	int score = d["Result"];
 	if (score <= 0)
 		return 0;
@@ -513,8 +508,7 @@ string OnSuteComplete(dict ref)
 		isRecievedResponse = 1;
 		for (int i = 0; i < 3; i++)
 		{
-			array hai13 = arTehai[i];
-			int shanten = getShanten(hai13);
+			int shanten = getShanten(arTehai[i]);
 			if (shanten == 0)
 			{
 				reservedTenpai[playerName[i]] = "yes";//デフォルトでyes
@@ -610,14 +604,12 @@ setSutehai(string sute, int nPlayer)
 string Menu_Sutehai(dict ref)
 {
 	int selectPlayer = 3;
-	int index = ref["Reference2"];
 	string tsumo = arYama[nYamaIndex - 1];
-	arTehai[selectPlayer] += tsumo;
-	string sute = arTehai[selectPlayer][index];
+	string sute = ref["Reference2"];
 	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
 	//userが捨て
 	setSutehai(sute, selectPlayer);
-	arTehai[selectPlayer] = sortHai(removeElement(arTehai[selectPlayer], index));
+	arTehai[selectPlayer] = removeHai(addHai(arTehai[selectPlayer], tsumo), sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
@@ -644,7 +636,6 @@ string Menu_Sutehai(dict ref)
 string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag)
 {
 	string s;
-	array uramen = getUramen();
 	array wanpai = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
 	array seki = {"東", "南", "西", "北"};
 	dict dSeki;
@@ -675,21 +666,17 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		s += "\f[height,+16]";
 		if (openTehai || (p == agariPlayer) || arTenpaiPlayerFlag[p])
 		{
-			for (int i = 0; arTehai[p][i] != nil; i++)
-			{
-				s += convertUnicode(arTehai[p][i]);
-			}
+			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
-				s += " " + convertUnicode(tsumo);
+				tsumoShowing = tsumo;
+			s += showHai(arTehai[p], tsumoShowing, p);
 		}
 		else
 		{
-			for (int i = 0; uramen[i] != nil; i++)
-			{
-				s += convertUnicode(uramen[i]);
-			}
+			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
-				s += " " + convertUnicode(uramen[0]);
+				tsumoShowing = "tb";
+			s += showHai("tbtbtbtbtbtbtbtbtbtbtbtbtb", tsumoShowing, p);
 		}
 		s += "\n";
 		for (int i = 0; arKawa[p][i] != nil; i++)
@@ -711,52 +698,11 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			s += convertUnicode(arKawa[3][i]);
 	}
 	s += "\n";
-	for (int i = 0; arTehai[3][i] != nil; i++)
-	{
-		if (nPlayer == 3 && tsumo != "")
-		{
-			if (arRichiJunme[3] == -1)
-			{
-				s += "\__q[Menu_Sutehai," + i + "]" + convertUnicode(arTehai[3][i]) + "\__q";
-			}
-			else if (arRichiJunme[3] == _aryvn(arKawa[3]))
-			{
-				array hai13 = arTehai[3];
-				hai13 += tsumo;
-				hai13 = removeElement(hai13, i);
-				hai13 = sortHai(hai13);
-				int shanten = getShanten(hai13);
-				if (shanten == 0)
-					s += "\__q[Menu_Sutehai," + i + "]" + convertUnicode(arTehai[3][i]) + "\__q";
-				else
-					s += "\f[color,gray]" + convertUnicode(arTehai[3][i]) + "\f[color,default]";
-			}
-			else
-			{
-				s += convertUnicode(arTehai[3][i]);
-			}
-		}
-		else
-		{
-			s += convertUnicode(arTehai[3][i]);
-		}
-	}
-	if (nPlayer == 3 && tsumo != "")
-	{
-		s += " ";
-		if (arRichiJunme[3] == _aryvn(arKawa[3]))
-		{
-			int shanten = getShanten(arTehai[3]);
-			if (shanten == 0)
-				s += "\__q[Menu_Sutehai,13]" + convertUnicode(tsumo) + "\__q";
-			else
-				s += "\f[color,gray]" + convertUnicode(tsumo) + "\f[color,default]";
-		}
-		else
-		{
-			s += "\__q[Menu_Sutehai,13]" + convertUnicode(tsumo) + "\__q";
-		}
-	}
+	string tsumoShowing = "";
+	int pUser = 3;
+	if (nPlayer == pUser)
+		tsumoShowing = tsumo;
+	s += showHai(arTehai[pUser], tsumoShowing, pUser);
 	s += "\f[height,default]";
 	int n = getLeftYama();
 	if (n > 0 || tsumo != "")
@@ -764,20 +710,17 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	else
 		s += "\n[half]\_l[225,]流局";
 	s += "\n\n";
-	if (nPlayer == 3 && tsumo != "")
+	if (nPlayer == pUser && tsumo != "")
 	{
-		array hai14 = arTehai[3];
-		hai14 += tsumo;
-		hai14 = sortHai(hai14);
-		int shanten = getShanten(hai14);
+		int shanten = getShanten(addHai(arTehai[pUser], tsumo));
 		if (shanten == -1)
 			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
-		else if (shanten == 0 && arRichiJunme[3] == -1 && getLeftYama() >= 4)
+		else if (shanten == 0 && arRichiJunme[pUser] == -1 && getLeftYama() >= 4)
 			s += "\![*]\__q[Menu_Richi]リーチ\__q";
 	}
-	if (nPlayer != 3 && sute != "" && agariPlayer == -1)
+	if (nPlayer != pUser && sute != "" && agariPlayer == -1)
 	{
-		if (canRon(3, sute))
+		if (canRon(pUser, sute))
 			s += "\![*]\__q[Menu_Ron,3," + nPlayer + "," + sute + "]ロン\__q";
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
@@ -803,7 +746,7 @@ string Menu_CANCEL(dict ref)
 clearStatus()
 {
 	arYama = {};
-	arTehai = {{}, {}, {}, {}};
+	arTehai = {"", "", "", ""};
 	arKawa = {{}, {}, {}, {}};
 	arFuritenCheckRichi = {{}, {}, {}, {}};
 	arFuritenCheckTurn = {{}, {}, {}, {}};
@@ -838,6 +781,120 @@ array getAllHai()
 	return a;
 }
 
+string showHai(string strHai, string tsumoShowing, int nPlayer)
+{
+	string s;
+	array arHai = strHaiToArray(strHai);
+	if (nPlayer != 3)
+	{
+		for (int i = 0; arHai[i] != nil; i++)
+		{
+			s += convertUnicode(arHai[i]);
+		}
+		if (tsumoShowing != "")
+			s += " " + convertUnicode(tsumoShowing);
+	}
+	else
+	{
+		for (int i = 0; arHai[i] != nil; i++)
+		{
+			if (tsumoShowing != "")
+			{
+				if (arRichiJunme[3] == -1)
+				{
+					s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+				}
+				else if (arRichiJunme[3] == _aryvn(arKawa[3]))
+				{
+					int shanten = getShanten(removeHai(addHai(arTehai[3], tsumoShowing), arHai[i]));
+					if (shanten == 0)
+						s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+					else
+						s += "\f[color,gray]" + convertUnicode(arHai[i]) + "\f[color,default]";
+				}
+				else
+				{
+					s += convertUnicode(arHai[i]);
+				}
+			}
+			else
+			{
+				s += convertUnicode(arHai[i]);
+			}
+		}
+		if (tsumoShowing != "")
+		{
+			s += " ";
+			if (arRichiJunme[3] == _aryvn(arKawa[3]))
+			{
+				int shanten = getShanten(arTehai[3]);
+				if (shanten == 0)
+					s += "\__q[Menu_Sutehai," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
+				else
+					s += "\f[color,gray]" + convertUnicode(tsumoShowing) + "\f[color,default]";
+			}
+			else
+			{
+				s += "\__q[Menu_Sutehai," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
+			}
+		}
+	}
+	return s;
+}
+
+string addHai(string strHai1, string strHai2)
+{
+	array arHai1 = strHaiToArray(strHai1);
+	array arHai2 = strHaiToArray(strHai2);
+	array arRet = arHai1;
+	for (int i = 0; arHai2[i] != nil; i++)
+	{
+		arRet += arHai2[i];
+	}
+	arRet = sortHai(arRet);
+	return _arystr(arRet);
+}
+
+string removeHai(string strHai1, string strHai2)
+{
+	array arHai1 = strHaiToArray(strHai1);
+	array arHai2 = strHaiToArray(strHai2);
+	array arRet = arHai1;
+	for (int i = 0; arHai2[i] != nil; i++)
+	{
+		arRet = removeElementByName(arRet, arHai2[i], 1);
+	}
+	return _arystr(arRet);
+}
+
+array removeElementByName(array ary, string name, int count)
+{
+	array arRet;
+	int n = 0;
+	for (int i = 0; ary[i] != nil; i++)
+	{
+		if (ary[i] == name && n < count)
+		{
+			n++;
+		}
+		else
+		{
+			arRet += ary[i];
+		}
+	}
+	return arRet;
+}
+
+array strHaiToArray(string strHai)
+{
+	array arRet;
+	for (int i = 0; i < _strlen(strHai); i += 2)
+	{
+		arRet += _substr(strHai, i, 2);
+	}
+	return arRet;
+}
+
 array shuffleArray(array a)
 {
 	array arRet;
@@ -856,28 +913,6 @@ array shuffleArray(array a)
 		a = an;
 	}
 	return arRet;
-}
-
-array removeElement(array a, int index)
-{
-	array arRet;
-	int n = _aryvn(a);
-	for (int i = 0; i < n; i++)
-	{
-		if (i != index)
-			arRet += a[i];
-	}
-	return arRet;
-}
-
-int getIndex(array a, string s)
-{
-	for (int i = 0; a[i] != nil; i++)
-	{
-		if (a[i] == s)
-			return i;
-	}
-	return -1;
 }
 
 array getArrayRange(array a, int start, int end)
@@ -983,10 +1018,4 @@ int getSortCode(string hai)
 	int index = _strstr(s, hai);
 	int r = index / 2;
 	return r;
-}
-
-array getUramen()
-{
-	array a = {"tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb", "tb"};
-	return a;
 }

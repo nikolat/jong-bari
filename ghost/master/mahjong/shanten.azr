@@ -1,13 +1,13 @@
 //haiはソートされてる前提
-int getShanten(array hai)
+int getShanten(string hai)
 {
-	int shanten = _saorirequest("MahjongUtil", "shanten", _arystr(hai))["Result"];
+	int shanten = _saorirequest("MahjongUtil", "shanten", hai)["Result"];
 	return shanten;
 }
 
-array getShantenWithMentsu(array hai)
+array getShantenWithMentsu(string hai)
 {
-	dict d = _saorirequest("MahjongUtil", "shanten", _arystr(hai));
+	dict d = _saorirequest("MahjongUtil", "shanten", hai);
 	int shanten = d["Result"];
 	array arPattern;
 	for (int i = 0; d["Value" + i] != nil; i++)
@@ -17,9 +17,9 @@ array getShantenWithMentsu(array hai)
 	return {shanten, arPattern};
 }
 
-array getShantenNormalWithMentsu(array hai)
+array getShantenNormalWithMentsu(string hai)
 {
-	dict d = _saorirequest("MahjongUtil", "shanten_normal", _arystr(hai));
+	dict d = _saorirequest("MahjongUtil", "shanten_normal", hai);
 	int shanten = d["Result"];
 	array arPattern;
 	for (int i = 0; d["Value" + i] != nil; i++)

@@ -3,7 +3,7 @@ string Menu_Ron(dict ref)
 {
 	int nAgariPlayer = ref["Reference2"];
 	int nFurikomiPlayer = ref["Reference3"];
-	array hai13 = arTehai[nAgariPlayer];
+	string hai13 = arTehai[nAgariPlayer];
 	string sute = ref["Reference4"];
 	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
 }
@@ -13,7 +13,7 @@ string Menu_Tsumo(dict ref)
 {
 	int nAgariPlayer = ref["Reference2"];
 	int nFurikomiPlayer = -1;
-	array hai13 = arTehai[nAgariPlayer];
+	string hai13 = arTehai[nAgariPlayer];
 	string tsumo = arYama[nYamaIndex - 1];
 	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
 }
@@ -26,7 +26,7 @@ string OnRyukyokuScore(dict ref)
 }
 
 //点数画面表示
-string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, string atariHai, array arTenpaiPlayerFlag)
+string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, string atariHai, array arTenpaiPlayerFlag)
 {
 	string s;
 	s += "\![set,balloontimeout,0]\![set,choicetimeout,0]\0\s[0]\b[2]\_q";
@@ -81,7 +81,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 		int isOya = 0;
 		if (nAgariPlayer == oyaIndex)
 			isOya = 1;
-		dict d = _saorirequest("MahjongUtil", "score", _arystr(hai13), atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
+		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
 		score = d["Result"];
 		int isYakuman = 0;
 		if (score >= 32000 && !isOya || score >= 48000 && isOya)
@@ -142,9 +142,10 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, array hai13, strin
 	s += "\n";
 	//牌表示
 	s += "\f[height,+16]";
-	for (int i = 0; hai13[i] != nil; i++)
+	array arHai13 = strHaiToArray(hai13);
+	for (int i = 0; arHai13[i] != nil; i++)
 	{
-		s += convertUnicode(hai13[i]);
+		s += convertUnicode(arHai13[i]);
 	}
 	s += " " + convertUnicode(atariHai);
 	s += "\n\f[height,default]\n";
@@ -377,42 +378,4 @@ string getDoraFromDorahyouji(string hai)
 		$("7z", "5z")
 	};
 	return d[hai];
-}
-
-array strHaiToArray(string strHai)
-{
-	array arRet;
-	for (int i = 0; i < _strlen(strHai); i += 2)
-	{
-		arRet += _substr(strHai, i, 2);
-	}
-	return arRet;
-}
-
-array convertNumArray(array hai)
-{
-	array arNum;
-	for (int i = 0; hai[i] != nil; i++)
-	{
-		arNum += (int)_substr(hai[i], 0, 1);
-	}
-	return arNum;
-}
-
-array removeElementByName(array ary, string name, int count)
-{
-	array arRet;
-	int n = 0;
-	for (int i = 0; ary[i] != nil; i++)
-	{
-		if (ary[i] == name && n < count)
-		{
-			n++;
-		}
-		else
-		{
-			arRet += ary[i];
-		}
-	}
-	return arRet;
 }
