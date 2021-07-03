@@ -688,12 +688,17 @@ string Menu_Sutehai(dict ref)
 	isRecievedResponse = 1;
 	for (int i = 0; playerName[i] != nil; i++)
 	{
-		if (playerName[i] != playerName[selectPlayer])
+		if (i != selectPlayer)
 		{
+			array command = {};
 			if (canRon(i, sute))
+				command += "ron";
+			if (canPon(i, sute))
+				command += "pon";
+			if (_aryvn(command) > 0)
 			{
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",naku?," + sute + ",ron]";
+					+ ",naku?," + sute + "," + JOIN(command, ",") + "]";
 				dResponseNeed[playerName[i]] = 1;
 				isRecievedResponse = 0;
 			}
