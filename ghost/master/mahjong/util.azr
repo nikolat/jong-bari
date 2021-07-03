@@ -15,6 +15,8 @@ array arFuritenCheckRichi = {{}, {}, {}, {}};
 array arFuritenCheckTurn = {{}, {}, {}, {}};
 array arScore = {25000, 25000, 25000, 25000};
 array arRichiJunme = {-1, -1, -1, -1};
+array arFuroJunme = {{}, {}, {}, {}};
+array arFuroHistory = {{}, {}, {}, {}};
 string dorahyouji;
 string uradorahyouji;
 int nYamaIndex;
@@ -251,6 +253,8 @@ string startKyoku()
 	arFuritenCheckRichi = {{}, {}, {}, {}};
 	arFuritenCheckTurn = {{}, {}, {}, {}};
 	arRichiJunme = {-1, -1, -1, -1};
+	arFuroJunme = {{}, {}, {}, {}};
+	arFuroHistory = {{}, {}, {}, {}};
 	dorahyouji = arYama[52];
 	uradorahyouji = arYama[53];
 	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
@@ -369,7 +373,7 @@ string OnSuteSelect(dict ref)
 	arTehai[selectPlayer] = removeHai(tehai, sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで通知を一時停止する
-	if (canRon(3, sute))
+	if (canRon(3, sute) || canPon(3, sute))
 		s += "\x";
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
@@ -392,6 +396,15 @@ string OnSuteSelect(dict ref)
 
 	s += "\_q\e";
 	return s;
+}
+
+int canPon(int nPlayer, string suteHai)
+{
+	if (arRichiJunme[nPlayer] >= 0)
+		return 0;
+	if (_aryvn(ASEARCHEX(suteHai, strHaiToArray(arTehai[nPlayer]))) >= 2)
+		return 1;
+	return 0;
 }
 
 int canRon(int nPlayer, string atariHai)
@@ -604,8 +617,8 @@ setSutehai(string sute, int nPlayer)
 string Menu_Sutehai(dict ref)
 {
 	int selectPlayer = 3;
-	string tsumo = arYama[nYamaIndex - 1];
 	string sute = ref["Reference2"];
+	string tsumo = ref["Reference3"];
 	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
 	//userが捨て
 	setSutehai(sute, selectPlayer);
@@ -633,7 +646,7 @@ string Menu_Sutehai(dict ref)
 	return s;
 }
 
-string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag)
+string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro)
 {
 	string s;
 	array wanpai = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
@@ -683,48 +696,71 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		{
 			if (i == arRichiJunme[p])
 				s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+			else if (ASEARCH(i, arFuroJunme[p]) >= 0)
+				s += "\f[color,gray]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
 			else
 				s += convertUnicode(arKawa[p][i]);
 		}
 	}
 	//3
-	s += "\_l[0,240]\f[height,default]" + dSeki[playerName[3]] + "家<<" + playerName[3] + ">>\n";
+	int pUser = 3;
+	s += "\_l[0,240]\f[height,default]" + dSeki[playerName[pUser]] + "家<<" + playerName[pUser] + ">>\n";
 	s += "\f[height,+16]";
-	for (int i = 0; arKawa[3][i] != nil; i++)
+	for (int i = 0; arKawa[pUser][i] != nil; i++)
 	{
-		if (i == arRichiJunme[3])
-			s += "\f[color,red]" + convertUnicode(arKawa[3][i]) + "\f[color,default]";
+		if (i == arRichiJunme[pUser])
+			s += "\f[color,red]" + convertUnicode(arKawa[pUser][i]) + "\f[color,default]";
+		else if (ASEARCH(i, arFuroJunme[pUser]) >= 0)
+			s += "\f[color,gray]" + convertUnicode(arKawa[pUser][i]) + "\f[color,default]";
 		else
-			s += convertUnicode(arKawa[3][i]);
+			s += convertUnicode(arKawa[pUser][i]);
 	}
 	s += "\n";
 	string tsumoShowing = "";
-	int pUser = 3;
 	if (nPlayer == pUser)
 		tsumoShowing = tsumo;
-	s += showHai(arTehai[pUser], tsumoShowing, pUser);
+	s += showHai(arTehai[pUser], tsumoShowing, pUser, isFuro);
 	s += "\f[height,default]";
 	int n = getLeftYama();
 	if (n > 0 || tsumo != "")
-		s += "\n[half]\_l[225,]残り: " + n + "枚";
+		s += "\n\n\_l[225,]残り: " + n + "枚";
 	else
-		s += "\n[half]\_l[225,]流局";
-	s += "\n\n";
+		s += "\n\n\_l[225,]流局";
+	s += "\_l[0,]";
 	if (nPlayer == pUser && tsumo != "")
 	{
 		int shanten = getShanten(addHai(arTehai[pUser], tsumo));
 		if (shanten == -1)
 			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
-		else if (shanten == 0 && arRichiJunme[pUser] == -1 && getLeftYama() >= 4)
+		else if (shanten == 0 && arRichiJunme[pUser] == -1 && isMenzenPlayer(pUser) && getLeftYama() >= 4)
 			s += "\![*]\__q[Menu_Richi]リーチ\__q";
 	}
 	if (nPlayer != pUser && sute != "" && agariPlayer == -1)
 	{
 		if (canRon(pUser, sute))
 			s += "\![*]\__q[Menu_Ron,3," + nPlayer + "," + sute + "]ロン\__q";
+		if (canPon(pUser, sute))
+			s += "\![*]\__q[Menu_Pon,3," + nPlayer + "," + sute + "]ポン\__q";
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
 	return s;
+}
+
+int isMenzenPlayer(int nPlayer)
+{
+	string tehai = arTehai[nPlayer];
+	for (int i = 0; i < _strlen(tehai); i++)
+	{
+		if (_substr(tehai, i, 1) == "<")
+		{
+			return 0;
+		}
+		else
+		{
+			i++;
+		}
+	}
+	return 1;
 }
 
 string Menu_Richi(dict ref)
@@ -735,6 +771,43 @@ string Menu_Richi(dict ref)
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",say,user,richi]";
 	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}) + "\_q\e";
+	return s;
+}
+
+string Menu_Pon(dict ref)
+{
+	int nFuroPlayer = ref["Reference2"];
+	int nSutePlayer = ref["Reference3"];
+	string sute = ref["Reference4"];
+	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], sute + sute);
+	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], sute + sute + sute);
+	arFuroJunme[nSutePlayer] += _aryvn(arKawa[nSutePlayer]) - 1;
+	arFuroHistory[nFuroPlayer] += {sute, nSutePlayer};
+	string s;
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",say,user,pon]";
+	s += "\0\s[0]\b[2]\_q" + showStatus("", "", 3, -1, {0, 0, 0}, 1) + "\_q\e";
+	return s;
+}
+
+string addFuro(string tehai, string furo)
+{
+	string s;
+	string sFuro;
+	for (int i = 0; i < _strlen(tehai); i++)
+	{
+		if (_substr(tehai, i, 1) == "<")
+		{
+			sFuro += _substr(tehai, i, 8);
+			i += 7;
+		}
+		else
+		{
+			s += _substr(tehai, i, 2);
+			i++;
+		}
+	}
+	s = s + "<" + furo + ">" + sFuro;
 	return s;
 }
 
@@ -751,6 +824,8 @@ clearStatus()
 	arFuritenCheckRichi = {{}, {}, {}, {}};
 	arFuritenCheckTurn = {{}, {}, {}, {}};
 	arRichiJunme = {-1, -1, -1, -1};
+	arFuroJunme = {{}, {}, {}, {}};
+	arFuroHistory = {{}, {}, {}, {}};
 	dorahyouji = "";
 	uradorahyouji = "";
 	nYamaIndex = 0;
@@ -781,28 +856,35 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int nPlayer)
+string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro)
 {
 	string s;
 	array arHai = strHaiToArray(strHai);
 	if (nPlayer != 3)
 	{
 		string sFuro;
+		int nFuro;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (_strlen(arHai[i]) == 2)
+			{
 				s += convertUnicode(arHai[i]);
+			}
 			else
-				sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
+			{
+				sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
+				nFuro++;
+			}
 		}
 		if (tsumoShowing != "")
 			s += " " + convertUnicode(tsumoShowing);
 		if (sFuro != "")
-			s += "\_l[180,]" + sFuro;
+			s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
 	}
 	else
 	{
 		string sFuro;
+		int nFuro;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (tsumoShowing != "")
@@ -811,13 +893,13 @@ string showHai(string strHai, string tsumoShowing, int nPlayer)
 				{
 					if (arRichiJunme[3] == -1)
 					{
-						s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+						s += "\__q[Menu_Sutehai," + arHai[i] + "," + tsumoShowing + "]" + convertUnicode(arHai[i]) + "\__q";
 					}
 					else if (arRichiJunme[3] == _aryvn(arKawa[3]))
 					{
 						int shanten = getShanten(removeHai(addHai(arTehai[3], tsumoShowing), arHai[i]));
 						if (shanten == 0)
-							s += "\__q[Menu_Sutehai," + arHai[i] + "]" + convertUnicode(arHai[i]) + "\__q";
+							s += "\__q[Menu_Sutehai," + arHai[i] + "," + tsumoShowing + "]" + convertUnicode(arHai[i]) + "\__q";
 						else
 							s += "\f[color,gray]" + convertUnicode(arHai[i]) + "\f[color,default]";
 					}
@@ -828,15 +910,33 @@ string showHai(string strHai, string tsumoShowing, int nPlayer)
 				}
 				else
 				{
-					sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
+					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
+					nFuro++;
+				}
+			}
+			else if (isFuro)
+			{
+				if (_strlen(arHai[i]) == 2)
+				{
+					s += "\__q[Menu_Sutehai," + arHai[i] + ",]" + convertUnicode(arHai[i]) + "\__q";
+				}
+				else
+				{
+					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
+					nFuro++;
 				}
 			}
 			else
 			{
 				if (_strlen(arHai[i]) == 2)
+				{
 					s += convertUnicode(arHai[i]);
+				}
 				else
-					sFuro += convertUnicode(_substr(arHai[i], 0, 2)) + convertUnicode(_substr(arHai[i], 2, 2)) + convertUnicode(_substr(arHai[i], 4, 2));
+				{
+					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
+					nFuro++;
+				}
 			}
 		}
 		if (tsumoShowing != "")
@@ -846,18 +946,39 @@ string showHai(string strHai, string tsumoShowing, int nPlayer)
 			{
 				int shanten = getShanten(arTehai[3]);
 				if (shanten == 0)
-					s += "\__q[Menu_Sutehai," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
+					s += "\__q[Menu_Sutehai," + tsumoShowing + "," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
 				else
 					s += "\f[color,gray]" + convertUnicode(tsumoShowing) + "\f[color,default]";
 			}
 			else
 			{
-				s += "\__q[Menu_Sutehai," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
+				s += "\__q[Menu_Sutehai," + tsumoShowing + "," + tsumoShowing + "]" + convertUnicode(tsumoShowing) + "\__q";
 			}
 		}
 		if (sFuro != "")
-			s += "\_l[180,]" + sFuro;
+			s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
 	}
+	return s;
+}
+
+string showFuroWithColor(string strFuro, int nPlayer, int nFuroIndex)
+{
+	nFuroIndex = (_aryvn(arFuroHistory[nPlayer]) - 1) - nFuroIndex;
+	string strFuroHai = arFuroHistory[nPlayer][nFuroIndex][0];
+	int nSutePlayer = arFuroHistory[nPlayer][nFuroIndex][1];
+	string s;
+	if ((4 + nPlayer - nSutePlayer) % 4 == 1)
+		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 0, 2)) + "\f[color,default]";
+	else
+		s += convertUnicode(_substr(strFuro, 0, 2));
+	if ((4 + nPlayer - nSutePlayer) % 4 == 2)
+		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 2, 2)) + "\f[color,default]";
+	else
+		s += convertUnicode(_substr(strFuro, 2, 2));
+	if ((4 + nPlayer - nSutePlayer) % 4 == 3)
+		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 4, 2)) + "\f[color,default]";
+	else
+		s += convertUnicode(_substr(strFuro, 4, 2));
 	return s;
 }
 

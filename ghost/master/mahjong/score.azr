@@ -142,12 +142,24 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	s += "\n";
 	//牌表示
 	s += "\f[height,+16]";
-	array arHai13 = strHaiToArray(hai13);
-	for (int i = 0; arHai13[i] != nil; i++)
+	array arHai = strHaiToArray(hai13);
+	string sFuro;
+	int nFuro;
+	for (int i = 0; arHai[i] != nil; i++)
 	{
-		s += convertUnicode(arHai13[i]);
+		if (_strlen(arHai[i]) == 2)
+		{
+			s += convertUnicode(arHai[i]);
+		}
+		else
+		{
+			sFuro += showFuroWithColor(arHai[i], nAgariPlayer, nFuro);
+			nFuro++;
+		}
 	}
 	s += " " + convertUnicode(atariHai);
+	if (sFuro != "")
+		s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
 	s += "\n\f[height,default]\n";
 	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
 	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
