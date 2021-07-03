@@ -741,14 +741,14 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
 				tsumoShowing = tsumo;
-			s += showHai(arTehai[p], tsumoShowing, p);
+			s += showHai(arTehai[p], tsumoShowing, p, 0, 1);
 		}
 		else
 		{
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
-				tsumoShowing = "tb";
-			s += showHai("tbtbtbtbtbtbtbtbtbtbtbtbtb", tsumoShowing, p);
+				tsumoShowing = tsumo;
+			s += showHai(arTehai[p], tsumoShowing, p, 0, 0);
 		}
 		s += "\n";
 		for (int i = 0; arKawa[p][i] != nil; i++)
@@ -778,7 +778,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	string tsumoShowing = "";
 	if (nPlayer == pUser)
 		tsumoShowing = tsumo;
-	s += showHai(arTehai[pUser], tsumoShowing, pUser, isFuro);
+	s += showHai(arTehai[pUser], tsumoShowing, pUser, isFuro, 1);
 	s += "\f[height,default]";
 	int n = getLeftYama();
 	if (n > 0 || tsumo != "")
@@ -920,7 +920,7 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro)
+string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int isOpen)
 {
 	string s;
 	array arHai = strHaiToArray(strHai);
@@ -932,7 +932,10 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro)
 		{
 			if (_strlen(arHai[i]) == 2)
 			{
-				s += convertUnicode(arHai[i]);
+				if (isOpen)
+					s += convertUnicode(arHai[i]);
+				else
+					s += convertUnicode("tb");
 			}
 			else
 			{
@@ -941,7 +944,13 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro)
 			}
 		}
 		if (tsumoShowing != "")
-			s += " " + convertUnicode(tsumoShowing);
+		{
+			s += " ";
+			if (isOpen)
+				s += convertUnicode(tsumoShowing);
+			else
+				s += convertUnicode("tb");
+		}
 		if (sFuro != "")
 			s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
 	}
