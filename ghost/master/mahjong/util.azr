@@ -415,6 +415,19 @@ int canPon(int nPlayer, string suteHai)
 	return 0;
 }
 
+int shouldPon(int nPlayer, string suteHai)
+{
+	if (!canPon(nPlayer, suteHai))
+		return 0;
+	string hai13 = arTehai[nPlayer];
+	string hai14 = addHai(hai13, suteHai);
+	int shantenBefore = getShanten(hai13);
+	int shantenAfter = getShanten(hai14);
+	if (shantenAfter < shantenBefore)
+		return 1;
+	return 0;
+}
+
 int canChi(int nPlayer, string suteHai)
 {
 	if (arRichiJunme[nPlayer] >= 0)
@@ -425,6 +438,19 @@ int canChi(int nPlayer, string suteHai)
 	if (_aryvn(a) > 0)
 		return 1;
 	return 0;	
+}
+
+int shouldChi(int nPlayer, string suteHai)
+{
+	if (!canChi(nPlayer, suteHai))
+		return 0;
+	string hai13 = arTehai[nPlayer];
+	string hai14 = addHai(hai13, suteHai);
+	int shantenBefore = getShanten(hai13);
+	int shantenAfter = getShanten(hai14);
+	if (shantenAfter < shantenBefore)
+		return 1;
+	return 0;
 }
 
 array getChiMaterial(string strTehai, string suteHai)
@@ -442,11 +468,11 @@ array getChiMaterial(string strTehai, string suteHai)
 	}
 	array arRet;
 	if (ASEARCH(n - 2, a) >= 0 && ASEARCH(n - 1, a) >= 0)
-		arRet += {"" + (n - 2) + color, "" + (n - 1) + color};
+		arRet += "" + (n - 2) + color + (n - 1) + color;
 	if (ASEARCH(n - 1, a) >= 0 && ASEARCH(n + 1, a) >= 0)
-		arRet += {"" + (n - 1) + color, "" + (n + 1) + color};
+		arRet += "" + (n - 1) + color + (n + 1) + color;
 	if (ASEARCH(n + 1, a) >= 0 && ASEARCH(n + 2, a) >= 0)
-		arRet += {"" + (n + 1) + color, "" + (n + 2) + color};
+		arRet += "" + (n + 1) + color + (n + 2) + color;
 	return arRet;
 }
 
@@ -603,7 +629,7 @@ string OnSuteComplete(dict ref)
 					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
 					return s;
 				}
-				if (canPon(i, sute))//とりあえず常にポンする
+				if (shouldPon(i, sute))
 				{
 					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
 					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
@@ -616,7 +642,7 @@ string OnSuteComplete(dict ref)
 					_create_thread("TH_WaitResponse");
 					return s;
 				}
-				if (completePlayer + 1 == i && canChi(i, sute))//とりあえず常にチーする
+				if (completePlayer + 1 == i && shouldChi(i, sute))
 				{
 					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
 					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
@@ -625,8 +651,24 @@ string OnSuteComplete(dict ref)
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
 					array arMaterial = getChiMaterial(arTehai[i], sute);
-					int index = _rand() * _aryvn(arMaterial) / 10000;
-					array arMaterialSelected = arMaterial[index];
+					int shantenMin = 99;
+					array indexMin = -1;
+					for (int j = 0; arMaterial[j] != nil; j++)
+					{
+						string haiRemoved = removeHai(arTehai[i], arMaterial[j]);
+						int shantenTmp = getShanten(haiRemoved);
+						if (shantenTmp < shantenMin)
+						{
+							shantenMin = shantenTmp;
+							indexMin = {j};
+						}
+						else if (shantenTmp == shantenMin)
+						{
+							indexMin += j;
+						}
+					}
+					int index = _randselect(indexMin);
+					array arMaterialSelected = strHaiToArray(arMaterial[index]);
 					string hai1 = arMaterialSelected[0];
 					string hai2 = arMaterialSelected[1];
 					setFuro(i, completePlayer, sute, hai1, hai2);
@@ -881,20 +923,17 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			array arMaterial = getChiMaterial(arTehai[pUser], sute);
 			if (_aryvn(arMaterial) == 1)
 			{
-				array arMaterialSelected = arMaterial[0];
-				string hai1 = arMaterialSelected[0];
-				string hai2 = arMaterialSelected[1];
-				s += "\![*]\__q[Menu_Chi,3," + nPlayer + "," + sute + "," + hai1 + "," + hai2 + "]チー\__q";
+				s += "\![*]\__q[Menu_Chi,3," + nPlayer + "," + sute + "," + arMaterial[0] + "]チー\__q";
 			}
 			else
 			{
 				s += "\![*]チー";
 				for (int i = 0; arMaterial[i] != nil; i++)
 				{
-					array arMaterialSelected = arMaterial[i];
+					array arMaterialSelected = strHaiToArray(arMaterial[i]);
 					string hai1 = arMaterialSelected[0];
 					string hai2 = arMaterialSelected[1];
-					s += " \__q[Menu_Chi,3," + nPlayer + "," + sute + "," + hai1 + "," + hai2 + "]\f[height,+16]" + convertUnicode(hai1) + convertUnicode(hai2) + "\f[height,default]\__q";
+					s += " \__q[Menu_Chi,3," + nPlayer + "," + sute + "," + arMaterial[i] + "]\f[height,+16]" + convertUnicode(hai1) + convertUnicode(hai2) + "\f[height,default]\__q";
 				}
 			}
 		}
@@ -949,9 +988,9 @@ string Menu_Chi(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
-	string hai1 = ref["Reference5"];
-	string hai2 = ref["Reference6"];
-	setFuro(nFuroPlayer, nSutePlayer, sute, hai1, hai2);
+	string hai = ref["Reference5"];
+	array arHai = strHaiToArray(hai);
+	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0], arHai[1]);
 	string s;
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",chi]";
