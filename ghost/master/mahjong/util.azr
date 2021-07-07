@@ -354,13 +354,7 @@ string OnSuteSelect(dict ref)
 			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
 			return s;
 		}
-		int richi = arRichiJunme[selectPlayer];
-		if (richi >= 0)
-			sute = tsumo;
-		else
-			sute = naniwokiru(tehai, arKawa[selectPlayer]);
-		int shanten = getShanten(tehai);
-		if (shanten == 0 && richi == -1 && isMenzenPlayer(selectPlayer) && getLeftYama() >= 4)
+		if (canRichi(selectPlayer, tsumo))
 		{
 			//即リー
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
@@ -368,6 +362,10 @@ string OnSuteSelect(dict ref)
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
 		}
+		if (arRichiJunme[selectPlayer] >= 0)
+			sute = tsumo;
+		else
+			sute = naniwokiru(tehai, arKawa[selectPlayer]);
 	}
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
@@ -479,11 +477,6 @@ array getChiMaterial(string strTehai, string suteHai)
 	return arRet;
 }
 
-int shouldDaiminkan(int nPlayer, string suteHai)
-{
-	return canDaiminkan(nPlayer, suteHai) * (int)_randselect(0, 1);
-}
-
 int canDaiminkan(int nPlayer, string suteHai)
 {
 	if (arRichiJunme[nPlayer] >= 0)
@@ -493,6 +486,11 @@ int canDaiminkan(int nPlayer, string suteHai)
 	if (_aryvn(ASEARCHEX(suteHai, strHaiToArray(arTehai[nPlayer]))) >= 3)
 		return 1;
 	return 0;
+}
+
+int shouldDaiminkan(int nPlayer, string suteHai)
+{
+	return canDaiminkan(nPlayer, suteHai) * (int)_randselect(0, 1);
 }
 
 int canRon(int nPlayer, string atariHai)
@@ -571,6 +569,43 @@ int canTsumo(int nPlayer, string atariHai)
 	if (score <= 0)
 		return 0;
 	return 1;
+}
+
+int canRichi(int nPlayer, string tsumoHai)
+{
+	int shanten = getShanten(addHai(arTehai[nPlayer], tsumoHai));
+	if (shanten <= 0 && arRichiJunme[nPlayer] == -1 && isMenzenPlayer(nPlayer) && getLeftYama() >= 4)
+		return 1;
+	return 0;
+}
+
+int canKakan(int nPlayer, string tsumoHai)
+{
+	array arKakanHai = getKakanHai(addHai(arTehai[nPlayer], tsumoHai));
+	if (_aryvn(arKakanHai) > 0)
+		return 1;
+	return 0;
+}
+
+array getKakanHai(string hai)
+{
+	array arHai = strHaiToArray(hai);
+	array arHaiWithoutFuro;
+	array arMinko;
+	array arRet;
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (_strlen(arHai[i]) == 2)
+			arHaiWithoutFuro += arHai[i];
+		else if (_strlen(arHai[i]) == 6 && _substr(arHai[i], 0, 2) == _substr(arHai[i], 2, 2))
+			arMinko += _substr(arHai[i], 0, 2);
+	}
+	for (int i = 0; arMinko[i] != nil; i++)
+	{
+		if (ASEARCH(arMinko[i], arHaiWithoutFuro) >= 0)
+			arRet += arMinko[i];
+	}
+	return arRet;
 }
 
 string OnNotifyPrepareSuteComplete(dict ref)
@@ -999,11 +1034,26 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	s += "\_l[0,]";
 	if (nPlayer == pUser && tsumo != "")
 	{
-		int shanten = getShanten(addHai(arTehai[pUser], tsumo));
-		if (shanten == -1)
+		if (canTsumo(pUser, tsumo))
 			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
-		else if (shanten == 0 && arRichiJunme[pUser] == -1 && isMenzenPlayer(pUser) && getLeftYama() >= 4)
+		if (canRichi(pUser, tsumo))
 			s += "\![*]\__q[Menu_Richi]リーチ\__q";
+		if (canKakan(pUser, tsumo))
+		{
+			array arKakanHai = getKakanHai(addHai(arTehai[pUser], tsumo));
+			if (_aryvn(arKakanHai) == 1)
+			{
+				s += "\![*]\__q[Menu_Kakan," + arKakanHai[0] + "]カン\__q";
+			}
+			else
+			{
+				s += "\![*]カン";
+				for (int i = 0; arKakanHai[i] != nil; i++)
+				{
+					s += " \__q[Menu_Kakan," + arKakanHai[i] + "]\f[height,+16]" + convertUnicode(arKakanHai[i]) + "\f[height,default]\__q";
+				}
+			}
+		}
 	}
 	if (nPlayer != pUser && sute != "" && agariPlayer == -1)
 	{
@@ -1065,6 +1115,24 @@ string Menu_Richi(dict ref)
 	return s;
 }
 
+string Menu_Kakan(dict ref)
+{
+	string kakanHai = ref["Reference2"];
+	string tsumo = arYama[nYamaIndex - 1];
+	int nFuroPlayer = 3;
+	arTehai[nFuroPlayer] = addHai(arTehai[nFuroPlayer], tsumo);
+	isRinshanChance = 1;
+	setKakan(nFuroPlayer, kakanHai);
+	dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
+	tsumo = arYama[nYamaIndex++];
+	string s;
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",say," + playerName[nFuroPlayer] + ",kan]";
+	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
+	lastScript = s;
+	return s;
+}
+
 string Menu_Pon(dict ref)
 {
 	int nFuroPlayer = ref["Reference2"];
@@ -1116,6 +1184,12 @@ setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
 	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], sute + haiUsed);
 	arFuroJunme[nSutePlayer] += _aryvn(arKawa[nSutePlayer]) - 1;
 	arFuroHistory[nFuroPlayer] += {sute, nSutePlayer};
+}
+
+setKakan(int nFuroPlayer, string kakanHai)
+{
+	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], kakanHai);
+	arTehai[nFuroPlayer] = _strreplace(arTehai[nFuroPlayer], kakanHai + kakanHai + kakanHai, kakanHai + kakanHai + kakanHai + kakanHai);
 }
 
 string addFuro(string tehai, string furo)
