@@ -18,7 +18,6 @@ array arRichiJunme = {-1, -1, -1, -1};
 array arFuroJunme = {{}, {}, {}, {}};
 array arFuroHistory = {{}, {}, {}, {}};
 string dorahyouji;
-string uradorahyouji;
 int nYamaIndex;
 int isGameStarted = 0;
 int bafu = 0;//東:0, 南:1
@@ -28,6 +27,7 @@ int oyaIndex = -1;
 int tsumibou;
 int kyotaku;
 array playerName;
+int isRinshanChance;
 int isSoloMode;
 //バルーン表示保存用
 string lastScript;
@@ -254,8 +254,8 @@ string startKyoku()
 	arRichiJunme = {-1, -1, -1, -1};
 	arFuroJunme = {{}, {}, {}, {}};
 	arFuroHistory = {{}, {}, {}, {}};
+	isRinshanChance = 0;
 	dorahyouji = arYama[52];
-	uradorahyouji = arYama[53];
 	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
 	reservedNaku = ${
 		$(playerName[0], {}),
@@ -478,6 +478,17 @@ array getChiMaterial(string strTehai, string suteHai)
 	return arRet;
 }
 
+int canDaiminkan(int nPlayer, string suteHai)
+{
+	if (arRichiJunme[nPlayer] >= 0)
+		return 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	if (_aryvn(ASEARCHEX(suteHai, strHaiToArray(arTehai[nPlayer]))) >= 3)
+		return 1;
+	return 0;
+}
+
 int canRon(int nPlayer, string atariHai)
 {
 	//和了かどうか(シャンテン数が-1かどうか)検証する
@@ -598,7 +609,7 @@ string OnSuteComplete(dict ref)
 				s += "\_w[2000]";
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
-				setFuro(i, completePlayer, sute, sute, sute);
+				setFuro(i, completePlayer, sute, sute + sute);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
 				return s;
@@ -613,7 +624,7 @@ string OnSuteComplete(dict ref)
 					+ ",sutehai?]";
 				string hai1 = reservedNakuCopy[playerName[i]][1];
 				string hai2 = reservedNakuCopy[playerName[i]][2];
-				setFuro(i, completePlayer, sute, hai1, hai2);
+				setFuro(i, completePlayer, sute, hai1 + hai2);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
 				return s;
@@ -639,7 +650,7 @@ string OnSuteComplete(dict ref)
 					s += "\_w[2000]";
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
-					setFuro(i, completePlayer, sute, sute, sute);
+					setFuro(i, completePlayer, sute, sute + sute);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
 					return s;
@@ -673,7 +684,7 @@ string OnSuteComplete(dict ref)
 					array arMaterialSelected = strHaiToArray(arMaterial[index]);
 					string hai1 = arMaterialSelected[0];
 					string hai2 = arMaterialSelected[1];
-					setFuro(i, completePlayer, sute, hai1, hai2);
+					setFuro(i, completePlayer, sute, hai1 + hai2);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
 					return s;
@@ -793,6 +804,7 @@ string Menu_Sutehai(dict ref)
 	int selectPlayer = 3;
 	string sute = ref["Reference2"];
 	string tsumo = ref["Reference3"];
+	isRinshanChance = 0;
 	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
 	//userが捨て
 	setSutehai(sute, selectPlayer);
@@ -830,7 +842,32 @@ string Menu_Sutehai(dict ref)
 string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro)
 {
 	string s;
-	array wanpai = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
+	array wanpai;
+	array arDorahyouji = strHaiToArray(dorahyouji);
+	int isMinkan = 0;
+	if (isFuro && tsumo != "")
+		isMinkan = 1;
+	for (int i = 0; i < 5; i++)
+	{
+		if (arDorahyouji[4 - i] == nil)
+		{
+			wanpai += "tb";
+		}
+		else
+		{
+			if (isMinkan)
+			{
+				wanpai += "tb";
+				isMinkan = 0;
+			}
+			else
+			{
+				wanpai += arDorahyouji[4 - i];
+			}
+		}
+	}
+	wanpai += "tb";
+	wanpai += "tb";
 	array seki = {"東", "南", "西", "北"};
 	dict dSeki;
 	array pNames;
@@ -941,6 +978,8 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 				}
 			}
 		}
+		if (canDaiminkan(pUser, sute))
+			s += "\![*]\__q[Menu_Daiminkan,3," + nPlayer + "," + sute + "]カン\__q";
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
 	return s;
@@ -970,7 +1009,7 @@ string Menu_Richi(dict ref)
 	string s;
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",say,user,richi]";
-	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}) + "\_q\e";
+	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0) + "\_q\e";
 	return s;
 }
 
@@ -979,7 +1018,7 @@ string Menu_Pon(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
-	setFuro(nFuroPlayer, nSutePlayer, sute, sute, sute);
+	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute);
 	string s;
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",pon]";
@@ -994,7 +1033,7 @@ string Menu_Chi(dict ref)
 	string sute = ref["Reference4"];
 	string hai = ref["Reference5"];
 	array arHai = strHaiToArray(hai);
-	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0], arHai[1]);
+	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0] + arHai[1]);
 	string s;
 	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",chi]";
@@ -1002,15 +1041,32 @@ string Menu_Chi(dict ref)
 	return s;
 }
 
-setFuro(int nFuroPlayer, int nSutePlayer, string sute, string hai1, string hai2)
+string Menu_Daiminkan(dict ref)
 {
-	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], hai1 + hai2);
-	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], {sute, hai1, hai2});
+	int nFuroPlayer = ref["Reference2"];
+	int nSutePlayer = ref["Reference3"];
+	string sute = ref["Reference4"];
+	isRinshanChance = 1;
+	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute + sute);
+	dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
+	string tsumo = arYama[nYamaIndex++];
+	string s;
+	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		+ ",say," + playerName[nFuroPlayer] + ",kan]";
+	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
+	lastScript = s;
+	return s;
+}
+
+setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
+{
+	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], haiUsed);
+	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], sute + haiUsed);
 	arFuroJunme[nSutePlayer] += _aryvn(arKawa[nSutePlayer]) - 1;
 	arFuroHistory[nFuroPlayer] += {sute, nSutePlayer};
 }
 
-string addFuro(string tehai, array furo)
+string addFuro(string tehai, string furo)
 {
 	string s;
 	string sFuro;
@@ -1018,8 +1074,16 @@ string addFuro(string tehai, array furo)
 	{
 		if (_substr(tehai, i, 1) == "<")
 		{
-			sFuro += _substr(tehai, i, 8);
-			i += 7;
+			if (_substr(tehai, i + 7, 1) == ">")
+			{
+				sFuro += _substr(tehai, i, 8);
+				i += 7;
+			}
+			else if (_substr(tehai, i + 9, 1) == ">")
+			{
+				sFuro += _substr(tehai, i, 10);
+				i += 9;
+			}
 		}
 		else
 		{
@@ -1027,7 +1091,7 @@ string addFuro(string tehai, array furo)
 			i++;
 		}
 	}
-	string strFuro = _arystr(sortHai(furo));
+	string strFuro = _arystr(sortHai(strHaiToArray(furo)));
 	s = s + "<" + strFuro + ">" + sFuro;
 	return s;
 }
@@ -1047,8 +1111,8 @@ clearStatus()
 	arRichiJunme = {-1, -1, -1, -1};
 	arFuroJunme = {{}, {}, {}, {}};
 	arFuroHistory = {{}, {}, {}, {}};
+	isRinshanChance = 0;
 	dorahyouji = "";
-	uradorahyouji = "";
 	nYamaIndex = 0;
 	lastScript = "";
 }
@@ -1077,14 +1141,15 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int isOpen)
+string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int isOpen, int isScoreView)
 {
 	string s;
 	array arHai = strHaiToArray(strHai);
-	if (nPlayer != 3)
+	if (nPlayer != 3 || isScoreView)
 	{
 		string sFuro;
 		int nFuro;
+		int nFuroOffset;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (_strlen(arHai[i]) == 2)
@@ -1098,6 +1163,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 			{
 				sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
 				nFuro++;
+				nFuroOffset += _strlen(arHai[i]) / 2;
 			}
 		}
 		if (tsumoShowing != "")
@@ -1109,12 +1175,13 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				s += convertUnicode("tb");
 		}
 		if (sFuro != "")
-			s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
+			s += "\_l[" + (260 - (15 * nFuroOffset)) + ",]" + sFuro;
 	}
 	else
 	{
 		string sFuro;
 		int nFuro;
+		int nFuroOffset;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (tsumoShowing != "")
@@ -1142,9 +1209,10 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				{
 					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
 					nFuro++;
+					nFuroOffset += _strlen(arHai[i]) / 2;
 				}
 			}
-			else if (isFuro)
+			else if (isFuro && tsumoShowing == "")
 			{
 				if (_strlen(arHai[i]) == 2)
 				{
@@ -1154,6 +1222,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				{
 					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
 					nFuro++;
+					nFuroOffset += _strlen(arHai[i]) / 2;
 				}
 			}
 			else
@@ -1166,6 +1235,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				{
 					sFuro += showFuroWithColor(arHai[i], nPlayer, nFuro);
 					nFuro++;
+					nFuroOffset += _strlen(arHai[i]) / 2;
 				}
 			}
 		}
@@ -1186,7 +1256,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 			}
 		}
 		if (sFuro != "")
-			s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
+			s += "\_l[" + (260 - (15 * nFuroOffset)) + ",]" + sFuro;
 	}
 	return s;
 }
@@ -1198,18 +1268,37 @@ string showFuroWithColor(string strFuro, int nPlayer, int nFuroIndex)
 	int nSutePlayer = arFuroHistory[nPlayer][nFuroIndex][1];
 	strFuro = strFuroHai + removeHai(strFuro, strFuroHai);
 	string s;
-	if ((4 + nPlayer - nSutePlayer) % 4 == 1)
-		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 0, 2)) + "\f[color,default]";
-	else
-		s += convertUnicode(_substr(strFuro, 0, 2));
-	if ((4 + nPlayer - nSutePlayer) % 4 == 2)
-		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 2, 2)) + "\f[color,default]";
-	else
+	if (_strlen(strFuro) == 6)
+	{
+		if ((4 + nPlayer - nSutePlayer) % 4 == 1)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 0, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 0, 2));
+		if ((4 + nPlayer - nSutePlayer) % 4 == 2)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 2, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 2, 2));
+		if ((4 + nPlayer - nSutePlayer) % 4 == 3)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 4, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 4, 2));
+	}
+	else if (_strlen(strFuro) == 8)
+	{
+		if ((4 + nPlayer - nSutePlayer) % 4 == 1)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 0, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 0, 2));
 		s += convertUnicode(_substr(strFuro, 2, 2));
-	if ((4 + nPlayer - nSutePlayer) % 4 == 3)
-		s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 4, 2)) + "\f[color,default]";
-	else
-		s += convertUnicode(_substr(strFuro, 4, 2));
+		if ((4 + nPlayer - nSutePlayer) % 4 == 2)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 4, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 4, 2));
+		if ((4 + nPlayer - nSutePlayer) % 4 == 3)
+			s += "\f[color,blue]" + convertUnicode(_substr(strFuro, 6, 2)) + "\f[color,default]";
+		else
+			s += convertUnicode(_substr(strFuro, 6, 2));
+	}
 	return s;
 }
 
@@ -1273,8 +1362,16 @@ array strHaiToArray(string strHai)
 	{
 		if (_substr(strHai, i, 1) == "<")
 		{
-			arRet += _substr(strHai, i + 1, 6);
-			i += 7;
+			if (_substr(strHai, i + 7, 1) == ">")
+			{
+				arRet += _substr(strHai, i + 1, 6);
+				i += 7;
+			}
+			else if (_substr(strHai, i + 9, 1) == ">")
+			{
+				arRet += _substr(strHai, i + 1, 8);
+				i += 9;
+			}
 		}
 		else
 		{

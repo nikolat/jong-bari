@@ -31,8 +31,32 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	string s;
 	s += "\![set,balloontimeout,0]\![set,choicetimeout,0]\0\s[0]\b[2]\_q";
 	//王牌表示
-	array wanpaiOmote = {"tb", "tb", "tb", "tb", dorahyouji, "tb", "tb"};
-	array wanpaiUra = {"tb", "tb", "tb", "tb", uradorahyouji, "tb", "tb"};
+	array wanpaiOmote;
+	array wanpaiUra;
+	array arDorahyouji = strHaiToArray(dorahyouji);
+	string uradorahyouji;
+	for (int i = 0; arDorahyouji[i] != nil; i++)
+	{
+		uradorahyouji += arYama[59 + i];
+	}
+	array arUradorahyouji = strHaiToArray(uradorahyouji);
+	for (int i = 0; i < 5; i++)
+	{
+		if (arDorahyouji[4 - i] == nil)
+		{
+			wanpaiOmote += "tb";
+			wanpaiUra += "tb";
+		}
+		else
+		{
+			wanpaiOmote += arDorahyouji[4 - i];
+			wanpaiUra += arUradorahyouji[4 - i];
+		}
+	}
+	wanpaiOmote += "tb";
+	wanpaiOmote += "tb";
+	wanpaiUra += "tb";
+	wanpaiUra += "tb";
 	s += "\f[height,+16]\_l[110,]";
 	for (int i = 0; wanpaiOmote[i] != nil; i++)
 	{
@@ -60,9 +84,13 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		int isRichi = 0;
 		if (arRichiJunme[nAgariPlayer] >= 0)
 			isRichi = 1;
-		string strDora = getDoraFromDorahyouji(dorahyouji);
-		if (isRichi)
-			strDora += getDoraFromDorahyouji(uradorahyouji);
+		string strDora;
+		for (int i = 0; arDorahyouji[i] != nil; i++)
+		{
+			strDora += getDoraFromDorahyouji(arDorahyouji[i]);
+			if (isRichi)
+				strDora += getDoraFromDorahyouji(arUradorahyouji[i]);
+		}
 		int isTsumo = 0;
 		if (nFurikomiPlayer == -1)
 			isTsumo = 1;
@@ -78,10 +106,12 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		int isFinalTileWin = 0;
 		if (_aryvn(arYama) == nYamaIndex)
 			isFinalTileWin = 1;
+		int isRinshan = isRinshanChance;
+		int isChankan = 0;
 		int isOya = 0;
 		if (nAgariPlayer == oyaIndex)
 			isOya = 1;
-		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isOya);
+		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isRinshan, isChankan, isOya);
 		score = d["Result"];
 		int isYakuman = 0;
 		if (score >= 32000 && !isOya || score >= 48000 && isOya)
@@ -142,24 +172,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	s += "\n";
 	//牌表示
 	s += "\f[height,+16]";
-	array arHai = strHaiToArray(hai13);
-	string sFuro;
-	int nFuro;
-	for (int i = 0; arHai[i] != nil; i++)
-	{
-		if (_strlen(arHai[i]) == 2)
-		{
-			s += convertUnicode(arHai[i]);
-		}
-		else
-		{
-			sFuro += showFuroWithColor(arHai[i], nAgariPlayer, nFuro);
-			nFuro++;
-		}
-	}
-	s += " " + convertUnicode(atariHai);
-	if (sFuro != "")
-		s += "\_l[" + (260 - (40 * nFuro)) + ",]" + sFuro;
+	s += showHai(hai13, atariHai, nAgariPlayer, 0, 1, 1);
 	s += "\n\f[height,default]\n";
 	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
 	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
