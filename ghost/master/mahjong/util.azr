@@ -610,6 +610,7 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
 				setFuro(i, completePlayer, sute, sute + sute);
+				setKyotaku(completePlayer);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
 				return s;
@@ -625,6 +626,7 @@ string OnSuteComplete(dict ref)
 				string hai1 = reservedNakuCopy[playerName[i]][1];
 				string hai2 = reservedNakuCopy[playerName[i]][2];
 				setFuro(i, completePlayer, sute, hai1 + hai2);
+				setKyotaku(completePlayer);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
 				return s;
@@ -651,6 +653,7 @@ string OnSuteComplete(dict ref)
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
 					setFuro(i, completePlayer, sute, sute + sute);
+					setKyotaku(completePlayer);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
 					return s;
@@ -685,6 +688,7 @@ string OnSuteComplete(dict ref)
 					string hai1 = arMaterialSelected[0];
 					string hai2 = arMaterialSelected[1];
 					setFuro(i, completePlayer, sute, hai1 + hai2);
+					setKyotaku(completePlayer);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
 					return s;
@@ -692,12 +696,7 @@ string OnSuteComplete(dict ref)
 			}
 		}
 	}
-	//供託
-	if (arRichiJunme[completePlayer] == _aryvn(arKawa[completePlayer]) - 1)
-	{
-		kyotaku++;
-		arScore[completePlayer] -= 1000;
-	}
+	setKyotaku(completePlayer);
 	//流局
 	if (_aryvn(arYama) == nYamaIndex)
 	{
@@ -742,6 +741,15 @@ string OnSuteComplete(dict ref)
 	reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + nextPlayer + "," + tsumo + "]";
 	_create_thread("TH_WaitResponse");
 	return s;
+}
+
+setKyotaku(int nPlayer)
+{
+	if (arRichiJunme[nPlayer] == _aryvn(arKawa[nPlayer]) - 1)
+	{
+		kyotaku++;
+		arScore[nPlayer] -= 1000;
+	}
 }
 
 string OnNotifyPrepareRyukyoku(dict ref)
