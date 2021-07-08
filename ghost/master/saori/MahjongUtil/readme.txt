@@ -104,9 +104,11 @@
 　　Argument7　　　立直か否か
 　　Argument8　　　ダブル立直か否か
 　　Argument9　　　一発か否か
-　　Argument10 　　1巡目か否か
+　　Argument10 　　鳴きの無い1巡目のツモか否か
 　　Argument11 　　海底牌(河底牌)か否か
-　　Argument12 　　親か否か
+　　Argument12 　　嶺上開花か否か
+　　Argument13 　　槍槓か否か
+　　Argument14 　　親か否か
 　　※Argument3以降は省略可
 
 　・結果
@@ -144,7 +146,9 @@
 　　Argument9: 0
 　　Argument10: 1
 　　Argument11: 0
-　　Argument12: 1
+　　Argument12: 0
+　　Argument13: 0
+　　Argument14: 1
 　　　↓
 　　Result: 192000
 　　Value0: 4
