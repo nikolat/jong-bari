@@ -91,6 +91,9 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			if (isRichi)
 				strDora += getDoraFromDorahyouji(arUradorahyouji[i]);
 		}
+		int isOya = 0;
+		if (nAgariPlayer == oyaIndex)
+			isOya = 1;
 		int isTsumo = 0;
 		if (nFurikomiPlayer == -1)
 			isTsumo = 1;
@@ -108,10 +111,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			isFinalTileWin = 1;
 		int isRinshan = isRinshanChance;
 		int isChankan = 0;
-		int isOya = 0;
-		if (nAgariPlayer == oyaIndex)
-			isOya = 1;
-		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isRinshan, isChankan, isOya);
+		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isRinshan, isChankan);
 		score = d["Result"];
 		int isYakuman = 0;
 		if (score >= 32000 && !isOya || score >= 48000 && isOya)
