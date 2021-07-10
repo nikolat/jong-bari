@@ -113,11 +113,11 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		int isChankan = 0;
 		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin, isRinshan, isChankan);
 		score = d["Result"];
-		int isYakuman = 0;
-		if (score >= 32000 && !isOya || score >= 48000 && isOya)
-			isYakuman = 1;
+		int isPureYakuman = 0;
+		if ((score >= 32000 && !isOya || score >= 48000 && isOya) && (int)d["Value1"] < 13)
+			isPureYakuman = 1;
 		int nHan;
-		if (isYakuman)
+		if (isPureYakuman)
 		{
 			for (int i = 1; d["Value" + i] != nil; i++)
 			{
