@@ -54,6 +54,9 @@
 
 　　※上記の例ではValue0とValue7、Value1とValue8が同じ組み合わせを意味しますが、
 　　　雀頭の有無を区別する際に有用なので敢えて別物として出力しています。
+　　　また、9p9p,1m2m3m,5p6p7p,2s3s,3s4s等のパターンも存在すべきところですが、
+　　　全パターンを網羅しようとすると処理時間が膨大になり実用に耐えないため、
+　　　面子の数が最大となる場合のみ出力する仕様となっています。
 
 　・例2
 　　Argument0: shanten
@@ -96,7 +99,7 @@
 　・呼び出し：
 　　Argument0　　　score
 　　Argument1　　　手牌(13枚)
-　　Argument2　　　当たり牌
+　　Argument2　　　和了牌
 　　Argument3　　　場風牌
 　　Argument4　　　自風牌
 　　Argument5　　　ドラ牌(複数指定可)
@@ -168,11 +171,20 @@
 　・結果
 　　Result 　　　　待ち牌
 
-　・例
+　・例1
 　　Argument0: machi
 　　Argument1: 1m1m1m2m3m4m5m6m7m8m9m9m9m
 　　　↓
 　　Result: 1m2m3m4m5m6m7m8m9m
+
+　・例2
+　　Argument0: machi
+　　Argument1: 1m1m4m5m6m7m8m<1m2m3m>(9m9m9m9m)
+　　　↓
+　　Result: 3m6m9m
+
+　　※上記の例では9mが4枚使われているため9mで和了ることはできません。
+　　　待ちから除外する処理は呼び出し元の責任で行ってください。
 
 ■謝辞
 
