@@ -105,13 +105,12 @@
 　　Argument5　　　ドラ牌(複数指定可)
 　　Argument6　　　親か否か
 　　Argument7　　　ツモか否か
-　　Argument8　　　立直か否か
-　　Argument9　　　ダブル立直か否か
-　　Argument10 　　一発か否か
-　　Argument11 　　鳴きの無い1巡目のツモか否か
+　　Argument8　　　1: 立直, 2: ダブル立直
+　　Argument9　　　一発か否か
+　　Argument10 　　槍槓か否か
+　　Argument11 　　嶺上開花か否か
 　　Argument12 　　海底牌(河底牌)か否か
-　　Argument13 　　嶺上開花か否か
-　　Argument14 　　槍槓か否か
+　　Argument13 　　鳴きの無い1巡目のツモか否か
 　　※Argument3以降は省略可
 
 　・結果
@@ -148,17 +147,17 @@
 　　Argument8: 0
 　　Argument9: 0
 　　Argument10: 0
-　　Argument11: 1
+　　Argument11: 0
 　　Argument12: 0
-　　Argument13: 0
-　　Argument14: 0
+　　Argument13: 1
 　　　↓
 　　Result: 192000
 　　Value0: 4
 　　Value1: 四暗刻,1
-　　Value2: 字一色,1
-　　Value3: 大三元,1
-　　Value4: 天和,1
+　　Value2: 大三元,1
+　　Value3: 天和,1
+　　Value4: 字一色,1
+
 
 □machi:待ち牌の判定
 

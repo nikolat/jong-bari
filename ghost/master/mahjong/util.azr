@@ -607,8 +607,9 @@ int canRon(int nPlayer, string atariHai)
 	string jifuHai = getJifuHai(nPlayer);
 	string strDora = "";
 	int isTsumo = 0;
-	int isWRichi = 0;
 	int isIppatsu = 0;
+	int isChankan = 0;
+	int isRinshan = 0;
 	int is1stRound = 0;
 	if (_aryvn(arKawa[nPlayer]) == 0)//鳴きを考慮していないため注意
 		is1stRound = 1;
@@ -616,7 +617,7 @@ int canRon(int nPlayer, string atariHai)
 	if (_aryvn(arYama) == nYamaIndex)
 		isFinalTileWin = 1;
 	int isOya = 0;
-	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin);
+	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	int score = d["Result"];
 	if (score <= 0)
 		return 0;
@@ -636,14 +637,15 @@ int canTsumo(int nPlayer, string atariHai)
 	string strDora = "";
 	int isTsumo = 1;
 	int isRichi = 0;
-	int isWRichi = 0;
 	int isIppatsu = 0;
-	int is1stRound = 0;
+	int isChankan = 0;
+	int isRinshan = isRinshanChance;
 	int isFinalTileWin = 0;
+	int is1stRound = 0;
 	if (_aryvn(arYama) == nYamaIndex)
 		isFinalTileWin = 1;
 	int isOya = 0;
-	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isWRichi, isIppatsu, is1stRound, isFinalTileWin);
+	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	int score = d["Result"];
 	if (score <= 0)
 		return 0;
