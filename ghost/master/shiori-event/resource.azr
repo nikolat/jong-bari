@@ -47,6 +47,14 @@ string sakura.recommendsites()
 		+ _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(2);
+	s += "kobalab/Majiang: HTML5 + JavaScript で動作する麻雀アプリ「電脳麻将」" + _bytechar(1)
+		+ "https://github.com/kobalab/Majiang" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
+	s += "-" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
 	s += "シャンテン数計算アルゴリズム" + _bytechar(1)
 		+ "http://ara.moo.jp/mjhmr/shanten.htm" + _bytechar(1)
 		+ _bytechar(1)

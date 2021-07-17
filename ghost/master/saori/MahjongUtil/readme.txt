@@ -34,29 +34,25 @@
 　・結果
 　　Result　　 　　シャンテン数
 　　Value0以降 　　算出した元となる雀頭、面子、塔子の組み合わせ(","区切り)
-　　　　　　　 　　先頭は雀頭(無い場合は空)
+　　　　　　　 　　先頭は雀頭(無い場合は空)、塔子(対子)との重複分は除外
 
 　・例1
 　　Argument0: shanten
 　　Argument1: 1m2m3m5p6p7p8p9p9p2s3s4s4s
 　　　↓
 　　Result: 1
-　　Value0: 9p9p,1m2m3m,5p6p7p,2s3s4s
-　　Value1: 9p9p,1m2m3m,6p7p8p,2s3s4s
-　　Value2: 4s4s,1m2m3m,5p6p7p,8p9p,2s3s
-　　Value3: 4s4s,1m2m3m,5p6p7p,9p9p,2s3s
-　　Value4: 4s4s,1m2m3m,6p7p8p,9p9p,2s3s
-　　Value5: 4s4s,1m2m3m,7p8p9p,5p6p,2s3s
-　　Value6: ,1m2m3m,5p6p7p,8p9p,2s3s4s
-　　Value7: ,1m2m3m,5p6p7p,9p9p,2s3s4s
-　　Value8: ,1m2m3m,6p7p8p,9p9p,2s3s4s
-　　Value9: ,1m2m3m,7p8p9p,5p6p,2s3s4s
-
-　　※上記の例ではValue0とValue7、Value1とValue8が同じ組み合わせを意味しますが、
-　　　雀頭の有無を区別する際に有用なので敢えて別物として出力しています。
-　　　また、9p9p,1m2m3m,5p6p7p,2s4s,3s4s等のパターンも存在すべきところですが、
-　　　全パターンを網羅しようとすると処理時間が膨大になり実用に耐えないため、
-　　　面子の数が最大となる場合のみ出力する仕様となっています。
+　　Value0: 9p9p,1m2m3m,5p7p,6p8p,2s3s4s
+　　Value1: 9p9p,1m2m3m,5p6p,7p8p,2s3s4s
+　　Value2: 9p9p,1m2m3m,6p7p8p,2s4s,3s4s
+　　Value3: 9p9p,1m2m3m,6p7p8p,2s3s,4s4s
+　　Value4: 9p9p,1m2m3m,6p7p8p,2s3s4s
+　　Value5: 9p9p,1m2m3m,5p6p7p,2s4s,3s4s
+　　Value6: 9p9p,1m2m3m,5p6p7p,2s3s,4s4s
+　　Value7: 9p9p,1m2m3m,5p6p7p,2s3s4s
+　　Value8: 4s4s,1m2m3m,7p8p9p,5p6p,2s3s
+　　Value9: 4s4s,1m2m3m,5p6p7p,8p9p,2s3s
+　　Value10: ,1m2m3m,7p8p9p,5p6p,2s3s4s
+　　Value11: ,1m2m3m,5p6p7p,8p9p,2s3s4s
 
 　・例2
 　　Argument0: shanten
@@ -90,9 +86,9 @@
 　　Value0: 7z7z
 　　Value1: ,7z7z
 
-□score:点数計算
+□score:和了点計算
 
-　点数を計算します。
+　和了点を計算します。
 　算出した元となる符、翻、および役の情報をValue0以降に返します。
 　(役満の場合は何倍役満であるか、および役満の情報をValue0以降に返します)
 
@@ -102,7 +98,7 @@
 　　Argument2　　　和了牌
 　　Argument3　　　場風牌
 　　Argument4　　　自風牌
-　　Argument5　　　ドラ牌(複数指定可)
+　　Argument5　　　ドラ牌(複数指定可)(ドラ表示牌ではない)
 　　Argument6　　　親か否か
 　　Argument7　　　ツモか否か
 　　Argument8　　　1: 立直, 2: ダブル立直
@@ -188,11 +184,15 @@
 ■謝辞
 
 　SAORIサンプルクラス「CSAORI」を使用させていただきました。
-　ありがとうございます。
 
 　　csaori
 　　　https://github.com/ponapalt/csaori
 
+　麻雀アプリ「電脳麻将」を参考にさせていただきました。
+　　電脳麻将
+　　　https://github.com/kobalab/Majiang
+
+　ありがとうございます。
 
 ■配布条件等
 
