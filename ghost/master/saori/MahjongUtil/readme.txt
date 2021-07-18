@@ -24,7 +24,7 @@
 　入力された手牌に対し最小となるシャンテン数をResultに、
 　算出した元となる雀頭、面子、塔子の組み合わせをValue0以降に返します。
 　(七対子の場合は"chitoitsu"、国士無双の場合は"kokushimusou"をValue0以降に返します)
-　入力する牌の数に制限はありません。13枚でも14枚でも可能です。
+　入力する牌の数に制限はありません。1枚でも13枚でも14枚でも15枚でも可能です。
 　シャンテン数0はテンパイ、-1は和了を意味します。
 
 　・呼び出し：
@@ -33,7 +33,7 @@
 
 　・結果
 　　Result　　 　　シャンテン数
-　　Value0以降 　　算出した元となる雀頭、面子、塔子の組み合わせ(","区切り)
+　　Value0以降 　　算出した元となる雀頭、面子、塔子、孤立牌の組み合わせ(","区切り)
 　　　　　　　 　　先頭は雀頭(無い場合は空)、塔子(対子)との重複分は除外
 
 　・例1
@@ -41,18 +41,19 @@
 　　Argument1: 1m2m3m5p6p7p8p9p9p2s3s4s4s
 　　　↓
 　　Result: 1
-　　Value0: 9p9p,1m2m3m,5p7p,6p8p,2s3s4s
-　　Value1: 9p9p,1m2m3m,5p6p,7p8p,2s3s4s
-　　Value2: 9p9p,1m2m3m,6p7p8p,2s4s,3s4s
-　　Value3: 9p9p,1m2m3m,6p7p8p,2s3s,4s4s
-　　Value4: 9p9p,1m2m3m,6p7p8p,2s3s4s
-　　Value5: 9p9p,1m2m3m,5p6p7p,2s4s,3s4s
-　　Value6: 9p9p,1m2m3m,5p6p7p,2s3s,4s4s
-　　Value7: 9p9p,1m2m3m,5p6p7p,2s3s4s
-　　Value8: 4s4s,1m2m3m,7p8p9p,5p6p,2s3s
-　　Value9: 4s4s,1m2m3m,5p6p7p,8p9p,2s3s
-　　Value10: ,1m2m3m,7p8p9p,5p6p,2s3s4s
-　　Value11: ,1m2m3m,5p6p7p,8p9p,2s3s4s
+　　Value0: 9p9p,1m2m3m,5p7p,6p8p,2s3s4s,4s
+　　Value1: 9p9p,1m2m3m,5p6p,7p8p,2s3s4s,4s
+　　Value2: 9p9p,1m2m3m,6p7p8p,5p,2s4s,3s4s
+　　Value3: 9p9p,1m2m3m,6p7p8p,5p,2s3s,4s4s
+　　Value4: 9p9p,1m2m3m,6p7p8p,5p,2s3s4s,4s
+　　Value5: 9p9p,1m2m3m,5p6p7p,8p,2s4s,3s4s
+　　Value6: 9p9p,1m2m3m,5p6p7p,8p,2s3s,4s4s
+　　Value7: 9p9p,1m2m3m,5p6p7p,8p,2s3s4s,4s
+　　Value8: 4s4s,1m2m3m,7p8p9p,5p6p,9p,2s3s
+　　Value9: 4s4s,1m2m3m,5p6p7p,8p9p,9p,2s3s
+　　Value10: ,1m2m3m,7p8p9p,5p6p,9p,2s3s4s,4s
+　　Value11: ,1m2m3m,5p6p7p,8p9p,9p,2s3s4s,4s
+
 
 　・例2
 　　Argument0: shanten
@@ -75,16 +76,15 @@
 
 　・結果
 　　Result　　 　　シャンテン数
-　　Value0以降 　　算出した元となる雀頭、面子、塔子の組み合わせ(","区切り)
-　　　　　　　 　　先頭は雀頭(無い場合は空)
+　　Value0以降 　　算出した元となる雀頭、面子、塔子、孤立牌の組み合わせ(","区切り)
+　　　　　　　 　　先頭は雀頭(無い場合は空)、塔子(対子)との重複分は除外
 
 　・例
 　　Argument0: shanten_normal
 　　Argument1: 1m9m1p9p1s9s1z2z3z4z5z6z7z7z
 　　　↓
 　　Result: 7
-　　Value0: 7z7z
-　　Value1: ,7z7z
+　　Value0: 7z7z,1m,9m,1p,9p,1s,9s,1z,2z,3z,4z,5z,6z
 
 □score:和了点計算
 
