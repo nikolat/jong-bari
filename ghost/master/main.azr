@@ -17,22 +17,69 @@ unload()
 dict dAdditionalHeader;
 array _customrequest(dict ref)
 {
-    string s = _eventdict[ref["ID"]];
-    if(s == "") s = _fncstr(ref["ID"], ref);
-	
-	array ar;
-	ar += "SHIORI/3.0 200 OK";
-	ar += "Sender: akari";
-	ar += "Charset: UTF-8";
-	ar += "Value: " + s;
-	array arKey = _dickeyget(dAdditionalHeader);
-	for (int i = 0; arKey[i] != nil; i++)
-	{
-		ar += arKey[i] + ": " + dAdditionalHeader[arKey[i]];
-	}
-	ar += "";
-	ar += "";
+	dict d = dAdditionalHeader;
 	dAdditionalHeader = $();
-	
-	return ar;
+	array ar;
+	// SHIORIに対するリクエストでない場合
+	if (_strstr(ref["head"], "SHIORI") == -1) {
+		ar	+=	"SHIORI/3.0 400 Bad Request";
+		ar	+=	"Sender: akari";
+		ar	+=	"Charset: UTF-8";
+		ar	+=	"";
+		ar	+=	"";
+		return ar;
+	}
+	// セキュリティレベル="External"なら即返る
+	if (ref["SecurityLevel"] == "External") {
+		ar	+=	"SHIORI/3.0 204 No Content";
+		ar	+=	"Sender: akari";
+		ar	+=	"Charset: UTF-8";
+		ar	+=	"";
+		ar	+=	"";
+		return ar;
+	}
+	string s = _eventdict[ref["ID"]];
+	if (s == "") s = _fncstr(ref["ID"], ref);
+	// NOTIFY
+	if (_strstr(ref["head"], "NOTIFY") != -1) {
+		ar	+=	"SHIORI/3.0 200 OK";
+		ar	+=	"Sender: akari";
+		ar	+=	"Charset: UTF-8";
+		ar	+=	"";
+		ar	+=	"";
+		return ar;
+	}
+	// GET
+	if (_strstr(ref["head"], "GET") != -1) {
+		if (s == "")
+		{
+			ar	+=	"SHIORI/3.0 204 No Content";
+			ar	+=	"Sender: akari";
+			ar	+=	"Charset: UTF-8";
+		}
+		else
+		{
+			ar	+=	"SHIORI/3.0 200 OK";
+			ar	+=	"Sender: akari";
+			ar	+=	"Charset: UTF-8";
+			ar	+=	"Value: " + s;
+		}
+		array arKey = _dickeyget(d);
+		for (int i = 0; arKey[i] != nil; i++)
+		{
+			ar += arKey[i] + ": " + d[arKey[i]];
+		}
+		ar	+=	"";
+		ar	+=	"";
+		return ar;
+	}
+	// 未知のリクエスト
+	else {
+		ar	+=	"SHIORI/3.0 400 Bad Request";
+		ar	+=	"Sender: akari";
+		ar	+=	"Charset: UTF-8";
+		ar	+=	"";
+		ar	+=	"";
+		return ar;
+	}
 }
