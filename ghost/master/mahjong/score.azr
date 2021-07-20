@@ -187,7 +187,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	//通知
 	if (nAgariPlayer >= 0)
 	{
-		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",agari," + playerName[nAgariPlayer] + "," + nFu;
 		array arYaku = _dickeyget(dYakuAndHan);
 		for (int i = 0; arYaku[i] != nil; i++)
@@ -198,7 +198,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	}
 	else
 	{
-		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",ryukyoku]";
 	}
 	for (int i = 0; i < 3; i++)
@@ -209,10 +209,10 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		else if (arScoreAdd[i] < 0)
 			fugo = "-";
 		if (fugo != "")
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",point," + playerName[i] + "," + fugo + "," + (int)_fabs(arScoreAdd[i]) + "]";
 	}
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",kyokuend]";
 	s += "\_q\e";
 	//連荘判定

@@ -239,7 +239,7 @@ string Menu_StartKyoku(dict ref)
 string endGame()
 {
 	//gameend通知
-	string s = "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion() + ",gameend";
+	string s = "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
 	for (int i = 0; playerName[i] != nil; i++)
 	{
 		s += "," + playerName[i] + _bytechar(1) + arScore[i];
@@ -285,7 +285,7 @@ string startKyoku()
 	string tsumo = arYama[nYamaIndex++];
 	string s;
 	//kyokustart通知
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",kyokustart," + arBafu[bafu] + "," + playerName[oyaIndex] + "," + tsumibou + "," + kyotaku + "]";
 	//haipai通知
 	for (int i = 0; i < 3; i++)
@@ -294,7 +294,7 @@ string startKyoku()
 			+ ",haipai," + playerName[i] + "," + arTehai[i] + "]";
 	}
 	//dora通知
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",dora," + dorahyouji + "]";
 
 	s += "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
@@ -335,7 +335,7 @@ string OnSuteSelect(dict ref)
 	{
 		reservedTsumo = 0;
 		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
-		s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",say," + playerName[selectPlayer] + ",tsumo]";
 		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
 		return s;
@@ -347,7 +347,7 @@ string OnSuteSelect(dict ref)
 			sute = reservedSelectedHai;
 			reservedSelectedHai = "";
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
 		}
@@ -362,7 +362,7 @@ string OnSuteSelect(dict ref)
 			dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 			tsumo = arYama[nYamaIndex++];
 			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",kan]";
 			s += "\_q\e";
 			return s;
@@ -384,7 +384,7 @@ string OnSuteSelect(dict ref)
 		if (canTsumo(selectPlayer, tsumo))
 		{
 			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",tsumo]";
 			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
 			return s;
@@ -394,7 +394,7 @@ string OnSuteSelect(dict ref)
 			//即リー
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
 			sute = naniwokiru(tehai, arKawa[selectPlayer]);
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
 		}
@@ -408,7 +408,7 @@ string OnSuteSelect(dict ref)
 			dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 			tsumo = arYama[nYamaIndex++];
 			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",kan]";
 			s += "\_w[2000]";
 			//この時点でロン(槍槓)を受け付ける必要があるんだけどどうしよう
@@ -431,7 +431,7 @@ string OnSuteSelect(dict ref)
 			dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 			tsumo = arYama[nYamaIndex++];
 			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
-			s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",kan]";
 			s += "\_w[2000]";
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
@@ -456,7 +456,7 @@ string OnSuteSelect(dict ref)
 	arTehai[selectPlayer] = removeHai(tehai, sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	s += wait;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
 	if (canRon(3, sute) || canPon(3, sute) || (selectPlayer + 1 == 3) && canChi(3, sute))
@@ -819,7 +819,7 @@ string OnSuteComplete(dict ref)
 			if (action == "ron")
 			{
 				s += showStatus("", sute, completePlayer, i, {0, 0, 0});
-				s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",ron]";
 				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
 				return s;
@@ -827,7 +827,7 @@ string OnSuteComplete(dict ref)
 			if (action == "pon")
 			{
 				s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-				s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",pon]";
 				s += "\_w[2000]";
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -841,7 +841,7 @@ string OnSuteComplete(dict ref)
 			if (action == "chi")
 			{
 				s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-				s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",chi]";
 				s += "\_w[2000]";
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -862,7 +862,7 @@ string OnSuteComplete(dict ref)
 				dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 				string tsumo = arYama[nYamaIndex++];
 				s += showStatus(tsumo, "", i, -1, {0, 0, 0}, 1);
-				s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",kan]";
 				s += "\_w[2000]";
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -881,7 +881,7 @@ string OnSuteComplete(dict ref)
 				if (canRon(i, sute))
 				{
 					s += showStatus("", sute, completePlayer, i, {0, 0, 0});
-					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 						+ ",say," + playerName[i] + ",ron]";
 					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
 					return s;
@@ -889,7 +889,7 @@ string OnSuteComplete(dict ref)
 				if (shouldPon(i, sute))
 				{
 					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 						+ ",say," + playerName[i] + ",pon]";
 					s += "\_w[2000]";
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -903,7 +903,7 @@ string OnSuteComplete(dict ref)
 				if ((completePlayer + 1) % 4 == i && shouldChi(i, sute))
 				{
 					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 						+ ",say," + playerName[i] + ",chi]";
 					s += "\_w[2000]";
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -943,7 +943,7 @@ string OnSuteComplete(dict ref)
 					dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 					string tsumo = arYama[nYamaIndex++];
 					s += showStatus(tsumo, "", i, -1, {0, 0, 0}, 1);
-					s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 						+ ",say," + playerName[i] + ",kan]";
 					s += "\_w[2000]";
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
@@ -1030,14 +1030,14 @@ string OnRyukyoku(dict ref)
 		if (action == "yes")
 		{
 			arTenpaiPlayerFlag[i] = 1;
-			m += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			m += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[i] + ",tenpai]";
 			m += "\_w[1000]";
 		}
 		else
 		{
 			arTenpaiPlayerFlag[i] = 0;
-			m += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+			m += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[i] + ",noten]";
 			m += "\_w[1000]";
 		}
@@ -1079,7 +1079,7 @@ string Menu_Sutehai(dict ref)
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(addHai(arTehai[selectPlayer], tsumo), sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	isRecievedResponse = 1;
 	for (int i = 0; playerName[i] != nil; i++)
@@ -1307,7 +1307,7 @@ string Menu_Richi(dict ref)
 	arRichiJunme[3] = _aryvn(arKawa[3]);
 	string tsumo = arYama[nYamaIndex - 1];
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say,user,richi]";
 	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0) + "\_q\e";
 	return s;
@@ -1324,7 +1324,7 @@ string Menu_Kakan(dict ref)
 	dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 	tsumo = arYama[nYamaIndex++];
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	lastScript = s;
@@ -1342,7 +1342,7 @@ string Menu_Ankan(dict ref)
 	dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 	tsumo = arYama[nYamaIndex++];
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 0) + "\_q\e";
 	lastScript = s;
@@ -1356,7 +1356,7 @@ string Menu_Pon(dict ref)
 	string sute = ref["Reference4"];
 	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute);
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",pon]";
 	s += "\0\s[0]\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	return s;
@@ -1371,7 +1371,7 @@ string Menu_Chi(dict ref)
 	array arHai = strHaiToArray(hai);
 	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0] + arHai[1]);
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",chi]";
 	s += "\0\s[0]\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	return s;
@@ -1387,7 +1387,7 @@ string Menu_Daiminkan(dict ref)
 	dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
 	string tsumo = arYama[nYamaIndex++];
 	string s;
-	s += "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion()
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	s += "\0\s[0]\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	lastScript = s;
