@@ -14,3 +14,25 @@ unload()
 {
 	_saoriunload("MahjongUtil");
 }
+dict dAdditionalHeader;
+array _customrequest(dict ref)
+{
+    string s = _eventdict[ref["ID"]];
+    if(s == "") s = _fncstr(ref["ID"], ref);
+	
+	array ar;
+	ar += "SHIORI/3.0 200 OK";
+	ar += "Sender: akari";
+	ar += "Charset: UTF-8";
+	ar += "Value: " + s;
+	array arKey = _dickeyget(dAdditionalHeader);
+	for (int i = 0; arKey[i] != nil; i++)
+	{
+		ar += arKey[i] + ": " + dAdditionalHeader[arKey[i]];
+	}
+	ar += "";
+	ar += "";
+	dAdditionalHeader = $();
+	
+	return ar;
+}

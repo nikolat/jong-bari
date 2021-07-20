@@ -1,13 +1,30 @@
 //haiはソートされてる前提
 int getShanten(string hai)
 {
-	int shanten = _saorirequest("MahjongUtil", "shanten", hai)["Result"];
+	dict d = _saorirequest("MahjongUtil", "shanten", hai);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"getShanten\" with " + hai)
+		};
+		return 99;
+	}
+	int shanten = d["Result"];
 	return shanten;
 }
 
 array getShantenWithMentsu(string hai)
 {
 	dict d = _saorirequest("MahjongUtil", "shanten", hai);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"getShantenWithMentsu\" with " + hai)
+		};
+		return {99, {}};
+	}
 	int shanten = d["Result"];
 	array arPattern;
 	for (int i = 0; d["Value" + i] != nil; i++)
@@ -20,6 +37,14 @@ array getShantenWithMentsu(string hai)
 array getShantenNormalWithMentsu(string hai)
 {
 	dict d = _saorirequest("MahjongUtil", "shanten_normal", hai);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"getShantenNormalWithMentsu\" with " + hai)
+		};
+		return {99, {}};
+	}
 	int shanten = d["Result"];
 	array arPattern;
 	for (int i = 0; d["Value" + i] != nil; i++)

@@ -1,7 +1,15 @@
 //本来は他家の捨て牌とか諸々の情報が必要
 string naniwokiru(string hai, array kawa)
 {
-	return getDahai(hai);
+	string s = getDahai(hai);
+	if (s == "")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"naniwokiru\" with " + hai)
+		};
+	}
+	return s;
 }
 
 //テンパイに近づける

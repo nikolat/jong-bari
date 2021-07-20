@@ -112,6 +112,14 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		int isRinshan = isRinshanChance;
 		int isChankan = 0;
 		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isOya, isTsumo, nRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
+		if (d["head"] == "SAORI/1.0 400 Bad Request")
+		{
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", "failed \"score\" in \"showScoreResult\" with " + hai13 + " " + atariHai)
+			};
+			return "\0Error.\e";
+		}
 		score = d["Result"];
 		int isPureYakuman = 0;
 		if ((score >= 32000 && !isOya || score >= 48000 && isOya) && (int)d["Value1"] < 13)
