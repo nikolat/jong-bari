@@ -326,7 +326,6 @@ string OnSuteSelect(dict ref)
 {
 	int selectPlayer = ref["Reference0"];
 	string tsumo = ref["Reference1"];
-	//捨て
 	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
 	string sute;
 	string tehai = addHai(arTehai[selectPlayer], tsumo);
@@ -393,7 +392,7 @@ string OnSuteSelect(dict ref)
 		{
 			//即リー
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			sute = naniwokiru(tehai, arKawa[selectPlayer]);
+			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer));
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
@@ -401,7 +400,7 @@ string OnSuteSelect(dict ref)
 		else if (shouldKakan(selectPlayer, tsumo))
 		{
 			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			array arKakanHaiUseful = getKakanHaiUseful(arTehai[selectPlayer]);
+			array arKakanHaiUseful = getKakanHaiUseful(arTehai[selectPlayer], selectPlayer);
 			string kakanHai = _randselect(arKakanHaiUseful);
 			isRinshanChance = 1;
 			setKakan(selectPlayer, kakanHai);
@@ -424,7 +423,7 @@ string OnSuteSelect(dict ref)
 		else if (shouldAnkan(selectPlayer, tsumo))
 		{
 			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer]);
+			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer], selectPlayer);
 			string ankanHai = _randselect(arAnkanHaiUseful);
 			isRinshanChance = 1;
 			setAnkan(selectPlayer, ankanHai);
@@ -448,14 +447,36 @@ string OnSuteSelect(dict ref)
 			if (arRichiJunme[selectPlayer] >= 0)
 				sute = tsumo;
 			else
-				sute = naniwokiru(tehai, arKawa[selectPlayer]);
+				sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer));
 		}
 	}
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(tehai, sute);
-	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
-	s += wait;
+
+	return "\C" + s + "\![raise,OnSuteSelect2," + selectPlayer + "," + tsumo + "," + sute + "]";
+}
+
+string OnSuteSelect2(dict ref)
+{
+	int selectPlayer = ref["Reference0"];
+	string tsumo = ref["Reference1"];
+	string sute = ref["Reference2"];
+
+	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});//どうもこの処理で詰まってレスポンスを返せないことがあるらしい
+
+	return s + "\![raise,OnSuteSelect3," + selectPlayer + "," + tsumo + "," + sute + "]";
+}
+
+string OnSuteSelect3(dict ref)
+{
+	int selectPlayer = ref["Reference0"];
+	string tsumo = ref["Reference1"];
+	string sute = ref["Reference2"];
+	string s = "\C\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
+	string tehai = addHai(arTehai[selectPlayer], tsumo);
+
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
@@ -504,10 +525,12 @@ int shouldPon(int nPlayer, string suteHai)
 {
 	if (!canPon(nPlayer, suteHai))
 		return 0;
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
 	string hai13 = arTehai[nPlayer];
-	string hai14 = addHai(hai13, suteHai);
-	int shantenBefore = getShanten(hai13);
-	int shantenAfter = getShanten(hai14);
+	string hai14 = removeHai(hai13, suteHai + suteHai) + "<" + suteHai + suteHai + suteHai + ">";
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
 	if (shantenAfter < shantenBefore)
 		return 1;
 	return 0;
@@ -529,12 +552,18 @@ int shouldChi(int nPlayer, string suteHai)
 {
 	if (!canChi(nPlayer, suteHai))
 		return 0;
+	array a = getChiMaterial(arTehai[nPlayer], suteHai);
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
 	string hai13 = arTehai[nPlayer];
-	string hai14 = addHai(hai13, suteHai);
-	int shantenBefore = getShanten(hai13);
-	int shantenAfter = getShanten(hai14);
-	if (shantenAfter < shantenBefore)
-		return 1;
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	for (int i = 0; a[i] != nil; i++)
+	{
+		string hai14 = removeHai(hai13, a[i]) + "<" + _arystr(sortHai(strHaiToArray(a[i] + suteHai))) + ">";
+		int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
+		if (shantenAfter < shantenBefore)
+			return 1;
+	}
 	return 0;
 }
 
@@ -574,7 +603,17 @@ int canDaiminkan(int nPlayer, string suteHai)
 
 int shouldDaiminkan(int nPlayer, string suteHai)
 {
-	return canDaiminkan(nPlayer, suteHai) * (int)_randselect(0, 1);
+	if (!canDaiminkan(nPlayer, suteHai))
+		return 0;
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string hai13 = arTehai[nPlayer];
+	string hai14 = removeHai(hai13, suteHai + suteHai + suteHai) + "<" + suteHai + suteHai + suteHai + suteHai + ">";
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
+	if (shantenAfter <= shantenBefore)
+		return (int)_randselect(0, 1);
+	return 0;
 }
 
 int canRon(int nPlayer, string atariHai)
@@ -703,7 +742,7 @@ int canKakan(int nPlayer, string tsumoHai)
 int shouldKakan(int nPlayer, string tsumoHai)
 {
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
-	array arKakanHaiUseful = getKakanHaiUseful(tehai);
+	array arKakanHaiUseful = getKakanHaiUseful(tehai, nPlayer);
 	if (_aryvn(arKakanHaiUseful) > 0)
 		return 1;
 	return 0;
@@ -730,16 +769,20 @@ array getKakanHai(string hai)
 	return arRet;
 }
 
-array getKakanHaiUseful(string hai)
+array getKakanHaiUseful(string hai, int nPlayer)
 {
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
 	array arKakanHai = getKakanHai(hai);
-	int shantenBefore = getShanten(hai);
+	int shantenBefore = getShantenYaku(hai, bafuHai, jifuHai);
 	array arKakanHaiUseful;
 	for (int i = 0; arKakanHai[i] != nil; i++)
 	{
-		int shantenAfter = getShanten(removeHai(hai, arKakanHai[i]));
+		string h = arKakanHai[i];
+		string strTehai = _strreplace(removeHai(hai, h), h + h + h, h + h + h + h);
+		int shantenAfter = getShantenYaku(strTehai, bafuHai, jifuHai);
 		if (shantenBefore >= shantenAfter)
-			arKakanHaiUseful += arKakanHai[i];
+			arKakanHaiUseful += h;
 	}
 	return arKakanHaiUseful;
 }
@@ -755,7 +798,7 @@ int canAnkan(int nPlayer, string tsumoHai)
 int shouldAnkan(int nPlayer, string tsumoHai)
 {
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
-	array arAnkanHaiUseful = getAnkanHaiUseful(tehai);
+	array arAnkanHaiUseful = getAnkanHaiUseful(tehai, nPlayer);
 	if (_aryvn(arAnkanHaiUseful) > 0)
 		return 1;
 	return 0;
@@ -776,16 +819,20 @@ array getAnkanHai(string hai)
 	return arRet;
 }
 
-array getAnkanHaiUseful(string hai)
+array getAnkanHaiUseful(string hai, int nPlayer)
 {
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
 	array arAnkanHai = getAnkanHai(hai);
-	int shantenBefore = getShanten(hai);
+	int shantenBefore = getShantenYaku(hai, bafuHai, jifuHai);
 	array arAnkanHaiUseful;
 	for (int i = 0; arAnkanHai[i] != nil; i++)
 	{
-		int shantenAfter = getShanten(removeHai(hai, arAnkanHai[i]));
+		string h = arAnkanHai[i];
+		string strTehai = removeHai(hai, h + h + h + h) + "(" + h + h + h + h + ")";
+		int shantenAfter = getShantenYaku(strTehai, bafuHai, jifuHai);
 		if (shantenBefore >= shantenAfter)
-			arAnkanHaiUseful += arAnkanHai[i];
+			arAnkanHaiUseful += h;
 	}
 	return arAnkanHaiUseful;
 }
@@ -908,13 +955,15 @@ string OnSuteComplete(dict ref)
 					s += "\_w[2000]";
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
+					string bafuHai = getBafuHai();
+					string jifuHai = getJifuHai(i);
 					array arMaterial = getChiMaterial(arTehai[i], sute);
 					int shantenMin = 99;
-					array indexMin = -1;
+					array indexMin = {};
 					for (int j = 0; arMaterial[j] != nil; j++)
 					{
-						string haiRemoved = removeHai(arTehai[i], arMaterial[j]);
-						int shantenTmp = getShanten(haiRemoved);
+						string haiChanged = removeHai(arTehai[i], arMaterial[j]) + "<" + _arystr(sortHai(strHaiToArray(arMaterial[j] + sute))) + ">";
+						int shantenTmp = getShantenYaku(haiChanged, bafuHai, jifuHai);
 						if (shantenTmp < shantenMin)
 						{
 							shantenMin = shantenTmp;

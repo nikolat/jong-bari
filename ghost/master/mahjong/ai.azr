@@ -1,7 +1,7 @@
 //本来は他家の捨て牌とか諸々の情報が必要
-string naniwokiru(string hai, array kawa)
+string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai)
 {
-	string s = getDahai(hai);
+	string s = getDahai(hai, bafuHai, jifuHai);
 	if (s == "")
 	{
 		dAdditionalHeader = ${
@@ -13,7 +13,7 @@ string naniwokiru(string hai, array kawa)
 }
 
 //テンパイに近づける
-string getDahai(string hai)
+string getDahai(string hai, string bafuHai, string jifuHai)
 {
 	array arDahai;
 	int point = -1;
@@ -24,7 +24,7 @@ string getDahai(string hai)
 	{
 		if (ASEARCH(hai14[i], arDahai) == -1)
 		{
-			array a = getShantenWithMentsu(removeHai(hai, hai14[i]));
+			array a = getShantenWithMentsu(removeHai(hai, hai14[i]), bafuHai, jifuHai);
 			int shanten13 = a[0];
 			array arPattern = a[1];
 			int shantenPoint = 0;

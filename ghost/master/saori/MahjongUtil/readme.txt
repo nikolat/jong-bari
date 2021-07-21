@@ -86,6 +86,59 @@
 　　Result: 7
 　　Value0: 7z7z,1m,9m,1p,9p,1s,9s,1z,2z,3z,4z,5z,6z
 
+□shanten_yaku:シャンテン数の計算(役がある場合)
+
+　役があるシャンテン数を計算します。
+　いくつかの役に対するシャンテン数を計算し、その中で最小となるシャンテン数をResultに、
+　算出した元となる特定の役に対するシャンテン数をValue0以降に返します。
+
+　現時点で算出対象としている役は以下の通りです。
+　・七対子
+　・国士無双
+　・門前清自摸和
+　・役牌
+　・断ヤオ九
+　・対々和
+　・混一色
+
+　役牌の場合は役牌の手持ちが0枚でも理論上3枚引いてくれば役ができますが、
+　手持ちに役牌の刻子または対子がある場合のみ計算対象としています。
+　副露判断に使用されることを想定している事情によるものです。
+
+　・呼び出し：
+　　Argument0　　　shanten
+　　Argument1　　　手牌
+　　Argument2　　　場風牌
+　　Argument3　　　自風牌
+　　※Argument2以降は省略可
+
+　・結果
+　　Result　　 　　シャンテン数
+　　Value0以降 　　役、シャンテン数の組み合わせ(","区切り)
+
+　・例1
+　　Argument0: shanten_yaku
+　　Argument1: 1m2m3m5p6p7p8p9p9p2s3s4s4s
+　　　↓
+　　Result: 1
+　　Value0: 七対子,4
+　　Value1: 国士無双,10
+　　Value2: 対々和,6
+　　Value3: 断ヤオ九,3
+　　Value4: 混一色,7
+　　Value5: 門前清自摸和,1
+
+　・例2
+　　Argument0: shanten_yaku
+　　Argument1: 1m3m3m5m6m8m2s3s1z2z2z<3m4m5m>
+　　Argument2: 1z
+　　Argument3: 2z
+　　　↓
+　　Result: 2
+　　Value0: 役牌,2
+　　Value1: 断ヤオ九,3
+　　Value2: 混一色,2
+
 □score:和了点計算
 
 　和了点を計算します。
