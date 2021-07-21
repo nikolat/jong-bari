@@ -144,6 +144,7 @@
 　和了点を計算します。
 　算出した元となる符、翻、および役の情報をValue0以降に返します。
 　(役満の場合は何倍役満であるか、および役満の情報をValue0以降に返します)
+　(嶺上開花においてツモ符2符を認めるルールとしています)
 
 　・呼び出し：
 　　Argument0　　　score
@@ -152,14 +153,13 @@
 　　Argument3　　　場風牌
 　　Argument4　　　自風牌
 　　Argument5　　　ドラ牌(複数指定可)(ドラ表示牌ではない)
-　　Argument6　　　親か否か
-　　Argument7　　　ツモか否か
-　　Argument8　　　1: 立直, 2: ダブル立直
-　　Argument9　　　一発か否か
-　　Argument10 　　槍槓か否か
-　　Argument11 　　嶺上開花か否か
-　　Argument12 　　海底牌(河底牌)か否か
-　　Argument13 　　鳴きの無い1巡目のツモか否か
+　　Argument6　　　ツモか否か
+　　Argument7　　　1: 立直, 2: ダブル立直
+　　Argument8　　　一発か否か
+　　Argument9　　　槍槓か否か
+　　Argument10 　　嶺上開花か否か
+　　Argument11 　　海底牌(河底牌)か否か
+　　Argument12 　　鳴きの無い1巡目のツモか否か
 　　※Argument3以降は省略可
 
 　・結果
@@ -188,17 +188,16 @@
 　　Argument0: score
 　　Argument1: 3z3z3z4z4z5z5z5z6z6z6z7z7z
 　　Argument2: 7z
-　　Argument3: 1z
-　　Argument4: 2z
+　　Argument3: 2z
+　　Argument4: 1z
 　　Argument5: 9m9p
 　　Argument6: 1
-　　Argument7: 1
+　　Argument7: 0
 　　Argument8: 0
 　　Argument9: 0
 　　Argument10: 0
 　　Argument11: 0
-　　Argument12: 0
-　　Argument13: 1
+　　Argument12: 1
 　　　↓
 　　Result: 192000
 　　Value0: 4
