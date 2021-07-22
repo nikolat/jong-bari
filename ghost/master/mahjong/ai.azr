@@ -32,52 +32,72 @@ string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string d
 	{
 		if (ASEARCH(hai14[i], arDahai) == -1)
 		{
-			array a = getShantenWithMentsu(removeHai(hai, hai14[i]), bafuHai, jifuHai);
+			string strTehai13 = removeHai(hai, hai14[i]);
+			array a = getShantenWithMentsu(strTehai13, bafuHai, jifuHai);
 			int shanten13 = a[0];
 			array arPattern = a[1];
 			int shantenPoint = 10000 * (10 - shanten13);
+			int machiPoint = 0;
 			int elementMaxPoint = 0;
-			for (int j = 0; arPattern[j] != nil; j++)
+			//テンパイ時は待ちの広さを考慮
+			if (shanten13 == 0)
 			{
-				int elementPoint = 0;
-				if (arPattern[j] == "chitoitsu" || arPattern[j] == "kokushimusou")
+				dict d = _saorirequest("MahjongUtil", "machi", strTehai13);
+				if (d["head"] == "SAORI/1.0 400 Bad Request")
 				{
-					elementPoint = 0;
+					dAdditionalHeader = ${
+						$("ErrorLevel", "warning"),
+						$("ErrorDescription", "failed \"machi\" in \"getDahai\" with " + strTehai13)
+					};
+					return "";
 				}
-				else
+				array arMachi = strHaiToArray(d["Result"]);
+				machiPoint = 100 * _aryvn(arMachi);
+			}
+			else
+			{
+				for (int j = 0; arPattern[j] != nil; j++)
 				{
-					array ap = _strsplit(arPattern[j], ",");
-					array arTatsu13 = {};
-					if (ap[0] != "")
+					int elementPoint = 0;
+					if (arPattern[j] == "chitoitsu" || arPattern[j] == "kokushimusou")
 					{
-						elementPoint += 40;//雀頭
+						elementPoint = 0;
 					}
-					for (int k = 1; ap[k] != nil; k++)
+					else
 					{
-						if (_strlen(ap[k]) == 6)
+						array ap = _strsplit(arPattern[j], ",");
+						array arTatsu13 = {};
+						if (ap[0] != "")
 						{
-							elementPoint += 90;//面子
+							elementPoint += 40;//雀頭
 						}
-						else if (_strlen(ap[k]) == 4)
+						for (int k = 1; ap[k] != nil; k++)
 						{
-							arTatsu13 += ap[k];
+							if (_strlen(ap[k]) == 6)
+							{
+								elementPoint += 90;//面子
+							}
+							else if (_strlen(ap[k]) == 4)
+							{
+								arTatsu13 += ap[k];
+							}
+						}
+						for (int k = 0; arTatsu13[k] != nil; k++)
+						{
+							array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
+							if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
+								elementPoint += 60;//両面
+							else if (arTatsuNum[0] == arTatsuNum[1])
+								elementPoint += 40;//対子
+							else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
+								elementPoint += 20;//辺張
+							else
+								elementPoint += 30;//嵌張
 						}
 					}
-					for (int k = 0; arTatsu13[k] != nil; k++)
-					{
-						array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
-						if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
-							elementPoint += 60;//両面
-						else if (arTatsuNum[0] == arTatsuNum[1])
-							elementPoint += 40;//対子
-						else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
-							elementPoint += 20;//辺張
-						else
-							elementPoint += 30;//嵌張
-					}
+					if (elementMaxPoint < elementPoint)
+						elementMaxPoint = elementPoint;
 				}
-				if (elementMaxPoint < elementPoint)
-					elementMaxPoint = elementPoint;
 			}
 			//孤立牌を優先的に切る
 			int koritsuPoint = 0;
@@ -97,7 +117,7 @@ string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string d
 			{
 				doraPoint = -50;
 			}
-			int dahaiPoint = shantenPoint + elementMaxPoint + koritsuPoint + furitenPoint;
+			int dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint;
 			if (point < dahaiPoint)
 			{
 				point = dahaiPoint;

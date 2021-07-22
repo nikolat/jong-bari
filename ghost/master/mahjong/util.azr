@@ -453,30 +453,7 @@ string OnSuteSelect(dict ref)
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(tehai, sute);
-
-	return "\C" + s + "\![raise,OnSuteSelect2," + selectPlayer + "," + tsumo + "," + sute + "]";
-}
-
-string OnSuteSelect2(dict ref)
-{
-	int selectPlayer = ref["Reference0"];
-	string tsumo = ref["Reference1"];
-	string sute = ref["Reference2"];
-
-	string s = "\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
-	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});//どうもこの処理で詰まってレスポンスを返せないことがあるらしい
-
-	return s + "\![raise,OnSuteSelect3," + selectPlayer + "," + tsumo + "," + sute + "]";
-}
-
-string OnSuteSelect3(dict ref)
-{
-	int selectPlayer = ref["Reference0"];
-	string tsumo = ref["Reference1"];
-	string sute = ref["Reference2"];
-	string s = "\C\![set,balloontimeout,0]\0\s[0]\b[2]\_q";
-	string tehai = addHai(arTehai[selectPlayer], tsumo);
-
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
