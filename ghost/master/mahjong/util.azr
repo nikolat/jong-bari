@@ -392,7 +392,7 @@ string OnSuteSelect(dict ref)
 		{
 			//即リー
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer));
+			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
@@ -447,7 +447,7 @@ string OnSuteSelect(dict ref)
 			if (arRichiJunme[selectPlayer] >= 0)
 				sute = tsumo;
 			else
-				sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer));
+				sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
 		}
 	}
 	isRinshanChance = 0;
