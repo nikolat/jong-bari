@@ -640,12 +640,12 @@ int canRon(int nPlayer, string atariHai)
 	int isIppatsu = 0;
 	int isChankan = 0;
 	int isRinshan = 0;
-	int is1stRound = 0;
-	if (_aryvn(arKawa[nPlayer]) == 0)//鳴きを考慮していないため注意
-		is1stRound = 1;
 	int isFinalTileWin = 0;
 	if (_aryvn(arYama) == nYamaIndex)
 		isFinalTileWin = 1;
+	int is1stRound = 0;
+	if (_aryvn(arKawa[nPlayer]) == 0)//鳴きを考慮していないため注意
+		is1stRound = 1;
 	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
@@ -680,9 +680,9 @@ int canTsumo(int nPlayer, string atariHai)
 	int isChankan = 0;
 	int isRinshan = isRinshanChance;
 	int isFinalTileWin = 0;
-	int is1stRound = 0;
 	if (_aryvn(arYama) == nYamaIndex)
 		isFinalTileWin = 1;
+	int is1stRound = 0;
 	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{

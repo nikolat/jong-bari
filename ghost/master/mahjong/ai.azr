@@ -39,7 +39,7 @@ string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string d
 			int shantenPoint = 10000 * (10 - shanten13);
 			int machiPoint = 0;
 			int elementMaxPoint = 0;
-			//テンパイ時は待ちの広さを考慮
+			//テンパイ時は待ちの広さ・和了点の高さを考慮
 			if (shanten13 == 0)
 			{
 				dict d = _saorirequest("MahjongUtil", "machi", strTehai13);
@@ -52,7 +52,29 @@ string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string d
 					return "";
 				}
 				array arMachi = strHaiToArray(d["Result"]);
-				machiPoint = 100 * _aryvn(arMachi);
+				for (int j = 0; arMachi[j] != nil; j++)
+				{
+					string strDora = _arystr(arDora);
+					int isTsumo = 1;
+					int isRichi = 0;
+					int isIppatsu = 0;
+					int isChankan = 0;
+					int isRinshan = 0;
+					int isFinalTileWin = 0;
+					int is1stRound = 0;
+					dict d = _saorirequest("MahjongUtil", "score", strTehai13, arMachi[j], bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
+					if (d["head"] == "SAORI/1.0 400 Bad Request")
+					{
+						dAdditionalHeader = ${
+							$("ErrorLevel", "warning"),
+							$("ErrorDescription", "failed \"score\" in \"getDahai\" with " + strTehai13 + " " + arMachi[j])
+						};
+						return "";
+					}
+					int score = d["Result"];
+					if (score > 0)
+						machiPoint += score;
+				}
 			}
 			else
 			{
