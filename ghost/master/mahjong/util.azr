@@ -370,7 +370,7 @@ string OnSuteSelect(dict ref)
 			s += "\_w[2000]";
 			//晒した牌通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + selectPlayer + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
+				+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
 			//ツモ通知
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
@@ -404,7 +404,7 @@ string OnSuteSelect(dict ref)
 			s += "\_w[2000]";
 			//晒した牌通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + selectPlayer + "," + kakanHai + kakanHai + kakanHai + kakanHai + "]";
+				+ ",open," + playerName[selectPlayer] + "," + kakanHai + kakanHai + kakanHai + kakanHai + "]";
 			//ツモ通知
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
@@ -459,7 +459,7 @@ string OnSuteSelect(dict ref)
 			s += "\_w[2000]";
 			//晒した牌通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + selectPlayer + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
+				+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
 			//ツモ通知
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
@@ -492,7 +492,7 @@ string OnSuteSelect(dict ref)
 			s += "\_w[2000]";
 			//晒した牌通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + selectPlayer + "," + kakanHai + kakanHai + kakanHai + kakanHai + "]";
+				+ ",open," + playerName[selectPlayer] + "," + kakanHai + kakanHai + kakanHai + kakanHai + "]";
 			//ツモ通知
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
@@ -936,7 +936,7 @@ string OnSuteComplete(dict ref)
 				s += "\_w[2000]";
 				//晒した牌通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-					+ ",open," + completePlayer + "," + sute + sute + sute + "]";
+					+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + "]";
 				//捨て牌問い合わせ
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
@@ -958,7 +958,7 @@ string OnSuteComplete(dict ref)
 				s += "\_w[2000]";
 				//晒した牌通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-					+ ",open," + completePlayer + "," + furoHai + "]";
+					+ ",open," + playerName[completePlayer] + "," + furoHai + "]";
 				//捨て牌問い合わせ
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
@@ -983,7 +983,7 @@ string OnSuteComplete(dict ref)
 				s += "\_w[2000]";
 				//晒した牌通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-					+ ",open," + completePlayer + "," + sute + sute + sute + sute + "]";
+					+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + sute + "]";
 				//ツモ通知
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",tsumo," + playerName[i] + "," + getLeftYama() + "," + tsumo + "]";
@@ -1021,7 +1021,7 @@ string OnSuteComplete(dict ref)
 					s += "\_w[2000]";
 					//晒した牌通知
 					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + completePlayer + "," + sute + sute + sute + "]";
+						+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + "]";
 					//捨て牌問い合わせ
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
@@ -1064,7 +1064,7 @@ string OnSuteComplete(dict ref)
 					s += "\_w[2000]";
 					//晒した牌通知
 					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + completePlayer + "," + furoHai + "]";
+						+ ",open," + playerName[completePlayer] + "," + furoHai + "]";
 					//捨て牌問い合わせ
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",sutehai?]";
@@ -1089,7 +1089,7 @@ string OnSuteComplete(dict ref)
 					s += "\_w[2000]";
 					//晒した牌通知
 					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + completePlayer + "," + sute + sute + sute + sute + "]";
+						+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + sute + "]";
 					//ツモ通知
 					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",tsumo," + playerName[i] + "," + getLeftYama() + "," + tsumo + "]";
