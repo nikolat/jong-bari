@@ -378,7 +378,7 @@ string OnSuteSelect(dict ref)
 			return "\0Error\e";
 		}
 	}
-	else//auto
+	else if(tsumo != "")//auto カン以外の副露直後を除く
 	{
 		if (canTsumo(selectPlayer, tsumo))
 		{
@@ -388,14 +388,27 @@ string OnSuteSelect(dict ref)
 			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
 			return s;
 		}
-		if (canRichi(selectPlayer, tsumo))
+		if (shouldAnkan(selectPlayer, tsumo))
 		{
-			//即リー
-			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
+			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer], selectPlayer);
+			string ankanHai = _randselect(arAnkanHaiUseful);
+			isRinshanChance = 1;
+			setAnkan(selectPlayer, ankanHai);
+			dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
+			tsumo = arYama[nYamaIndex++];
+			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",richi]";
-			wait += "\_w[2000]";
+				+ ",say," + playerName[selectPlayer] + ",kan]";
+			s += "\_w[2000]";
+			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+				+ ",sutehai?]";
+			s += "\_q\e";
+			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
+			_create_thread("TH_WaitResponse");
+			return s;
 		}
 		else if (shouldKakan(selectPlayer, tsumo))
 		{
@@ -420,27 +433,13 @@ string OnSuteSelect(dict ref)
 			_create_thread("TH_WaitResponse");
 			return s;
 		}
-		else if (shouldAnkan(selectPlayer, tsumo))
+		else if (canRichi(selectPlayer, tsumo))
 		{
-			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer], selectPlayer);
-			string ankanHai = _randselect(arAnkanHaiUseful);
-			isRinshanChance = 1;
-			setAnkan(selectPlayer, ankanHai);
-			dorahyouji += arYama[52 + (_strlen(dorahyouji) / 2)];
-			tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
+			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
+			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",kan]";
-			s += "\_w[2000]";
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			s += "\_q\e";
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
-			return s;
+				+ ",say," + playerName[selectPlayer] + ",richi]";
+			wait += "\_w[2000]";
 		}
 		else
 		{
@@ -449,6 +448,10 @@ string OnSuteSelect(dict ref)
 			else
 				sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
 		}
+	}
+	else//auto カン以外の副露直後
+	{
+		sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
 	}
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
@@ -1209,6 +1212,8 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 				s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
 			else if (ASEARCH(i, arFuroJunme[p]) >= 0)
 				s += "\f[color,gray]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+			else if (agariPlayer >= 0 && p != agariPlayer && nPlayer == p && i == _aryvn(arKawa[p]) - 1)
+				s += "\f[color,purple]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
 			else
 				s += convertUnicode(arKawa[p][i]);
 		}
@@ -1223,6 +1228,8 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			s += "\f[color,red]" + convertUnicode(arKawa[pUser][i]) + "\f[color,default]";
 		else if (ASEARCH(i, arFuroJunme[pUser]) >= 0)
 			s += "\f[color,gray]" + convertUnicode(arKawa[pUser][i]) + "\f[color,default]";
+		else if (agariPlayer >= 0 && pUser != agariPlayer && nPlayer == pUser && i == _aryvn(arKawa[pUser]) - 1)
+			s += "\f[color,purple]" + convertUnicode(arKawa[pUser][i]) + "\f[color,default]";
 		else
 			s += convertUnicode(arKawa[pUser][i]);
 	}

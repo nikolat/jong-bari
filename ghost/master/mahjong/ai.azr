@@ -139,7 +139,7 @@ string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string d
 			{
 				doraPoint = -50;
 			}
-			int dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint;
+			int dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint + doraPoint;
 			if (point < dahaiPoint)
 			{
 				point = dahaiPoint;
