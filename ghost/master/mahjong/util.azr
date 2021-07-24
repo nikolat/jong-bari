@@ -233,10 +233,10 @@ string Menu_StartKyoku(dict ref)
 	if (bafu < 2)//東場、南場
 		return startKyoku();
 	else
-		return endGame();
+		return Menu_EndGame(ref);
 }
 
-string endGame()
+string Menu_EndGame(dict ref)
 {
 	//gameend通知
 	string s = "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
@@ -1437,7 +1437,8 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		if (canDaiminkan(pUser, sute))
 			s += "\![*]\__q[Menu_Daiminkan,3," + nPlayer + "," + sute + "]カン\__q";
 	}
-	s += "\![*]\__q[Menu_CANCEL]閉じる\__q";
+	s += "\![*]\__q[Menu_CANCEL]閉じる\__q\n";
+	s += "\![*]\__q[Menu_EndGame]対局終了\__q";
 	return s;
 }
 
