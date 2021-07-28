@@ -1381,14 +1381,14 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			array arKakanHai = getKakanHai(addHai(arTehai[pUser], tsumo));
 			if (_aryvn(arKakanHai) == 1)
 			{
-				s += "\![*]\__q[Menu_Kakan," + arKakanHai[0] + "]カン\__q";
+				s += "\![*]\__q[Menu_Kakan,3," + arKakanHai[0] + "]カン\__q";
 			}
 			else
 			{
 				s += "\![*]カン";
 				for (int i = 0; arKakanHai[i] != nil; i++)
 				{
-					s += " \__q[Menu_Kakan," + arKakanHai[i] + "]\f[height,+16]" + convertUnicode(arKakanHai[i]) + "\f[height,default]\__q";
+					s += " \__q[Menu_Kakan,3," + arKakanHai[i] + "]\f[height,+16]" + convertUnicode(arKakanHai[i]) + "\f[height,default]\__q";
 				}
 			}
 		}
@@ -1397,14 +1397,14 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			array arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
 			if (_aryvn(arAnkanHai) == 1)
 			{
-				s += "\![*]\__q[Menu_Ankan," + arAnkanHai[0] + "]カン\__q";
+				s += "\![*]\__q[Menu_Ankan,3," + arAnkanHai[0] + "]カン\__q";
 			}
 			else
 			{
 				s += "\![*]カン";
 				for (int i = 0; arAnkanHai[i] != nil; i++)
 				{
-					s += " \__q[Menu_Ankan," + arAnkanHai[i] + "]\f[height,+16]" + convertUnicode(arAnkanHai[i]) + "\f[height,default]\__q";
+					s += " \__q[Menu_Ankan,3," + arAnkanHai[i] + "]\f[height,+16]" + convertUnicode(arAnkanHai[i]) + "\f[height,default]\__q";
 				}
 			}
 		}
@@ -1472,9 +1472,9 @@ string Menu_Richi(dict ref)
 
 string Menu_Kakan(dict ref)
 {
-	string kakanHai = ref["Reference2"];
+	int nFuroPlayer = ref["Reference2"];
+	string kakanHai = ref["Reference3"];
 	string tsumo = arYama[nYamaIndex - 1];
-	int nFuroPlayer = 3;
 	arTehai[nFuroPlayer] = addHai(arTehai[nFuroPlayer], tsumo);
 	isRinshanChance = 1;
 	setKakan(nFuroPlayer, kakanHai);
@@ -1498,9 +1498,9 @@ string Menu_Kakan(dict ref)
 
 string Menu_Ankan(dict ref)
 {
-	string ankanHai = ref["Reference2"];
+	int nFuroPlayer = ref["Reference2"];
+	string ankanHai = ref["Reference3"];
 	string tsumo = arYama[nYamaIndex - 1];
-	int nFuroPlayer = 3;
 	arTehai[nFuroPlayer] = addHai(arTehai[nFuroPlayer], tsumo);
 	isRinshanChance = 1;
 	setAnkan(nFuroPlayer, ankanHai);
