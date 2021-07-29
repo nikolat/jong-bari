@@ -239,7 +239,8 @@
 　　csaori
 　　　https://github.com/ponapalt/csaori
 
-　麻雀アプリ「電脳麻将」を参考にさせていただきました。
+　麻雀アプリ「電脳麻将」の開発ブログを参考にさせていただきました。
+
 　　電脳麻将
 　　　https://github.com/kobalab/Majiang
 
@@ -251,5 +252,5 @@ license.txtを見てください。
 
 ■更新履歴
 
-・まだ未完成なので完成したら正式に公開します。
+・2021-07-29 Initial Release
 
