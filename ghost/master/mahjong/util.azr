@@ -342,10 +342,10 @@ string OnSuteSelect(dict ref)
 	}
 	else if (reservedSelectedHai != "")
 	{
+		sute = reservedSelectedHai;
+		reservedSelectedHai = "";
 		if (reservedRichi && canRichi(selectPlayer, tsumo))
 		{
-			sute = reservedSelectedHai;
-			reservedSelectedHai = "";
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
 			//発声通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
