@@ -342,8 +342,6 @@ string OnSuteSelect(dict ref)
 	}
 	else if (reservedSelectedHai != "")
 	{
-		sute = reservedSelectedHai;
-		reservedSelectedHai = "";
 		if (reservedRichi && canRichi(selectPlayer, tsumo))
 		{
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
@@ -419,10 +417,7 @@ string OnSuteSelect(dict ref)
 			_create_thread("TH_WaitResponse");
 			return s;
 		}
-		reservedRichi = 0;
-		reservedAnkan = 0;
-		reservedKakan = 0;
-		if (sute == "")
+		if (reservedRichi && !canRichi(selectPlayer, tsumo) || reservedAnkan && !canAnkan(selectPlayer, tsumo) || reservedKakan && !canKakan(selectPlayer, tsumo))
 		{
 			//指定されたアクションが不可能だった
 			dAdditionalHeader = ${
@@ -431,6 +426,11 @@ string OnSuteSelect(dict ref)
 			};
 			return "\0Error\e";
 		}
+		sute = reservedSelectedHai;
+		reservedSelectedHai = "";
+		reservedRichi = 0;
+		reservedAnkan = 0;
+		reservedKakan = 0;
 	}
 	else if(tsumo != "")//auto カン以外の副露直後を除く
 	{
