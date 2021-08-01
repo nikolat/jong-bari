@@ -1,0 +1,3 @@
+shell\master\menu_background.png
+shell\master\menu_foreground.png
+shell\master\menu_sidebar.png
