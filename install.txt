@@ -1,4 +1,4 @@
-charset,Shift_JIS
+charset,UTF-8
 type,ghost
-name,XBARIBARI
+name,é›€ã€…BARIBARI
 directory,jong-bari

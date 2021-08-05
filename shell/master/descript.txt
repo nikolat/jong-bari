@@ -1,23 +1,23 @@
-charset,Shift_JIS
+charset,UTF-8
 type,shell
 name,master
 
 craftman,Don
 craftmanurl,http://nikolat.herokuapp.com/
 
-//ƒoƒ‹[ƒ“ˆÊ’u
+//ãƒãƒ«ãƒ¼ãƒ³ä½ç½®
 sakura.balloon.offsetx,0
 sakura.balloon.offsety,0
 kero.balloon.offsetx,0
 kero.balloon.offsety,0
 
-//ƒEƒCƒ“ƒhƒEˆÊ’u
+//ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ä½ç½®
 seriko.alignmenttodesktop,free
 
-//readmew’è
+//readmeæŒ‡å®š
 readme,readme.txt
 
-//ƒƒjƒ…[’è‹`
+//ãƒ¡ãƒ‹ãƒ¥ãƒ¼å®šç¾©
 menu.background.bitmap.filename,menu/menu_background.png
 menu.foreground.bitmap.filename,menu/menu_foreground.png
 menu.sidebar.bitmap.filename,menu/menu_sidebar.png

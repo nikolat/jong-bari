@@ -6,7 +6,7 @@ string OnBoot()               { return "\0\s[0]\1\s[10]\e"; }
 string OnGhostChanged()       { return "\0\s[0]\1\s[10]\e"; }
 string OnShellChanged()       { return "\0\s[0]\1\s[10]\e"; }
 string OnWindowStateRestore() { return "\0\s[0]\1\s[10]\e"; }
-string OnSurfaceRestore()     { return "\0\s[0]\1\s[10]\e"; }
+string OnSurfaceRestore()     { return ""; }
 string OnClose()              { return "\-\e"; }
 
 //******************************************************************************

@@ -1,15 +1,15 @@
-charset,Shift_JIS
+charset,UTF-8
 version,1
 
-group,‘ì
+group,é›€å“
 {
 	scope,0
 
-	0,‘f
+	0,ç´ 
 }
 
-group,‚»‚Ì‘¼
+group,ãã®ä»–
 {
-	10,–³‚µ
+	10,ç„¡ã—
 }
 

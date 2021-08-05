@@ -1,8 +1,8 @@
-charset,Shift_JIS
+charset,UTF-8
 type,ghost
 shiori,akari.dll
-name,XBARIBARI
-sakura.name,‘ì
+name,é›€ã€…BARIBARI
+sakura.name,é›€å“
 kero.name,none
 craftman,Don
 craftmanurl,http://nikolat.herokuapp.com/
