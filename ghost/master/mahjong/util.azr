@@ -33,6 +33,7 @@ int isSoloMode;
 string lastScript;
 //シェル表示保存用
 array arSavedTehai = {{}, {}, {}, {}};
+string savedTsumo;
 //クライアントからのレスポンス保存用
 string reservedSelectedHai;
 int reservedRichi;
@@ -1222,6 +1223,37 @@ setSutehai(string sute, int nPlayer)
 	}
 }
 
+string click_p01(dict ref) { return getSutehaiFromClick(ref); }
+string click_p02(dict ref) { return getSutehaiFromClick(ref); }
+string click_p03(dict ref) { return getSutehaiFromClick(ref); }
+string click_p04(dict ref) { return getSutehaiFromClick(ref); }
+string click_p05(dict ref) { return getSutehaiFromClick(ref); }
+string click_p06(dict ref) { return getSutehaiFromClick(ref); }
+string click_p07(dict ref) { return getSutehaiFromClick(ref); }
+string click_p08(dict ref) { return getSutehaiFromClick(ref); }
+string click_p09(dict ref) { return getSutehaiFromClick(ref); }
+string click_p10(dict ref) { return getSutehaiFromClick(ref); }
+string click_p11(dict ref) { return getSutehaiFromClick(ref); }
+string click_p12(dict ref) { return getSutehaiFromClick(ref); }
+string click_p13(dict ref) { return getSutehaiFromClick(ref); }
+string click_p14(dict ref) { return getSutehaiFromClick(ref); }
+string getSutehaiFromClick(dict ref)
+{
+	int i = (int)_substr(ref["Reference4"], 1, 2);
+	string sute;
+	string tsumo = savedTsumo;
+	savedTsumo = "";
+	if (i <= 13)
+		sute = _substr(arTehai[3], 2 * (i - 1), 2);
+	else
+		sute = tsumo;
+	dict d = ${
+		$("Reference2", sute),
+		$("Reference3", tsumo),
+	};
+	return Menu_Sutehai(d);
+}
+
 string Menu_Sutehai(dict ref)
 {
 	int selectPlayer = 3;
@@ -1323,14 +1355,14 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
 				tsumoShowing = tsumo;
-			s += showHai(arTehai[p], tsumoShowing, p, 0, 1);
+			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, 0, 1);
 		}
 		else
 		{
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
 				tsumoShowing = tsumo;
-			s += showHai(arTehai[p], tsumoShowing, p, 0, 0);
+			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, 0, 0);
 		}
 		s += "\n";
 		s += showKawa(nPlayer, p, agariPlayer);
@@ -1344,7 +1376,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	string tsumoShowing = "";
 	if (nPlayer == pUser)
 		tsumoShowing = tsumo;
-	s += showHai(arTehai[pUser], tsumoShowing, pUser, isFuro, 1);
+	s += showHai(arTehai[pUser], tsumoShowing, pUser, nPlayer, isFuro, 1);
 	s += "\f[height,default]";
 	int n = getLeftYama();
 	if (n > 0 || tsumo != "")
@@ -1669,26 +1701,26 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int isOpen, int isScoreView)
+string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen, int isScoreView)
 {
 	string s;
 	string si;
 	array savedTehai = {};
 	string animNo;
 	array arHai = strHaiToArrayWithFuro(strHai);
-	if (nPlayer != 3 || isScoreView)
+	if (showPlayer != 3 || isScoreView)
 	{
 		string sFuro;
 		int nFuro;
 		int nFuroAnim;
 		int nFuroOffset;
 		int nNormal = 13;
-		for (int i = 0; arSavedTehai[nPlayer][i] != nil; i++)
+		for (int i = 0; arSavedTehai[showPlayer][i] != nil; i++)
 		{
-			si += "\![anim,clear," + arSavedTehai[nPlayer][i] + "]";
+			si += "\![anim,clear," + arSavedTehai[showPlayer][i] + "]";
 		}
-		arSavedTehai[nPlayer] = {};
-		int offsetX = 0;
+		arSavedTehai[showPlayer] = {};
+		int offsetX = 32;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (arHai[i][0] == "furo")
@@ -1713,14 +1745,14 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				else
 					haiCode = "tb";
 				s += convertUnicode(haiCode);
-				animNo = "" + (nPlayer + 1) + "0" + fillzero(i + 1) + getSurfaceCode(haiCode);
+				animNo = "" + (showPlayer + 1) + "0" + fillzero(i + 1) + getSurfaceCode(haiCode);
 				si += "\i[" + animNo + "]";
 				savedTehai += animNo;
 			}
 			else if (arHai[i][0] == "furo")
 			{
-				sFuro += showFuroWithColor(arHai[i][1], nPlayer, nFuro);
-				si += showFuroByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+				sFuro += showFuroWithColor(arHai[i][1], showPlayer, nFuro);
+				si += showFuroByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 				nFuro++;
 				nFuroAnim++;
 				nFuroOffset += _strlen(arHai[i][1]) / 2;
@@ -1730,7 +1762,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 			else if (arHai[i][0] == "ankan")
 			{
 				sFuro += showAnkan(arHai[i][1]);
-				si += showAnkanByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+				si += showAnkanByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 				nFuroAnim++;
 				nFuroOffset += _strlen(arHai[i][1]) / 2;
 				offsetX += 32 * 4;
@@ -1746,21 +1778,22 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 			else
 				haiCode += "tb";
 			s += convertUnicode(haiCode);
-			animNo = "" + (nPlayer + 1) + "0" + fillzero(14) + getSurfaceCode(haiCode);
+			animNo = "" + (showPlayer + 1) + "0" + fillzero(14) + getSurfaceCode(haiCode);
 			savedTehai += animNo;
 			int offset = 16 - ((13 - nNormal) * 32);
-			si += getFuroAnimOffset(nPlayer, animNo, offset, 0);
+			si += getFuroAnimOffset(showPlayer, animNo, offset, 0);
 		}
 		if (sFuro != "")
 			s += "\_l[" + (260 - (15 * nFuroOffset)) + ",]" + sFuro;
 		s += si;
 		for (int i = 0; savedTehai[i] != nil; i++)
 		{
-			arSavedTehai[nPlayer] += savedTehai[i];
+			arSavedTehai[showPlayer] += savedTehai[i];
 		}
 	}
 	else
 	{
+		savedTsumo = tsumoShowing;
 		string sFuro;
 		int nFuro;
 		int nFuroAnim;
@@ -1775,7 +1808,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 		{
 			si += "\![anim,clear,40" + fillzero(i + 1) + "99]";
 		}
-		int offsetX = 0;
+		int offsetX = 32;
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (arHai[i][0] == "furo")
@@ -1833,8 +1866,8 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				}
 				else if (arHai[i][0] == "furo")
 				{
-					sFuro += showFuroWithColor(arHai[i][1], nPlayer, nFuro);
-					si += showFuroByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					sFuro += showFuroWithColor(arHai[i][1], showPlayer, nFuro);
+					si += showFuroByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuro++;
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
@@ -1844,14 +1877,14 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				else if (arHai[i][0] == "ankan")
 				{
 					sFuro += showAnkan(arHai[i][1]);
-					si += showAnkanByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					si += showAnkanByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
 					offsetX += 32 * 4;
 					nNormal -= 3;
 				}
 			}
-			else if (isFuro && tsumoShowing == "")
+			else if (isFuro && showPlayer == nPlayer && tsumoShowing == "")
 			{
 				if (arHai[i][0] == "normal")
 				{
@@ -1863,8 +1896,8 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				}
 				else if (arHai[i][0] == "furo")
 				{
-					sFuro += showFuroWithColor(arHai[i][1], nPlayer, nFuro);
-					si += showFuroByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					sFuro += showFuroWithColor(arHai[i][1], showPlayer, nFuro);
+					si += showFuroByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuro++;
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
@@ -1874,7 +1907,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				else if (arHai[i][0] == "ankan")
 				{
 					sFuro += showAnkan(arHai[i][1]);
-					si += showAnkanByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					si += showAnkanByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
 					offsetX += 32 * 4;
@@ -1892,8 +1925,8 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				}
 				else if (arHai[i][0] == "furo")
 				{
-					sFuro += showFuroWithColor(arHai[i][1], nPlayer, nFuro);
-					si += showFuroByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					sFuro += showFuroWithColor(arHai[i][1], showPlayer, nFuro);
+					si += showFuroByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuro++;
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
@@ -1903,7 +1936,7 @@ string showHai(string strHai, string tsumoShowing, int nPlayer, int isFuro, int 
 				else if (arHai[i][0] == "ankan")
 				{
 					sFuro += showAnkan(arHai[i][1]);
-					si += showAnkanByAnim(arHai[i][1], nPlayer, nFuroAnim, offsetX);
+					si += showAnkanByAnim(arHai[i][1], showPlayer, nFuroAnim, offsetX);
 					nFuroAnim++;
 					nFuroOffset += _strlen(arHai[i][1]) / 2;
 					offsetX += 32 * 4;
@@ -2170,15 +2203,37 @@ string showKawa(int nPlayer, int p, int agariPlayer)
 	string si;
 	for (int i = 0; arKawa[p][i] != nil; i++)
 	{
-		if (i == arRichiJunme[p])
-			s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
-		else if (ASEARCH(i, arFuroJunme[p]) >= 0)
-			s += "\f[color,gray]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
-		else if (agariPlayer >= 0 && p != agariPlayer && p == nPlayer && i == _aryvn(arKawa[p]) - 1)
-			s += "\f[color,purple]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
-		else
-			s += convertUnicode(arKawa[p][i]);
 		string animNo = "" + (p + 1) + "1" + fillzero(i) + getSurfaceCode(arKawa[p][i]);
+		if (i == arRichiJunme[p])
+		{
+			s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+			animNo = "" + (p + 1) + "2" + fillzero(i) + getSurfaceCode(arKawa[p][i]);
+		}
+		else if (ASEARCH(i, arFuroJunme[p]) >= 0)
+		{
+			s += "\f[color,gray]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+		}
+		else if (agariPlayer >= 0 && p != agariPlayer && p == nPlayer && i == _aryvn(arKawa[p]) - 1)
+		{
+			s += "\f[color,purple]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+		}
+		else if (arRichiJunme[p] >= 0 && i > arRichiJunme[p] && (int)(i / 6) == (int)(arRichiJunme[p] / 6))
+		{
+			s += convertUnicode(arKawa[p][i]);
+			int offset = 13;
+			if (p == 0)
+				si += "\![anim,offset," + animNo + ",0,-" + offset + "]";
+			else if (p == 1)
+				si += "\![anim,offset," + animNo + ",-" + offset + ",0]";
+			else if (p == 2)
+				si += "\![anim,offset," + animNo + ",0," + offset + "]";
+			else if (p == 3)
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+		}
+		else
+		{
+			s += convertUnicode(arKawa[p][i]);
+		}
 		savedTehai += animNo;
 		si += "\i[" + animNo + "]";
 	}

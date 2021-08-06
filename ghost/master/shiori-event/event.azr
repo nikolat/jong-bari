@@ -21,6 +21,17 @@ string OnUpdateFailure(dict ref)  { return "\0\s[0]\_q" + ref["Reference0"] + ".
 // mouse event
 //******************************************************************************
 //------------------------------------------------------------------------------
+// クリック
+//------------------------------------------------------------------------------
+string OnMouseClick(dict ref)
+{
+	//右クリックは無効
+	if (ref["Reference5"] != 0)
+		return "";
+	return _fncstr("click_" + ref["Reference4"], ref);
+}
+
+//------------------------------------------------------------------------------
 // ダブルクリック
 //------------------------------------------------------------------------------
 string OnMouseDoubleClick(dict ref)
@@ -36,17 +47,11 @@ string OnMouseDoubleClick(dict ref)
 //------------------------------------------------------------------------------
 string OnKeyPress(dict ref)
 {
-	string s;
-	switch (ref["Reference0"])
-	{
-	  case "r":
-		s = "\![reload,shiori]\0\s[0]\_qReloaded.\_q\e";
-		break;
-	  default:
-		s = "";
-		break;
-	}
-	return s;
+	return _fncstr("key_" + ref["Reference0"], ref);
+}
+string key_r(dict ref)
+{
+	return "\![reload,shiori]\0\s[0]\_qReloaded.\_q\e";
 }
 
 //------------------------------------------------------------------------------
