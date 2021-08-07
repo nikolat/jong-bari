@@ -34,6 +34,8 @@ string lastScript;
 //シェル表示保存用
 array arSavedTehai = {{}, {}, {}, {}};
 string savedTsumo;
+array arSavedWordCommand;
+string reservedClickScript;
 //クライアントからのレスポンス保存用
 string reservedSelectedHai;
 int reservedRichi;
@@ -542,6 +544,7 @@ string OnSuteSelect(dict ref)
 	if (canRon(3, sute) || canPon(3, sute) || (selectPlayer + 1 == 3) && canChi(3, sute))
 		s += "\x[noclear]";
 	isRecievedResponse = 1;
+	string rcs = "";
 	for (int i = 0; playerName[i] != nil; i++)
 	{
 		if (i != selectPlayer)
@@ -558,15 +561,16 @@ string OnSuteSelect(dict ref)
 			if (_aryvn(command) > 0)
 			{
 				//鳴くか問い合わせ
-				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",naku?," + sute + "," + JOIN(command, ",") + "]";
 				dResponseNeed[playerName[i]] = 1;
 				isRecievedResponse = 0;
 			}
 		}
 	}
-	s += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + sute + "]";
-	s += "\_q\e";
+	rcs += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + sute + "]";
+	reservedClickScript = rcs;
+	s += rcs + "\_q\e";
 	return s;
 }
 
@@ -1407,6 +1411,8 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	else
 		s += "\n\n\_l[225,]流局";
 	s += "\_l[0,]";
+	int nWord = 1;
+	arSavedWordCommand = {};
 	if (nPlayer == pUser && tsumo != "")
 	{
 		if (canTsumo(pUser, tsumo))
@@ -1416,7 +1422,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
 			offset += 110;
+			arSavedWordCommand += {"Menu_Tsumo", 3};
 		}
 		if (canRichi(pUser, tsumo))
 		{
@@ -1425,7 +1436,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
 			offset += 110;
+			arSavedWordCommand += {"Menu_Richi"};
 		}
 		if (canKakan(pUser, tsumo) || canAnkan(pUser, tsumo))
 		{
@@ -1433,15 +1449,27 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			array arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
 			if (_aryvn(arKakanHai) + _aryvn(arAnkanHai) == 1)
 			{
+				array saveCommand;
 				if (_aryvn(arKakanHai) == 1)
+				{
 					s += "\![*]\__q[Menu_Kakan,3," + arKakanHai[0] + "]カン\__q";
+					saveCommand = {"Menu_Kakan", 3, arKakanHai[0]};
+				}
 				else
+				{
 					s += "\![*]\__q[Menu_Ankan,3," + arAnkanHai[0] + "]カン\__q";
+					saveCommand = {"Menu_Ankan", 3, arAnkanHai[0]};
+				}
 				animNo = "500016";
 				si += "\![anim,offset," + animNo + "," + offset + ",0]";
 				si += "\i[" + animNo + "]";
 				savedTehai += animNo;
+				animNo = "500" + (nWord++) + "99";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
 				offset += 110;
+				arSavedWordCommand += saveCommand;
 			}
 			else
 			{
@@ -1459,7 +1487,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 					si += "\![anim,offset," + animNo + "," + offset + ",0]";
 					si += "\i[" + animNo + "]";
 					savedTehai += animNo;
+					animNo = "501" + (nWord++) + "99";
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
 					offset += 42;
+					arSavedWordCommand += {"Menu_Kakan", 3, arKakanHai[i]};
 				}
 				for (int i = 0; arAnkanHai[i] != nil; i++)
 				{
@@ -1468,7 +1501,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 					si += "\![anim,offset," + animNo + "," + offset + ",0]";
 					si += "\i[" + animNo + "]";
 					savedTehai += animNo;
+					animNo = "501" + (nWord++) + "99";
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
 					offset += 42;
+					arSavedWordCommand += {"Menu_Ankan", 3, arAnkanHai[i]};
 				}
 			}
 		}
@@ -1482,7 +1520,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
 			offset += 110;
+			arSavedWordCommand += {"Menu_Ron", 3, nPlayer, sute};
 		}
 		if (canPon(pUser, sute))
 		{
@@ -1491,7 +1534,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
 			offset += 110;
+			arSavedWordCommand += {"Menu_Pon", 3, nPlayer, sute};
 		}
 		if (nPlayer + 1 == pUser && canChi(pUser, sute))
 		{
@@ -1503,7 +1551,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 				si += "\![anim,offset," + animNo + "," + offset + ",0]";
 				si += "\i[" + animNo + "]";
 				savedTehai += animNo;
+				animNo = "500" + (nWord++) + "99";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
 				offset += 110;
+				arSavedWordCommand += {"Menu_Chi", 3, nPlayer, sute, arMaterial[0]};
 			}
 			else
 			{
@@ -1524,12 +1577,22 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 					si += "\![anim,offset," + animNo + "," + offset + ",0]";
 					si += "\i[" + animNo + "]";
 					savedTehai += animNo;
+					animNo = "501" + (nWord++) + "99";
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
 					offset += 32;
+					arSavedWordCommand += {"Menu_Chi", 3, nPlayer, sute, arMaterial[i]};
 					animNo = "500" + (nPaiIndex++) + "" + getSurfaceCode(hai2);
 					si += "\![anim,offset," + animNo + "," + offset + ",0]";
 					si += "\i[" + animNo + "]";
 					savedTehai += animNo;
+					animNo = "501" + (nWord++) + "99";
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
 					offset += 42;
+					arSavedWordCommand += {"Menu_Chi", 3, nPlayer, sute, arMaterial[i]};
 				}
 			}
 		}
@@ -1540,7 +1603,12 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
 			offset += 110;
+			arSavedWordCommand += {"Menu_Daiminkan", 3, nPlayer, sute};
 		}
 		//次へ
 		if (si != "")
@@ -1549,6 +1617,11 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			si += "\![anim,offset," + animNo + "," + offset + ",0]";
 			si += "\i[" + animNo + "]";
 			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			arSavedWordCommand += {"Menu_NextTurn"};
 		}
 	}
 	for (int i = 0; savedTehai[i] != nil; i++)
@@ -1575,6 +1648,36 @@ int isMenzenPlayer(int nPlayer)
 		}
 	}
 	return 1;
+}
+
+string click_w01(dict ref) { return getWordCommandFromClick(ref); }
+string click_w02(dict ref) { return getWordCommandFromClick(ref); }
+string click_w03(dict ref) { return getWordCommandFromClick(ref); }
+string click_w04(dict ref) { return getWordCommandFromClick(ref); }
+string click_w05(dict ref) { return getWordCommandFromClick(ref); }
+string click_w06(dict ref) { return getWordCommandFromClick(ref); }
+string click_w11(dict ref) { return getWordCommandFromClick(ref); }
+string click_w12(dict ref) { return getWordCommandFromClick(ref); }
+string click_w13(dict ref) { return getWordCommandFromClick(ref); }
+string click_w14(dict ref) { return getWordCommandFromClick(ref); }
+string click_w15(dict ref) { return getWordCommandFromClick(ref); }
+string click_w16(dict ref) { return getWordCommandFromClick(ref); }
+string getWordCommandFromClick(dict ref)
+{
+	int index = (int)_substr(ref["Reference4"], 2, 1);
+	array arWordCommand = arSavedWordCommand[index - 1];
+	arSavedWordCommand = {};
+	dict d;
+	for (int i = 0; arWordCommand[i] != nil; i++)
+	{
+		d += $("Reference" + (2 + i), arWordCommand[1 + i]);
+	}
+	return _fncstr(arWordCommand[0], d);
+}
+
+string Menu_NextTurn(dict ref)
+{
+	return "\0" + reservedClickScript + "\e";
 }
 
 string Menu_Richi(dict ref)
