@@ -1314,7 +1314,12 @@ string clearAnimation()
 
 string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro)
 {
-	string s = clearAnimation();
+	string s = "";
+	string si = "";
+	string sClear = clearAnimation();
+	array savedTehai = {};
+	string animNo;
+	int offset = 0;
 	array wanpai;
 	array arDorahyouji = strHaiToArray(dorahyouji);
 	int isMinkan = 0;
@@ -1405,38 +1410,65 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	if (nPlayer == pUser && tsumo != "")
 	{
 		if (canTsumo(pUser, tsumo))
+		{
 			s += "\![*]\__q[Menu_Tsumo,3]ツモ\__q";
+			animNo = "500012";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+		}
 		if (canRichi(pUser, tsumo))
+		{
 			s += "\![*]\__q[Menu_Richi]リーチ\__q";
-		if (canKakan(pUser, tsumo))
+			animNo = "500011";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+		}
+		if (canKakan(pUser, tsumo) || canAnkan(pUser, tsumo))
 		{
 			array arKakanHai = getKakanHai(addHai(arTehai[pUser], tsumo));
-			if (_aryvn(arKakanHai) == 1)
+			array arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
+			if (_aryvn(arKakanHai) + _aryvn(arAnkanHai) == 1)
 			{
-				s += "\![*]\__q[Menu_Kakan,3," + arKakanHai[0] + "]カン\__q";
+				if (_aryvn(arKakanHai) == 1)
+					s += "\![*]\__q[Menu_Kakan,3," + arKakanHai[0] + "]カン\__q";
+				else
+					s += "\![*]\__q[Menu_Ankan,3," + arAnkanHai[0] + "]カン\__q";
+				animNo = "500016";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
+				offset += 110;
 			}
 			else
 			{
 				s += "\![*]カン";
+				animNo = "500016";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
+				offset += 110;
+				int nPaiIndex = 1;
 				for (int i = 0; arKakanHai[i] != nil; i++)
 				{
 					s += " \__q[Menu_Kakan,3," + arKakanHai[i] + "]\f[height,+16]" + convertUnicode(arKakanHai[i]) + "\f[height,default]\__q";
+					animNo = "500" + (nPaiIndex++) + getSurfaceCode(arKakanHai[i]);
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
+					offset += 42;
 				}
-			}
-		}
-		if (canAnkan(pUser, tsumo))
-		{
-			array arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
-			if (_aryvn(arAnkanHai) == 1)
-			{
-				s += "\![*]\__q[Menu_Ankan,3," + arAnkanHai[0] + "]カン\__q";
-			}
-			else
-			{
-				s += "\![*]カン";
 				for (int i = 0; arAnkanHai[i] != nil; i++)
 				{
 					s += " \__q[Menu_Ankan,3," + arAnkanHai[i] + "]\f[height,+16]" + convertUnicode(arAnkanHai[i]) + "\f[height,default]\__q";
+					animNo = "500" + (nPaiIndex++) + getSurfaceCode(arAnkanHai[i]);
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
+					offset += 42;
 				}
 			}
 		}
@@ -1444,34 +1476,88 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	if (nPlayer != pUser && sute != "" && agariPlayer == -1)
 	{
 		if (canRon(pUser, sute))
+		{
 			s += "\![*]\__q[Menu_Ron,3," + nPlayer + "," + sute + "]ロン\__q";
+			animNo = "500013";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+		}
 		if (canPon(pUser, sute))
+		{
 			s += "\![*]\__q[Menu_Pon,3," + nPlayer + "," + sute + "]ポン\__q";
+			animNo = "500015";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+		}
 		if (nPlayer + 1 == pUser && canChi(pUser, sute))
 		{
 			array arMaterial = getChiMaterial(arTehai[pUser], sute);
 			if (_aryvn(arMaterial) == 1)
 			{
 				s += "\![*]\__q[Menu_Chi,3," + nPlayer + "," + sute + "," + arMaterial[0] + "]チー\__q";
+				animNo = "500014";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
+				offset += 110;
 			}
 			else
 			{
 				s += "\![*]チー";
+				animNo = "500014";
+				si += "\![anim,offset," + animNo + "," + offset + ",0]";
+				si += "\i[" + animNo + "]";
+				savedTehai += animNo;
+				offset += 110;
+				int nPaiIndex = 1;
 				for (int i = 0; arMaterial[i] != nil; i++)
 				{
 					array arMaterialSelected = strHaiToArray(arMaterial[i]);
 					string hai1 = arMaterialSelected[0];
 					string hai2 = arMaterialSelected[1];
 					s += " \__q[Menu_Chi,3," + nPlayer + "," + sute + "," + arMaterial[i] + "]\f[height,+16]" + convertUnicode(hai1) + convertUnicode(hai2) + "\f[height,default]\__q";
+					animNo = "500" + (nPaiIndex++) + "" + getSurfaceCode(hai1);
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
+					offset += 32;
+					animNo = "500" + (nPaiIndex++) + "" + getSurfaceCode(hai2);
+					si += "\![anim,offset," + animNo + "," + offset + ",0]";
+					si += "\i[" + animNo + "]";
+					savedTehai += animNo;
+					offset += 42;
 				}
 			}
 		}
 		if (canDaiminkan(pUser, sute))
+		{
 			s += "\![*]\__q[Menu_Daiminkan,3," + nPlayer + "," + sute + "]カン\__q";
+			animNo = "500016";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+		}
+		//次へ
+		if (si != "")
+		{
+			animNo = "500001";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+		}
+	}
+	for (int i = 0; savedTehai[i] != nil; i++)
+	{
+		arSavedTehai[3] += savedTehai[i];
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q\n";
 	s += "\![*]\__q[Menu_EndGame]対局終了\__q";
-	return s;
+	return sClear + si + s;
 }
 
 int isMenzenPlayer(int nPlayer)
