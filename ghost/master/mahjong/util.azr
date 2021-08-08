@@ -1760,12 +1760,18 @@ string click_w03(dict ref) { return getWordCommandFromClick(ref); }
 string click_w04(dict ref) { return getWordCommandFromClick(ref); }
 string click_w05(dict ref) { return getWordCommandFromClick(ref); }
 string click_w06(dict ref) { return getWordCommandFromClick(ref); }
+string click_w07(dict ref) { return getWordCommandFromClick(ref); }
+string click_w08(dict ref) { return getWordCommandFromClick(ref); }
+string click_w09(dict ref) { return getWordCommandFromClick(ref); }
 string click_w11(dict ref) { return getWordCommandFromClick(ref); }
 string click_w12(dict ref) { return getWordCommandFromClick(ref); }
 string click_w13(dict ref) { return getWordCommandFromClick(ref); }
 string click_w14(dict ref) { return getWordCommandFromClick(ref); }
 string click_w15(dict ref) { return getWordCommandFromClick(ref); }
 string click_w16(dict ref) { return getWordCommandFromClick(ref); }
+string click_w17(dict ref) { return getWordCommandFromClick(ref); }
+string click_w18(dict ref) { return getWordCommandFromClick(ref); }
+string click_w19(dict ref) { return getWordCommandFromClick(ref); }
 string getWordCommandFromClick(dict ref)
 {
 	int index = (int)_substr(ref["Reference4"], 2, 1);
