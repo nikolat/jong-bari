@@ -53,6 +53,10 @@ string key_r(dict ref)
 {
 	return "\![reload,shiori]\0\s[0]\_qReloaded.\_q\e";
 }
+string key_s(dict ref)
+{
+	return "\![reload,shell]\e";
+}
 
 //------------------------------------------------------------------------------
 // 選択肢・アンカー
