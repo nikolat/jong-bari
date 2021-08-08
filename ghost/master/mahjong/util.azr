@@ -1320,6 +1320,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 {
 	string s = "";
 	string si = "";
+	string siInfo = "";
 	string sClear = clearAnimation();
 	array savedTehai = {};
 	string animNo;
@@ -1366,12 +1367,30 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	for (int i = 0; wanpai[i] != nil; i++)
 	{
 		s += convertUnicode(wanpai[i]);
+		if (i < 5)
+		{
+			animNo = "600" + (i + 1) + getSurfaceCode(wanpai[i]);
+			siInfo += "\i[" + animNo + "]";
+			savedTehai += animNo;
+		}
 	}
 	s += "\f[height,default]";
 	//場風、局数、積み棒、供託棒
 	s += "\_l[,0] " + arBafu[bafu] + kyoku + "局";
 	s += "\_l[260,0]●x" + tsumibou + "\n";
 	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
+	for (int i = 0; i < tsumibou; i++)
+	{
+		animNo = "60001" + (i + 1);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
+	}
+	for (int i = 0; i < kyotaku; i++)
+	{
+		animNo = "60002" + (i + 1);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
+	}
 	//0-2
 	for (int p = 0; p < 3; p++)
 	{
@@ -1630,7 +1649,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	}
 	s += "\![*]\__q[Menu_CANCEL]閉じる\__q\n";
 	s += "\![*]\__q[Menu_EndGame]対局終了\__q";
-	return sClear + si + s;
+	return sClear + siInfo + si + s;
 }
 
 int isMenzenPlayer(int nPlayer)
@@ -1681,7 +1700,7 @@ string Menu_NextTurn(dict ref)
 }
 
 string Menu_Richi(dict ref)
-{	
+{
 	arRichiJunme[3] = _aryvn(arKawa[3]);
 	string tsumo = arYama[nYamaIndex - 1];
 	string s;
