@@ -362,8 +362,10 @@ string OnSuteSelect(dict ref)
 	}
 	else if (reservedSelectedHai != "")
 	{
+		int isActionAccepted = 0;
 		if (reservedRichi && canRichi(selectPlayer, tsumo))
 		{
+			isActionAccepted = 1;
 			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
 			//発声通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
@@ -372,6 +374,7 @@ string OnSuteSelect(dict ref)
 		}
 		else if (reservedAnkan && canAnkan(selectPlayer, tsumo))
 		{
+			isActionAccepted = 1;
 			reservedAnkan = 0;
 			string ankanHai = reservedSelectedHai;
 			reservedSelectedHai = "";
@@ -405,6 +408,7 @@ string OnSuteSelect(dict ref)
 		}
 		else if (reservedKakan && canKakan(selectPlayer, tsumo))
 		{
+			isActionAccepted = 1;
 			reservedKakan = 0;
 			string kakanHai = reservedSelectedHai;
 			reservedSelectedHai = "";
@@ -437,7 +441,7 @@ string OnSuteSelect(dict ref)
 			_create_thread("TH_WaitResponse");
 			return s;
 		}
-		if (reservedRichi && !canRichi(selectPlayer, tsumo) || reservedAnkan && !canAnkan(selectPlayer, tsumo) || reservedKakan && !canKakan(selectPlayer, tsumo))
+		if (!isActionAccepted && (reservedRichi || reservedAnkan || reservedKakan))
 		{
 			//指定されたアクションが不可能だった
 			dAdditionalHeader = ${
