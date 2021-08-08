@@ -444,7 +444,8 @@ string OnSuteSelect(dict ref)
 				$("ErrorLevel", "warning"),
 				$("ErrorDescription", "failed requested action")
 			};
-			return "\0Error\e";
+			openTehai = 1;
+			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}) + "\1Error\e";
 		}
 		sute = reservedSelectedHai;
 		reservedSelectedHai = "";
