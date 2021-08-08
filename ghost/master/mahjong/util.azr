@@ -254,6 +254,8 @@ string Menu_EndGame(dict ref)
 	isGameStarted = 0;
 	playerName = {};
 	arScore = {25000, 25000, 25000, 25000};
+	tsumibou = 0;
+	kyotaku = 0;
 	return s;
 }
 
