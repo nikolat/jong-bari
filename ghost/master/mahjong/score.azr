@@ -184,6 +184,19 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	s += "\n\f[height,default]\n";
 	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
 	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
+	string si;
+	string animNo;
+	animNo = "500001";
+	si += "\![anim,offset," + animNo + ",0,0]";
+	si += "\i[" + animNo + "]";
+	arSavedTehai[3] += animNo;
+	animNo = "500199";
+	si += "\![anim,offset," + animNo + ",0,0]";
+	si += "\i[" + animNo + "]";
+	arSavedTehai[3] += animNo;
+	arSavedWordCommand += {"Menu_NextTurn"};
+	s += si;
+	reservedClickScript = "\![raise,OnChoiceSelect,Menu_StartKyoku]";
 	//通知
 	if (nAgariPlayer >= 0)
 	{

@@ -243,8 +243,9 @@ string Menu_StartKyoku(dict ref)
 
 string Menu_EndGame(dict ref)
 {
+	string s = "\0\s[0]";
 	//gameend通知
-	string s = "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
+	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
 	for (int i = 0; playerName[i] != nil; i++)
 	{
 		s += "," + playerName[i] + _bytechar(1) + arScore[i];
@@ -342,7 +343,21 @@ string OnSuteSelect(dict ref)
 		//発声通知
 		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",say," + playerName[selectPlayer] + ",tsumo]";
-		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
+		string si;
+		string animNo;
+		animNo = "500001";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		animNo = "500199";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		arSavedWordCommand += {"Menu_NextTurn"};
+		s += si;
+		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+		s += "\e";
+		reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 		return s;
 	}
 	else if (reservedSelectedHai != "")
@@ -444,7 +459,21 @@ string OnSuteSelect(dict ref)
 			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",tsumo]";
-			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]\e";
+			string si;
+			string animNo;
+			animNo = "500001";
+			si += "\![anim,offset," + animNo + ",0,0]";
+			si += "\i[" + animNo + "]";
+			arSavedTehai[3] += animNo;
+			animNo = "500199";
+			si += "\![anim,offset," + animNo + ",0,0]";
+			si += "\i[" + animNo + "]";
+			arSavedTehai[3] += animNo;
+			arSavedWordCommand += {"Menu_NextTurn"};
+			s += si;
+			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+			s += "\e";
+			reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 			return s;
 		}
 		if (shouldAnkan(selectPlayer, tsumo))
@@ -931,7 +960,21 @@ string OnSuteComplete(dict ref)
 				//発声通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",ron]";
-				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
+				string si;
+				string animNo;
+				animNo = "500001";
+				si += "\![anim,offset," + animNo + ",0,0]";
+				si += "\i[" + animNo + "]";
+				arSavedTehai[3] += animNo;
+				animNo = "500199";
+				si += "\![anim,offset," + animNo + ",0,0]";
+				si += "\i[" + animNo + "]";
+				arSavedTehai[3] += animNo;
+				arSavedWordCommand += {"Menu_NextTurn"};
+				s += si;
+				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
+				s += "\e";
+				reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 				return s;
 			}
 			if (action == "pon")
@@ -1016,7 +1059,21 @@ string OnSuteComplete(dict ref)
 					//発声通知
 					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 						+ ",say," + playerName[i] + ",ron]";
-					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]\e";
+					string si;
+					string animNo;
+					animNo = "500001";
+					si += "\![anim,offset," + animNo + ",0,0]";
+					si += "\i[" + animNo + "]";
+					arSavedTehai[3] += animNo;
+					animNo = "500199";
+					si += "\![anim,offset," + animNo + ",0,0]";
+					si += "\i[" + animNo + "]";
+					arSavedTehai[3] += animNo;
+					arSavedWordCommand += {"Menu_NextTurn"};
+					s += si;
+					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
+					s += "\e";
+					reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 					return s;
 				}
 				if (shouldPon(i, sute))
@@ -1118,8 +1175,21 @@ string OnSuteComplete(dict ref)
 	if (_aryvn(arYama) == nYamaIndex)
 	{
 		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+		string si;
+		string animNo;
+		animNo = "500001";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		animNo = "500199";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		arSavedWordCommand += {"Menu_NextTurn"};
+		s += si;
 		s += "\x[noclear]";
 		isRecievedResponse = 1;
+		string rcs = "";
 		for (int i = 0; i < 3; i++)
 		{
 			int shanten = getShanten(arTehai[i]);
@@ -1127,14 +1197,15 @@ string OnSuteComplete(dict ref)
 			{
 				reservedTenpai[playerName[i]] = "yes";//デフォルトでyes
 				//テンパイ宣言問い合わせ
-				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",tenpai?]";
 				dResponseNeed[playerName[i]] = 1;
 				isRecievedResponse = 0;
 			}
 		}
-		s += "\![notify,OnNotifyPrepareRyukyoku]";
-		s += "\_q\e";
+		rcs += "\![notify,OnNotifyPrepareRyukyoku]";
+		reservedClickScript = rcs;
+		s += rcs + "\_q\e";
 		return s;
 	}
 	int nextPlayer = (completePlayer + 1) % 4;
@@ -1209,7 +1280,21 @@ string OnRyukyoku(dict ref)
 	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
 	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag);
 	s += m;
-	s += "\x\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]\e";
+	string si;
+	string animNo;
+	animNo = "500001";
+	si += "\![anim,offset," + animNo + ",0,0]";
+	si += "\i[" + animNo + "]";
+	arSavedTehai[3] += animNo;
+	animNo = "500199";
+	si += "\![anim,offset," + animNo + ",0,0]";
+	si += "\i[" + animNo + "]";
+	arSavedTehai[3] += animNo;
+	arSavedWordCommand += {"Menu_NextTurn"};
+	s += si;
+	s += "\x\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
+	s += "\e";
+	reservedClickScript = "\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
 	return s;
 }
 
@@ -1696,7 +1781,9 @@ string getWordCommandFromClick(dict ref)
 
 string Menu_NextTurn(dict ref)
 {
-	return "\0" + reservedClickScript + "\e";
+	string s = "\0" + reservedClickScript + "\e";
+	reservedClickScript = "";
+	return s;
 }
 
 string Menu_Richi(dict ref)
