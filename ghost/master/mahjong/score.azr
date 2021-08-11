@@ -35,6 +35,9 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	array wanpaiUra;
 	array arDorahyouji = strHaiToArray(dorahyouji);
 	string uradorahyouji;
+	string siInfo = "";
+	array savedTehai = {};
+	string animNo;
 	for (int i = 0; arDorahyouji[i] != nil; i++)
 	{
 		uradorahyouji += arYama[59 + i];
@@ -42,36 +45,53 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	array arUradorahyouji = strHaiToArray(uradorahyouji);
 	for (int i = 0; i < 5; i++)
 	{
-		if (arDorahyouji[4 - i] == nil)
+		if (arDorahyouji[i] == nil)
 		{
 			wanpaiOmote += "tb";
 			wanpaiUra += "tb";
 		}
 		else
 		{
-			wanpaiOmote += arDorahyouji[4 - i];
-			wanpaiUra += arUradorahyouji[4 - i];
+			wanpaiOmote += arDorahyouji[i];
+			wanpaiUra += arUradorahyouji[i];
 		}
 	}
-	wanpaiOmote += "tb";
-	wanpaiOmote += "tb";
-	wanpaiUra += "tb";
-	wanpaiUra += "tb";
 	s += "\f[height,+16]\_l[110,]";
+	s += convertUnicode("tb") + convertUnicode("tb");
 	for (int i = 0; wanpaiOmote[i] != nil; i++)
 	{
 		s += convertUnicode(wanpaiOmote[i]);
+		animNo = "601" + (i + 1) + getSurfaceCode(wanpaiOmote[i]);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
 	}
 	s += "\n\_l[110,]";
+	s += convertUnicode("tb") + convertUnicode("tb");
 	for (int i = 0; wanpaiUra[i] != nil; i++)
 	{
 		s += convertUnicode(wanpaiUra[i]);
+		animNo = "600" + (i + 1) + getSurfaceCode(wanpaiUra[i]);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
 	}
 	s += "\f[height,default]\n\n";
+	//場風、局数、積み棒、供託棒
 	s += "\_l[215,0] " + arBafu[bafu] + kyoku + "局";
 	s += "\_l[260,0]●x" + tsumibou + "\n";
 	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
 	s += "\_l[0,80]";
+	for (int i = 0; i < tsumibou; i++)
+	{
+		animNo = "60001" + (i + 1);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
+	}
+	for (int i = 0; i < kyotaku; i++)
+	{
+		animNo = "60002" + (i + 1);
+		siInfo += "\i[" + animNo + "]";
+		savedTehai += animNo;
+	}
 	//役・点数表示
 	int score;
 	int nFu;
@@ -227,7 +247,6 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	}
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",kyokuend]";
-	s += "\_q\e";
 	//連荘判定
 	if (nAgariPlayer == oyaIndex)
 	{
@@ -249,8 +268,13 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		if (oyaIndex == 4)
 			oyaIndex = 0;
 	}
+	//終了
 	clearStatus();
-	return s;
+	for (int i = 0; savedTehai[i] != nil; i++)
+	{
+		arSavedTehai[3] += savedTehai[i];
+	}
+	return s + siInfo + "\_q\e";
 }
 
 string getBafuHai()
