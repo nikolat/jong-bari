@@ -1,13 +1,19 @@
 //******************************************************************************
 // required event
 //******************************************************************************
-string OnFirstBoot()          { return "\0\s[0]\1\s[10]\e"; }
-string OnBoot()               { return "\0\s[0]\1\s[10]\e"; }
-string OnGhostChanged()       { return "\0\s[0]\1\s[10]\e"; }
-string OnShellChanged()       { return "\0\s[0]\1\s[10]\e"; }
-string OnWindowStateRestore() { return "\0\s[0]\1\s[10]\e"; }
+string OnFirstBoot()          { return OnBoot(); }
+string OnGhostChanged()       { return OnBoot(); }
+string OnShellChanged()       { return OnBoot(); }
+string OnBalloonChange()      { return OnBoot(); }
+string OnVanished()           { return OnBoot(); }
+string OnGhostCalled()        { return OnBoot(); }
+string OnWindowStateRestore() { return OnBoot(); }
 string OnSurfaceRestore()     { return ""; }
 string OnClose()              { return "\-\e"; }
+string OnBoot()
+{
+	return "\0\s[0]\1\s[10]\e";
+}
 
 //******************************************************************************
 // update event

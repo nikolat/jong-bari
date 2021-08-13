@@ -56,30 +56,41 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			wanpaiUra += arUradorahyouji[i];
 		}
 	}
-	s += "\f[height,+16]\_l[110,]";
-	s += convertUnicode("tb") + convertUnicode("tb");
+	if (!modeEx)
+	{
+		s += "\f[height,+16]\_l[110,]";
+		s += convertUnicode("tb") + convertUnicode("tb");
+	}
 	for (int i = 0; wanpaiOmote[i] != nil; i++)
 	{
-		s += convertUnicode(wanpaiOmote[i]);
+		if (!modeEx)
+			s += convertUnicode(wanpaiOmote[i]);
 		animNo = "601" + (i + 1) + getSurfaceCode(wanpaiOmote[i]);
 		siInfo += "\i[" + animNo + "]";
 		savedTehai += animNo;
 	}
-	s += "\n\_l[110,]";
-	s += convertUnicode("tb") + convertUnicode("tb");
+	if (!modeEx)
+	{
+		s += "\n\_l[110,]";
+		s += convertUnicode("tb") + convertUnicode("tb");
+	}
 	for (int i = 0; wanpaiUra[i] != nil; i++)
 	{
-		s += convertUnicode(wanpaiUra[i]);
+		if (!modeEx)
+			s += convertUnicode(wanpaiUra[i]);
 		animNo = "600" + (i + 1) + getSurfaceCode(wanpaiUra[i]);
 		siInfo += "\i[" + animNo + "]";
 		savedTehai += animNo;
 	}
-	s += "\f[height,default]\n\n";
-	//場風、局数、積み棒、供託棒
-	s += "\_l[215,0] " + arBafu[bafu] + kyoku + "局";
-	s += "\_l[260,0]●x" + tsumibou + "\n";
-	s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
-	s += "\_l[0,80]";
+	if (!modeEx)
+	{
+		s += "\f[height,default]\n\n";
+		//場風、局数、積み棒、供託棒
+		s += "\_l[215,0] " + arBafu[bafu] + kyoku + "局";
+		s += "\_l[260,0]●x" + tsumibou + "\n";
+		s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
+		s += "\_l[0,80]";
+	}
 	for (int i = 0; i < tsumibou; i++)
 	{
 		animNo = "60001" + (i + 1);
@@ -164,24 +175,40 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			}
 		}
 		array arYakuman = _dickeyget(dYakuman);
+		if (modeEx)
+			s += "\_l[,380]";
 		for (int i = 0; arYakuman[i] != nil; i++)
 		{
-			s += arYakuman[i] + "\_l[100,]役満\n";
+			if (modeEx)
+				s += "\_l[300,]" + arYakuman[i] + "\_l[450,]役満\n";
+			else
+				s += arYakuman[i] + "\_l[100,]役満\n";
 		}
 		if (_aryvn(arYakuman) == 0)
 		{
 			array arYaku = _dickeyget(dYakuAndHan);
 			for (int i = 0; arYaku[i] != nil; i++)
 			{
-				s += _strreplace(arYaku[i], "ヤオ", "么") + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
+				if (modeEx)
+					s += "\_l[300,]" + _strreplace(arYaku[i], "ヤオ", "么") + "\_l[450,]" + dYakuAndHan[arYaku[i]] + "翻\n";
+				else
+					s += _strreplace(arYaku[i], "ヤオ", "么") + "\_l[100,]" + dYakuAndHan[arYaku[i]] + "翻\n";
 			}
 		}
 		if (nHan > 0)
 		{
-			s += "" + nHan + "翻 " + nFu + "符\n";
+			if (modeEx)
+				s += "\_l[300,]" + nHan + "翻 " + nFu + "符\n";
+			else
+				s += "" + nHan + "翻 " + nFu + "符\n";
 		}
 		if (score > 0)
-			s += "" + score + "点\n";
+		{
+			if (modeEx)
+				s += "\_l[300,]" + score + "点\n";
+			else
+				s += "" + score + "点\n";
+		}
 		s += "\n";
 	}
 	//プレイヤー持ち点表示
@@ -192,18 +219,26 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		kyotaku = 0;
 	}
 	array arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag);
+	if (modeEx)
+		s += "\_l[,180]";
 	for (int i = 0; playerName[i] != nil; i++)
 	{
 		arScore[i] += arScoreAdd[i];
-		s += "<<" + playerName[i] + ">>\_l[100,]" + arScoreAdd[i] + "\_l[160,]" + arScore[i] + "\n";
+		if (modeEx)
+			s += "\_l[250,]<<" + playerName[i] + ">>\_l[400,]" + arScoreAdd[i] + "\_l[500,]" + arScore[i] + "\n";
+		else
+			s += "<<" + playerName[i] + ">>\_l[100,]" + arScoreAdd[i] + "\_l[160,]" + arScore[i] + "\n";
 	}
 	s += "\n";
 	//牌表示
 	s += "\f[height,+16]";
 	s += showHai(hai13, atariHai, nAgariPlayer, 0, 1, 1);
 	s += "\n\f[height,default]\n";
-	s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
-	s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
+	if (!modeEx)
+	{
+		s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
+		s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
+	}
 	string si;
 	string animNo;
 	animNo = "500001";
