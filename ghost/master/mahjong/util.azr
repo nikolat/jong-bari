@@ -146,7 +146,7 @@ string OnMahjongResponse(dict ref)
 TH_WaitResponse()
 {
 	double wait = 0.125;
-	int nLoop = 8;
+	int nLoop = 16;
 	for (int i = 0; i < nLoop; i++)
 	{
 		if (isSoloMode)
@@ -2117,14 +2117,14 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen, int isScoreView)
+string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen)
 {
 	string s;
 	string si;
 	array savedTehai = {};
 	string animNo;
 	array arHai = strHaiToArrayWithFuro(strHai);
-	if (showPlayer != 3 || isScoreView)
+	if (showPlayer != 3)
 	{
 		string sFuro;
 		int nFuro;
