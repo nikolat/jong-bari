@@ -30,6 +30,10 @@ string sakura.portalsites()
 		+ "https://github.com/nikolat/jb-standard" + _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(2);
+	s += "GitHub - nikolat/jb-standard-balloon: ゴースト「雀々BARIBARI」用バルーン" + _bytechar(1)
+		+ "https://github.com/nikolat/jb-standard-balloon" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
 	s += "-" + _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(1)
