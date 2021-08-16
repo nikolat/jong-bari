@@ -1348,6 +1348,7 @@ string OnRyukyoku(dict ref)
 	s += si;
 	s += "\x\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
 	s += "\e";
+	isLockedSingleClick = 0;
 	reservedClickScript = "\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
 	return s;
 }
@@ -1394,11 +1395,14 @@ string getSutehaiFromClick(dict ref)
 		sute = _substr(arTehai[3], 2 * (i - 1), 2);
 	else
 		sute = tsumo;
-	dict d = ${
-		$("Reference2", sute),
-		$("Reference3", tsumo),
-	};
-	return Menu_Sutehai(d);
+	string animNo;
+	string si;
+	animNo = "40" + fillzero(i) + getSurfaceCode(sute);
+	si += "\![anim,clear," + animNo + "]";
+	animNo = "40" + fillzero(i) + "99";
+	si += "\![anim,clear," + animNo + "]";
+	string s = "\![raise,OnChoiceSelectEx,,Menu_Sutehai," + sute + "," + tsumo + "]";
+	return "\C\0" + si + s + "\e";
 }
 
 string Menu_Sutehai(dict ref)
@@ -1909,12 +1913,20 @@ string getWordCommandFromClick(dict ref)
 	int index = (int)_substr(ref["Reference4"], 2, 1);
 	array arWordCommand = arSavedWordCommand[index - 1];
 	arSavedWordCommand = {};
-	dict d;
-	for (int i = 0; arWordCommand[i] != nil; i++)
+	string s = "\![raise,OnChoiceSelectEx,," + arWordCommand[0];
+	for (int i = 1; arWordCommand[i] != nil; i++)
 	{
-		d += $("Reference" + (2 + i), arWordCommand[1 + i]);
+		s += "," + arWordCommand[i];
 	}
-	return _fncstr(arWordCommand[0], d);
+	s += "]";
+	string si;
+	for (int i = 0; arSavedTehai[3][i] != nil; i++)
+	{
+		string animNo = arSavedTehai[3][i];
+		if (_substr(animNo, 0, 3) == "500")
+			si += "\![anim,clear," + animNo + "]";
+	}
+	return "\0" + si + s + "\e";
 }
 
 string Menu_NextTurn(dict ref)
