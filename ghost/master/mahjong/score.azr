@@ -5,6 +5,7 @@ string Menu_Ron(dict ref)
 	int nFurikomiPlayer = ref["Reference3"];
 	string hai13 = arTehai[nAgariPlayer];
 	string sute = ref["Reference4"];
+	isLockedSingleClick = 0;
 	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
 }
 
@@ -15,6 +16,7 @@ string Menu_Tsumo(dict ref)
 	int nFurikomiPlayer = -1;
 	string hai13 = arTehai[nAgariPlayer];
 	string tsumo = arYama[nYamaIndex - 1];
+	isLockedSingleClick = 0;
 	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
 }
 
@@ -22,6 +24,7 @@ string Menu_Tsumo(dict ref)
 string OnRyukyokuScore(dict ref)
 {
 	array arTenpaiPlayerFlag = _strary(ref["Reference0"]);
+	isLockedSingleClick = 0;
 	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag);
 }
 

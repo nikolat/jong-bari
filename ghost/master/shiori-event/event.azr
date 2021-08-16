@@ -42,6 +42,9 @@ string OnMouseClick(dict ref)
 //------------------------------------------------------------------------------
 string OnMouseDoubleClick(dict ref)
 {
+	//当たり判定がある場合は無効
+	if (ref["Reference4"] != "")
+		return "";
 	return showBalloon();
 }
 

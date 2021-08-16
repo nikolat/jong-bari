@@ -33,6 +33,8 @@ int isSoloMode;
 int modeEx;
 //バルーン表示保存用
 string lastScript;
+int isLockedSingleClick;
+int isLockedDoubleClick;
 //シェル表示保存用
 array arSavedTehai = {{}, {}, {}, {}};
 string savedTsumo;
@@ -173,6 +175,9 @@ string getVersion()
 //******************************************************************************
 string showBalloon()
 {
+	if (isLockedDoubleClick)
+		return "";
+	isLockedSingleClick = 0;//緊急避難的解除
 	string s = "\0\_q";
 	string shellName = _systemdict["OnNotifySelfInfo"]["Reference3"];
 	string balloonName = _systemdict["OnNotifySelfInfo"]["Reference5"];
@@ -332,11 +337,15 @@ string startKyoku()
 	//userがツモ
 	if (oyaIndex == 3)
 	{
+		isLockedSingleClick = 0;
+		isLockedDoubleClick = 0;
 		s += "\_q\e";
 		lastScript = s;
 		return s;
 	}
 	//user以外がツモ
+	isLockedSingleClick = 1;
+	isLockedDoubleClick = 1;
 	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
 		+ ",tsumo," + playerName[oyaIndex] + "," + getLeftYama() + "," + tsumo + "]";
 	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
@@ -381,6 +390,7 @@ string OnSuteSelect(dict ref)
 		s += si;
 		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 		s += "\e";
+		isLockedSingleClick = 0;
 		reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 		return s;
 	}
@@ -502,6 +512,7 @@ string OnSuteSelect(dict ref)
 			s += si;
 			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 			s += "\e";
+			isLockedSingleClick = 0;
 			reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 			return s;
 		}
@@ -600,7 +611,14 @@ string OnSuteSelect(dict ref)
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
 	if (canRon(3, sute) || canPon(3, sute) || (selectPlayer + 1 == 3) && canChi(3, sute))
+	{
 		s += "\x[noclear]";
+		isLockedSingleClick = 0;
+	}
+	else
+	{
+		isLockedSingleClick = 1;
+	}
 	isRecievedResponse = 1;
 	string rcs = "";
 	for (int i = 0; playerName[i] != nil; i++)
@@ -1003,6 +1021,7 @@ string OnSuteComplete(dict ref)
 				s += si;
 				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 				s += "\e";
+				isLockedSingleClick = 0;
 				reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 				return s;
 			}
@@ -1102,6 +1121,7 @@ string OnSuteComplete(dict ref)
 					s += si;
 					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 					s += "\e";
+					isLockedSingleClick = 0;
 					reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 					return s;
 				}
@@ -1203,6 +1223,7 @@ string OnSuteComplete(dict ref)
 	//流局
 	if (_aryvn(arYama) == nYamaIndex)
 	{
+		isLockedSingleClick = 0;
 		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
 		string si;
 		string animNo;
@@ -1242,6 +1263,8 @@ string OnSuteComplete(dict ref)
 	//userがツモ
 	if (nextPlayer == 3)
 	{
+		isLockedSingleClick = 0;
+		isLockedDoubleClick = 0;
 		tsumo = arYama[nYamaIndex++];
 		s += showStatus(tsumo, "", 3, -1, {0, 0, 0});
 		s += "\_q\e";
@@ -1249,6 +1272,8 @@ string OnSuteComplete(dict ref)
 		return s;
 	}
 	//user以外がツモ
+	isLockedSingleClick = 1;
+	isLockedDoubleClick = 1;
 	tsumo = arYama[nYamaIndex++];
 	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0});
 	//ツモ通知
@@ -1357,6 +1382,10 @@ string click_p13(dict ref) { return getSutehaiFromClick(ref); }
 string click_p14(dict ref) { return getSutehaiFromClick(ref); }
 string getSutehaiFromClick(dict ref)
 {
+	if (isLockedSingleClick)
+		return "";
+	isLockedSingleClick = 1;
+	isLockedDoubleClick = 1;
 	int i = (int)_substr(ref["Reference4"], 1, 2);
 	string sute;
 	string tsumo = savedTsumo;
@@ -1374,6 +1403,8 @@ string getSutehaiFromClick(dict ref)
 
 string Menu_Sutehai(dict ref)
 {
+	isLockedSingleClick = 1;
+	isLockedDoubleClick = 1;
 	int selectPlayer = 3;
 	string sute = ref["Reference2"];
 	string tsumo = ref["Reference3"];
@@ -1819,15 +1850,18 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	{
 		arSavedTehai[3] += savedTehai[i];
 	}
-	if (modeEx)
+	if (!isLockedDoubleClick)
 	{
-		s += "\_l[350,410]\![*]\__q[Menu_CANCEL]閉じる\__q\n";
-		s += "\_l[350,]\![*]\__q[Menu_EndGame]対局終了\__q";
-	}
-	else
-	{
-		s += "\![*]\__q[Menu_CANCEL]閉じる\__q\n";
-		s += "\![*]\__q[Menu_EndGame]対局終了\__q";
+		if (modeEx)
+		{
+			s += "\_l[350,410]\![*]\__q[Menu_CANCEL]閉じる\__q\n";
+			s += "\_l[350,]\![*]\__q[Menu_EndGame]対局終了\__q";
+		}
+		else
+		{
+			s += "\![*]\__q[Menu_CANCEL]閉じる\__q\n";
+			s += "\![*]\__q[Menu_EndGame]対局終了\__q";
+		}
 	}
 	return sClear + siInfo + si + s;
 }
@@ -1869,6 +1903,9 @@ string click_w18(dict ref) { return getWordCommandFromClick(ref); }
 string click_w19(dict ref) { return getWordCommandFromClick(ref); }
 string getWordCommandFromClick(dict ref)
 {
+	if (isLockedSingleClick)
+		return "";
+	isLockedSingleClick = 1;
 	int index = (int)_substr(ref["Reference4"], 2, 1);
 	array arWordCommand = arSavedWordCommand[index - 1];
 	arSavedWordCommand = {};
@@ -1889,6 +1926,7 @@ string Menu_NextTurn(dict ref)
 
 string Menu_Richi(dict ref)
 {
+	isLockedSingleClick = 0;
 	arRichiJunme[3] = _aryvn(arKawa[3]);
 	string tsumo = arYama[nYamaIndex - 1];
 	string s;
@@ -1902,6 +1940,7 @@ string Menu_Kakan(dict ref)
 {
 	int nFuroPlayer = ref["Reference2"];
 	string kakanHai = ref["Reference3"];
+	isLockedSingleClick = 0;
 	string tsumo = arYama[nYamaIndex - 1];
 	arTehai[nFuroPlayer] = addHai(arTehai[nFuroPlayer], tsumo);
 	isRinshanChance = 1;
@@ -1910,24 +1949,26 @@ string Menu_Kakan(dict ref)
 	dorahyouji += strDorahyoujiNew;
 	tsumo = arYama[nYamaIndex++];
 	string s;
+	string sr;
 	//発声通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	//晒した牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",open," + playerName[nFuroPlayer] + "," + kakanHai + "]";
 	//dora通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",dora," + strDorahyoujiNew + "]";
 	s += "\0\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	lastScript = s;
-	return s;
+	return sr + s;
 }
 
 string Menu_Ankan(dict ref)
 {
 	int nFuroPlayer = ref["Reference2"];
 	string ankanHai = ref["Reference3"];
+	isLockedSingleClick = 0;
 	string tsumo = arYama[nYamaIndex - 1];
 	arTehai[nFuroPlayer] = addHai(arTehai[nFuroPlayer], tsumo);
 	isRinshanChance = 1;
@@ -1936,18 +1977,19 @@ string Menu_Ankan(dict ref)
 	dorahyouji += strDorahyoujiNew;
 	tsumo = arYama[nYamaIndex++];
 	string s;
+	string sr;
 	//発声通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	//晒した牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",open," + playerName[nFuroPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
 	//dora通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",dora," + strDorahyoujiNew + "]";
 	s += "\0\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 0) + "\_q\e";
 	lastScript = s;
-	return s;
+	return sr + s;
 }
 
 string Menu_Pon(dict ref)
@@ -1955,16 +1997,19 @@ string Menu_Pon(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
+	isLockedSingleClick = 0;
 	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute);
 	string s;
+	string sr;
 	//発声通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",pon]";
 	//晒した牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",open," + playerName[nFuroPlayer] + "," + sute + sute + sute + "]";
 	s += "\0\s[0]\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
-	return s;
+	lastScript = s;
+	return sr + s;
 }
 
 string Menu_Chi(dict ref)
@@ -1973,18 +2018,21 @@ string Menu_Chi(dict ref)
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
 	string hai = ref["Reference5"];
+	isLockedSingleClick = 0;
 	string furoHai = _arystr(sortHai(strHaiToArray(sute + hai)));
 	array arHai = strHaiToArray(hai);
 	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0] + arHai[1]);
 	string s;
+	string sr;
 	//発声通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",chi]";
 	//晒した牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",open," + playerName[nFuroPlayer] + "," + furoHai + "]";
 	s += "\0\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
-	return s;
+	lastScript = s;
+	return sr + s;
 }
 
 string Menu_Daiminkan(dict ref)
@@ -1992,24 +2040,26 @@ string Menu_Daiminkan(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
+	isLockedSingleClick = 0;
 	isRinshanChance = 1;
 	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute + sute);
 	string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
 	dorahyouji += strDorahyoujiNew;
 	string tsumo = arYama[nYamaIndex++];
 	string s;
+	string sr;
 	//発声通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say," + playerName[nFuroPlayer] + ",kan]";
 	//晒した牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",open," + playerName[nFuroPlayer] + "," + sute + sute + sute + sute + "]";
 	//dora通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",dora," + strDorahyoujiNew + "]";
 	s += "\0\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
 	lastScript = s;
-	return s;
+	return sr + s;
 }
 
 setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
