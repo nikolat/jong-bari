@@ -621,7 +621,7 @@ string OnSuteSelect(dict ref)
 	}
 	isRecievedResponse = 1;
 	string rcs = "";
-	for (int i = 0; playerName[i] != nil; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		if (i != selectPlayer)
 		{
