@@ -30,6 +30,7 @@ int kyotaku;
 array playerName;
 int isRinshanChance;
 array arIppatsuChance = {0, 0, 0, 0};
+array arChihouChance = {1, 1, 1, 1};
 int isSoloMode;
 int modeEx;
 //バルーン表示保存用
@@ -304,6 +305,7 @@ string startKyoku()
 	arKakanHistory = {{}, {}, {}, {}};
 	isRinshanChance = 0;
 	arIppatsuChance = {0, 0, 0, 0};
+	arChihouChance = {1, 1, 1, 1};
 	dorahyouji = arYama[52];
 	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
 	reservedNaku = ${
@@ -1304,6 +1306,7 @@ setKyotaku(int nPlayer)
 	{
 		arIppatsuChance[nPlayer] = 0;
 	}
+	arChihouChance[nPlayer] = 0;
 }
 
 string OnNotifyPrepareRyukyoku(dict ref)
@@ -2090,6 +2093,7 @@ setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
 	arFuroJunme[nSutePlayer] += _aryvn(arKawa[nSutePlayer]) - 1;
 	arFuroHistory[nFuroPlayer] += {sute, nSutePlayer};
 	arIppatsuChance = {0, 0, 0, 0};
+	arChihouChance = {0, 0, 0, 0};
 }
 
 setKakan(int nFuroPlayer, string kakanHai)
@@ -2098,6 +2102,7 @@ setKakan(int nFuroPlayer, string kakanHai)
 	arTehai[nFuroPlayer] = _strreplace(arTehai[nFuroPlayer], kakanHai + kakanHai + kakanHai, kakanHai + kakanHai + kakanHai + kakanHai);
 	arKakanHistory[nFuroPlayer] += kakanHai;
 	arIppatsuChance = {0, 0, 0, 0};
+	arChihouChance = {0, 0, 0, 0};
 }
 
 setAnkan(int nFuroPlayer, string ankanHai)
@@ -2105,6 +2110,7 @@ setAnkan(int nFuroPlayer, string ankanHai)
 	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai);
 	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai, "(", ")");;
 	arIppatsuChance = {0, 0, 0, 0};
+	arChihouChance = {0, 0, 0, 0};
 }
 
 string addFuro(string tehai, string furo, string s1, string s2)
@@ -2163,6 +2169,7 @@ clearStatus()
 	arKakanHistory = {{}, {}, {}, {}};
 	isRinshanChance = 0;
 	arIppatsuChance = {0, 0, 0, 0};
+	arChihouChance = {1, 1, 1, 1};
 	dorahyouji = "";
 	nYamaIndex = 0;
 	lastScript = "";
