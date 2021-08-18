@@ -371,7 +371,7 @@ string OnSuteSelect(dict ref)
 {
 	int selectPlayer = ref["Reference0"];
 	string tsumo = ref["Reference1"];
-	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
+	string s = "\C\![lock,balloonrepaint]\![lock,repaint]\c\![set,balloontimeout,0]\0\b[2]\_q";
 	string sute;
 	string tehai = addHai(arTehai[selectPlayer], tsumo);
 	string wait = "";
@@ -394,6 +394,7 @@ string OnSuteSelect(dict ref)
 		arSavedTehai[3] += animNo;
 		arSavedWordCommand += {"Menu_NextTurn"};
 		s += si;
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 		s += "\e";
 		isLockedSingleClick = 0;
@@ -441,9 +442,11 @@ string OnSuteSelect(dict ref)
 			//捨て牌問い合わせ
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",sutehai?]";
-			s += "\_q\e";
+			s += "\_q";
 			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
 			_create_thread("TH_WaitResponse");
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			s += "\e";
 			return s;
 		}
 		else if (reservedKakan && canKakan(selectPlayer, tsumo))
@@ -476,9 +479,11 @@ string OnSuteSelect(dict ref)
 			//dora通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",dora," + strDorahyoujiNew + "]";
-			s += "\_q\e";
+			s += "\_q";
 			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
 			_create_thread("TH_WaitResponse");
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			s += "\e";
 			return s;
 		}
 		if (!isActionAccepted && (reservedRichi || reservedAnkan || reservedKakan))
@@ -489,7 +494,7 @@ string OnSuteSelect(dict ref)
 				$("ErrorDescription", "failed requested action")
 			};
 			openTehai = 1;
-			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}) + "\1Error\e";
+			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}) + "\1Error\![unlock,balloonrepaint]\![unlock,repaint]\e";
 		}
 		sute = reservedSelectedHai;
 		reservedSelectedHai = "";
@@ -516,6 +521,7 @@ string OnSuteSelect(dict ref)
 			arSavedTehai[3] += animNo;
 			arSavedWordCommand += {"Menu_NextTurn"};
 			s += si;
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
 			s += "\e";
 			isLockedSingleClick = 0;
@@ -549,9 +555,11 @@ string OnSuteSelect(dict ref)
 			//捨て牌問い合わせ
 			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",sutehai?]";
-			s += "\_q\e";
+			s += "\_q";
 			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
 			_create_thread("TH_WaitResponse");
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			s += "\e";
 			return s;
 		}
 		else if (shouldKakan(selectPlayer, tsumo))
@@ -582,9 +590,11 @@ string OnSuteSelect(dict ref)
 			//dora通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",dora," + strDorahyoujiNew + "]";
-			s += "\_q\e";
+			s += "\_q";
 			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
 			_create_thread("TH_WaitResponse");
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			s += "\e";
 			return s;
 		}
 		else if (canRichi(selectPlayer, tsumo))
@@ -618,6 +628,7 @@ string OnSuteSelect(dict ref)
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
 	if (canRon(3, sute) || canPon(3, sute) || (selectPlayer + 1 == 3) && canChi(3, sute))
 	{
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\x[noclear]";
 		isLockedSingleClick = 0;
 	}
@@ -652,7 +663,9 @@ string OnSuteSelect(dict ref)
 	}
 	rcs += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + sute + "]";
 	reservedClickScript = rcs;
-	s += rcs + "\_q\e";
+	s += rcs + "\_q";
+	s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+	s += "\e";
 	return s;
 }
 
@@ -985,7 +998,7 @@ string OnNotifyPrepareSuteComplete(dict ref)
 {
 	int selectPlayer = ref["Reference0"];
 	string sute = ref["Reference1"];
-	reservedScript = "\C\0\b[2]\![raise,OnSuteComplete," + selectPlayer + "," + sute + "]";
+	reservedScript = "\C\![raise,OnSuteComplete," + selectPlayer + "," + sute + "]";
 	_create_thread("TH_WaitResponse");
 	return "";
 }
@@ -994,7 +1007,7 @@ string OnSuteComplete(dict ref)
 {
 	int completePlayer = ref["Reference0"];
 	string sute = ref["Reference1"];
-	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
+	string s = "\C\![lock,balloonrepaint]\![lock,repaint]\c\![set,balloontimeout,0]\0\b[2]\_q";
 	dict reservedNakuCopy = reservedNaku;
 	reservedNaku = ${
 		$(playerName[0], {}),
@@ -1025,6 +1038,7 @@ string OnSuteComplete(dict ref)
 				arSavedTehai[3] += animNo;
 				arSavedWordCommand += {"Menu_NextTurn"};
 				s += si;
+				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 				s += "\e";
 				isLockedSingleClick = 0;
@@ -1048,6 +1062,8 @@ string OnSuteComplete(dict ref)
 				setFuro(i, completePlayer, sute, sute + sute);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
+				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+				s += "\e";
 				return s;
 			}
 			if (action == "chi")
@@ -1070,6 +1086,8 @@ string OnSuteComplete(dict ref)
 				setFuro(i, completePlayer, sute, hai1 + hai2);
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 				_create_thread("TH_WaitResponse");
+				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+				s += "\e";
 				return s;
 			}
 			if (action == "kan")
@@ -1097,9 +1115,11 @@ string OnSuteComplete(dict ref)
 				//dora通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",dora," + strDorahyoujiNew + "]";
-				s += "\_q\e";
+				s += "\_q";
 				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + "," + tsumo + "]";
 				_create_thread("TH_WaitResponse");
+				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+				s += "\e";
 				return s;
 			}
 		}
@@ -1125,6 +1145,7 @@ string OnSuteComplete(dict ref)
 					arSavedTehai[3] += animNo;
 					arSavedWordCommand += {"Menu_NextTurn"};
 					s += si;
+					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
 					s += "\e";
 					isLockedSingleClick = 0;
@@ -1148,6 +1169,8 @@ string OnSuteComplete(dict ref)
 					setFuro(i, completePlayer, sute, sute + sute);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
+					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+					s += "\e";
 					return s;
 				}
 				if ((completePlayer + 1) % 4 == i && shouldChi(i, sute))
@@ -1191,6 +1214,8 @@ string OnSuteComplete(dict ref)
 					setFuro(i, completePlayer, sute, hai1 + hai2);
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
 					_create_thread("TH_WaitResponse");
+					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+					s += "\e";
 					return s;
 				}
 				if (shouldDaiminkan(i, sute))
@@ -1220,6 +1245,8 @@ string OnSuteComplete(dict ref)
 						+ ",dora," + strDorahyoujiNew + "]";
 					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + "," + tsumo + "]";
 					_create_thread("TH_WaitResponse");
+					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+					s += "\e";
 					return s;
 				}
 			}
@@ -1243,6 +1270,7 @@ string OnSuteComplete(dict ref)
 		arSavedTehai[3] += animNo;
 		arSavedWordCommand += {"Menu_NextTurn"};
 		s += si;
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\x[noclear]";
 		isRecievedResponse = 1;
 		string rcs = "";
@@ -1273,7 +1301,9 @@ string OnSuteComplete(dict ref)
 		isLockedDoubleClick = 0;
 		tsumo = arYama[nYamaIndex++];
 		s += showStatus(tsumo, "", 3, -1, {0, 0, 0});
-		s += "\_q\e";
+		s += "\_q";
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+		s += "\e";
 		lastScript = s;
 		return s;
 	}
@@ -1288,7 +1318,9 @@ string OnSuteComplete(dict ref)
 	//捨て牌問い合わせ
 	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
 		+ ",sutehai?]";
-	s += "\_q\e";
+	s += "\_q";
+	s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+	s += "\e";
 	reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + nextPlayer + "," + tsumo + "]";
 	_create_thread("TH_WaitResponse");
 	return s;
@@ -1414,7 +1446,7 @@ string getSutehaiFromClick(dict ref)
 	animNo = "40" + fillzero(i) + "99";
 	si += "\![anim,clear," + animNo + "]";
 	string s = "\![raise,OnChoiceSelectEx,,Menu_Sutehai," + sute + "," + tsumo + "]";
-	return "\C\0" + si + s + "\e";
+	return "\C\![lock,balloonrepaint]\![lock,repaint]\0\b[2]" + si + s + "\![unlock,balloonrepaint]\![unlock,repaint]\e";
 }
 
 string Menu_Sutehai(dict ref)
@@ -1425,7 +1457,7 @@ string Menu_Sutehai(dict ref)
 	string sute = ref["Reference2"];
 	string tsumo = ref["Reference3"];
 	isRinshanChance = 0;
-	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
+	string s = "\C\![lock,balloonrepaint]\![lock,repaint]\c\![set,balloontimeout,0]\0\b[2]\_q";
 	//userが捨て
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(addHai(arTehai[selectPlayer], tsumo), sute);
@@ -1453,7 +1485,7 @@ string Menu_Sutehai(dict ref)
 			}
 		}
 	}
-	s += "\_q\e";
+	s += "\_q\![unlock,balloonrepaint]\![unlock,repaint]\e";
 	reservedScript = "\C\0\b[2]\![raise,OnSuteComplete," + selectPlayer + "," + sute + "]";
 	_create_thread("TH_WaitResponse");
 	return s;
