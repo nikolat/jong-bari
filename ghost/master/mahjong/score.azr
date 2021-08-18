@@ -134,9 +134,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		int nRichi = isRichi;
 		if (arRichiJunme[nAgariPlayer] == 0)
 			nRichi = 2;
-		int isIppatsu = 0;
-		if (isRichi && arRichiJunme[nAgariPlayer] == _aryvn(arKawa[nAgariPlayer]) - 1)//鳴きを考慮していないため注意
-			isIppatsu = 1;
+		int isIppatsu = arIppatsuChance[nAgariPlayer];
 		int is1stRound = 0;
 		if (_aryvn(arKawa[nAgariPlayer]) == 0)//鳴きを考慮していないため注意
 			is1stRound = 1;
