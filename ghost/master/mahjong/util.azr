@@ -311,7 +311,8 @@ string startKyoku()
 	reservedNaku = ${
 		$(playerName[0], {}),
 		$(playerName[1], {}),
-		$(playerName[2], {})
+		$(playerName[2], {}),
+		$(playerName[3], {})
 	};
 	reservedTenpai = ${
 		$(playerName[0], ""),
@@ -502,7 +503,7 @@ string OnSuteSelect(dict ref)
 		reservedAnkan = 0;
 		reservedKakan = 0;
 	}
-	else if(tsumo != "")//auto カン以外の副露直後を除く
+	else if (tsumo != "")//auto カン以外の副露直後を除く
 	{
 		if (canTsumo(selectPlayer, tsumo))
 		{
@@ -1012,10 +1013,10 @@ string OnSuteComplete(dict ref)
 	reservedNaku = ${
 		$(playerName[0], {}),
 		$(playerName[1], {}),
-		$(playerName[2], {})
+		$(playerName[2], {}),
+		$(playerName[3], {})
 	};
-	//AIがロンすることを選択した場合(ダブロンどうしよう)
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i <= 3; i++)
 	{
 		string action = reservedNakuCopy[playerName[i]][0];
 		if (action != "")
@@ -1047,6 +1048,8 @@ string OnSuteComplete(dict ref)
 			}
 			if (action == "pon")
 			{
+				setKyotaku(completePlayer);
+				setFuro(i, completePlayer, sute, sute + sute);
 				s += showStatus("", "", i, -1, {0, 0, 0}, 1);
 				//発声通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
@@ -1056,22 +1059,29 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + "]";
 				//捨て牌問い合わせ
-				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
-				setKyotaku(completePlayer);
-				setFuro(i, completePlayer, sute, sute + sute);
-				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
-				_create_thread("TH_WaitResponse");
+				if (i != 3)
+				{
+					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+						+ ",sutehai?]";
+					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
+					_create_thread("TH_WaitResponse");
+				}
+				else
+				{
+					isLockedSingleClick = 0;
+				}
 				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 				s += "\e";
 				return s;
 			}
 			if (action == "chi")
 			{
-				s += showStatus("", "", i, -1, {0, 0, 0}, 1);
 				string hai1 = reservedNakuCopy[playerName[i]][1];
 				string hai2 = reservedNakuCopy[playerName[i]][2];
 				string furoHai = _arystr(sortHai(strHaiToArray(sute + hai1 + hai2)));
+				setKyotaku(completePlayer);
+				setFuro(i, completePlayer, sute, hai1 + hai2);
+				s += showStatus("", "", i, -1, {0, 0, 0}, 1);
 				//発声通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",say," + playerName[i] + ",chi]";
@@ -1080,12 +1090,17 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",open," + playerName[completePlayer] + "," + furoHai + "]";
 				//捨て牌問い合わせ
-				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
-				setKyotaku(completePlayer);
-				setFuro(i, completePlayer, sute, hai1 + hai2);
-				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
-				_create_thread("TH_WaitResponse");
+				if (i != 3)
+				{
+					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+						+ ",sutehai?]";
+					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
+					_create_thread("TH_WaitResponse");
+				}
+				else
+				{
+					isLockedSingleClick = 0;
+				}
 				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 				s += "\e";
 				return s;
@@ -1110,20 +1125,27 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",tsumo," + playerName[i] + "," + getLeftYama() + "," + tsumo + "]";
 				//捨て牌問い合わせ
-				s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
+				if (i != 3)
+				{
+					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+						+ ",sutehai?]";
+					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + "," + tsumo + "]";
+					_create_thread("TH_WaitResponse");
+				}
+				else
+				{
+					isLockedSingleClick = 0;
+				}
 				//dora通知
 				s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 					+ ",dora," + strDorahyoujiNew + "]";
 				s += "\_q";
-				reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + "," + tsumo + "]";
-				_create_thread("TH_WaitResponse");
 				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 				s += "\e";
 				return s;
 			}
 		}
-		else//お任せモードの場合ロン可能ならロンする
+		else if (i != 3)//お任せモードの場合
 		{
 			if (i != completePlayer)
 			{
@@ -2053,19 +2075,9 @@ string Menu_Pon(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
-	isLockedSingleClick = 0;
-	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute);
-	string s;
-	string sr;
-	//発声通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",say," + playerName[nFuroPlayer] + ",pon]";
-	//晒した牌通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",open," + playerName[nFuroPlayer] + "," + sute + sute + sute + "]";
-	s += "\0\s[0]\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
-	lastScript = s;
-	return sr + s;
+	string name = playerName[nFuroPlayer];
+	reservedNaku[name] = {"pon"};
+	return "\C\0\b[2]\![raise,OnChoiceSelectEx,,Menu_NextTurn]\e";
 }
 
 string Menu_Chi(dict ref)
@@ -2074,21 +2086,10 @@ string Menu_Chi(dict ref)
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
 	string hai = ref["Reference5"];
-	isLockedSingleClick = 0;
-	string furoHai = _arystr(sortHai(strHaiToArray(sute + hai)));
 	array arHai = strHaiToArray(hai);
-	setFuro(nFuroPlayer, nSutePlayer, sute, arHai[0] + arHai[1]);
-	string s;
-	string sr;
-	//発声通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",say," + playerName[nFuroPlayer] + ",chi]";
-	//晒した牌通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",open," + playerName[nFuroPlayer] + "," + furoHai + "]";
-	s += "\0\b[2]\_q" + showStatus("", "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
-	lastScript = s;
-	return sr + s;
+	string name = playerName[nFuroPlayer];
+	reservedNaku[name] = {"chi", arHai[0], arHai[1]};
+	return "\C\0\b[2]\![raise,OnChoiceSelectEx,,Menu_NextTurn]\e";
 }
 
 string Menu_Daiminkan(dict ref)
@@ -2096,26 +2097,9 @@ string Menu_Daiminkan(dict ref)
 	int nFuroPlayer = ref["Reference2"];
 	int nSutePlayer = ref["Reference3"];
 	string sute = ref["Reference4"];
-	isLockedSingleClick = 0;
-	isRinshanChance = 1;
-	setFuro(nFuroPlayer, nSutePlayer, sute, sute + sute + sute);
-	string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-	dorahyouji += strDorahyoujiNew;
-	string tsumo = arYama[nYamaIndex++];
-	string s;
-	string sr;
-	//発声通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",say," + playerName[nFuroPlayer] + ",kan]";
-	//晒した牌通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",open," + playerName[nFuroPlayer] + "," + sute + sute + sute + sute + "]";
-	//dora通知
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",dora," + strDorahyoujiNew + "]";
-	s += "\0\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 1) + "\_q\e";
-	lastScript = s;
-	return sr + s;
+	string name = playerName[nFuroPlayer];
+	reservedNaku[name] = {"kan"};
+	return "\C\0\b[2]\![raise,OnChoiceSelectEx,,Menu_NextTurn]\e";
 }
 
 setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
