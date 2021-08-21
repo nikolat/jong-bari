@@ -31,6 +31,7 @@ array playerName;
 int isRinshanChance;
 array arIppatsuChance = {0, 0, 0, 0};
 array arChihouChance = {1, 1, 1, 1};
+array arWRichi = {0, 0, 0, 0};
 int isSoloMode;
 int modeEx;
 //バルーン表示保存用
@@ -306,6 +307,7 @@ string startKyoku()
 	isRinshanChance = 0;
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {1, 1, 1, 1};
+	arWRichi = {0, 0, 0, 0};
 	dorahyouji = arYama[52];
 	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
 	reservedNaku = ${
@@ -1433,6 +1435,8 @@ setKyotaku(int nPlayer)
 		kyotaku++;
 		arScore[nPlayer] -= 1000;
 		arIppatsuChance[nPlayer] = 1;
+		if (arChihouChance[nPlayer])
+			arWRichi[nPlayer] = 1;
 	}
 	else
 	{
@@ -2305,6 +2309,7 @@ clearStatus()
 	isRinshanChance = 0;
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {1, 1, 1, 1};
+	arWRichi = {0, 0, 0, 0};
 	dorahyouji = "";
 	nYamaIndex = 0;
 	lastScript = "";

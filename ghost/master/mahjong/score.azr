@@ -138,7 +138,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		if (nFurikomiPlayer == -1)
 			isTsumo = 1;
 		int nRichi = isRichi;
-		if (arRichiJunme[nAgariPlayer] == 0)
+		if (arWRichi[nAgariPlayer])
 			nRichi = 2;
 		int isIppatsu = arIppatsuChance[nAgariPlayer];
 		int is1stRound = arChihouChance[nAgariPlayer];
