@@ -25,10 +25,13 @@ string OnRyukyokuScore(dict ref)
 {
 	string reason = ref["Reference0"];
 	array arTenpaiPlayerFlag = {0, 0, 0, 0};
-	if (reason == "kouhai" || reason == "3ron")
+	if (reason == "kouhai" || reason == "3ron" || reason == "touhai")
 		arTenpaiPlayerFlag = _strary(ref["Reference1"]);
+	string tsumo;
+	if (reason == "touhai")
+		tsumo = arYama[nYamaIndex - 1];
 	isLockedSingleClick = 0;
-	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag, reason);
+	return showScoreResult(-1, -1, {}, tsumo, arTenpaiPlayerFlag, reason);
 }
 
 //点数画面表示
@@ -218,6 +221,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	{
 		dict d = ${
 			$("kouhai", "荒牌平局"),
+			$("touhai", "九種么九牌倒牌"),
 			$("4renda", "四風子連打"),
 			$("4kan", "四開槓"),
 			$("4richi", "四家立直"),
@@ -266,7 +270,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		for (int i = 0; i <= 3; i++)
 		{
 			if (arTenpaiPlayerFlag[i])
-				s += showHai(arTehai[i], "", i, -1, 0, 1);
+				s += showHai(arTehai[i], atariHai, i, -1, 0, 1);
 		}
 	}
 	if (!modeEx)

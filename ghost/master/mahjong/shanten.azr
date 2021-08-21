@@ -135,39 +135,3 @@ array getDuplicatedElement(array ary, int n)
 	}
 	return _dickeyget(d);
 }
-
-//YAYAのASEARCH
-int ASEARCH(string key, array ary)
-{
-	for (int i = 0; ary[i] != nil; i++)
-	{
-		if (key == ary[i])
-			return i;
-	}
-	return -1;
-}
-
-//YAYAのASEARCHEX
-array ASEARCHEX(string key, array ary)
-{
-	array ret = {};
-	for (int i = 0; ary[i] != nil; i++)
-	{
-		if (key == ary[i])
-			ret += i;
-	}
-	return ret;
-}
-
-//rubyのuniq
-array uniq(array ary)
-{
-	dict d;
-	for (int i = 0; ary[i] != nil; i++)
-	{
-		string key = ary[i];
-		if (d[key] == nil)
-			d += $(key, 1);
-	}
-	return _dickeyget(d);
-}

@@ -879,6 +879,23 @@ int canRon(int nPlayer, string atariHai)
 	return 1;
 }
 
+int canTouhai(int nPlayer, string tsumoHai)
+{
+	if (arChihouChance[nPlayer] == 0)
+		return 0;
+	array arHai = uniq(sortHai(strHaiToArray(addHai(arTehai[nPlayer], tsumoHai))));
+	array arYaochu = {"1m", "9m", "1p", "9p", "1s", "9s", "1z", "2z", "3z", "4z", "5z", "6z", "7z"};
+	int count = 0;
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (ASEARCH(arHai[i], arYaochu) >= 0)
+			count++;
+	}
+	if (count >= 9)
+		return 1;
+	return 0;
+}
+
 int canTsumo(int nPlayer, string atariHai)
 {
 	if (atariHai == "")
@@ -1758,6 +1775,21 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	arSavedWordCommand = {};
 	if (nPlayer == pUser && tsumo != "")
 	{
+		if (canTouhai(pUser, tsumo))
+		{
+			if (!modeEx)
+				s += "\![*]\__q[Menu_Touhai,3]倒牌\__q";
+			animNo = "500017";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			animNo = "500" + (nWord++) + "99";
+			si += "\![anim,offset," + animNo + "," + offset + ",0]";
+			si += "\i[" + animNo + "]";
+			savedTehai += animNo;
+			offset += 110;
+			arSavedWordCommand += {"Menu_Touhai", 3};
+		}
 		if (canTsumo(pUser, tsumo))
 		{
 			if (!modeEx)
@@ -2132,6 +2164,15 @@ string Menu_Ankan(dict ref)
 	s += "\0\b[2]\_q" + showStatus(tsumo, "", nFuroPlayer, -1, {0, 0, 0}, 0) + "\_q\e";
 	lastScript = s;
 	return sr + s;
+}
+
+string Menu_Touhai(dict ref)
+{
+	int nTouhaiPlayer = ref["Reference2"];
+	string reason = "touhai";
+	array arTenpaiPlayerFlag = {0, 0, 0, 0};
+	arTenpaiPlayerFlag[nTouhaiPlayer] = 1;
+	return "\C\0\b[2]\![raise,OnRyukyokuScore," + reason + "," + _arystr(arTenpaiPlayerFlag) + "]\e";
 }
 
 string Menu_Tsumo(dict ref)
@@ -3131,6 +3172,38 @@ array getArrayRange(array a, int start, int end)
 		arRet += a[i];
 	}
 	return arRet;
+}
+
+array uniq(array ary)
+{
+	array a;
+	for (int i = 0; ary[i] != nil; i++)
+	{
+		if (ASEARCH(ary[i], a) == -1)
+			a += ary[i];
+	}
+	return a;
+}
+
+int ASEARCH(string key, array ary)
+{
+	for (int i = 0; ary[i] != nil; i++)
+	{
+		if (key == ary[i])
+			return i;
+	}
+	return -1;
+}
+
+array ASEARCHEX(string key, array ary)
+{
+	array ret = {};
+	for (int i = 0; ary[i] != nil; i++)
+	{
+		if (key == ary[i])
+			ret += i;
+	}
+	return ret;
 }
 
 string JOIN(array a, string delim)
