@@ -396,10 +396,10 @@ string OnSuteSelect(dict ref)
 		arSavedWordCommand += {"Menu_NextTurn"};
 		s += si;
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-		s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+		s += "\x\![raise,OnTsumoScore," + selectPlayer + "]";
 		s += "\e";
 		isLockedSingleClick = 0;
-		reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+		reservedClickScript = "\![raise,OnTsumoScore," + selectPlayer + "]";
 		return s;
 	}
 	else if (reservedSelectedHai != "")
@@ -523,10 +523,10 @@ string OnSuteSelect(dict ref)
 			arSavedWordCommand += {"Menu_NextTurn"};
 			s += si;
 			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\x\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+			s += "\x\![raise,OnTsumoScore," + selectPlayer + "]";
 			s += "\e";
 			isLockedSingleClick = 0;
-			reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Tsumo," + selectPlayer + "]";
+			reservedClickScript = "\![raise,OnTsumoScore," + selectPlayer + "]";
 			return s;
 		}
 		if (shouldAnkan(selectPlayer, tsumo))
@@ -748,6 +748,32 @@ array getChiMaterial(string strTehai, string suteHai)
 	if (ASEARCH(n + 1, a) >= 0 && ASEARCH(n + 2, a) >= 0)
 		arRet += "" + (n + 1) + color + (n + 2) + color;
 	return arRet;
+}
+
+array getChiMaterialBest(int nPlayer, string suteHai)
+{
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	array arMaterial = getChiMaterial(arTehai[nPlayer], suteHai);
+	int shantenMin = 99;
+	array indexMin = {};
+	for (int i = 0; arMaterial[i] != nil; i++)
+	{
+		string haiChanged = removeHai(arTehai[nPlayer], arMaterial[i]) + "<" + _arystr(sortHai(strHaiToArray(arMaterial[i] + suteHai))) + ">";
+		int shantenTmp = getShantenYaku(haiChanged, bafuHai, jifuHai);
+		if (shantenTmp < shantenMin)
+		{
+			shantenMin = shantenTmp;
+			indexMin = {i};
+		}
+		else if (shantenTmp == shantenMin)
+		{
+			indexMin += i;
+		}
+	}
+	int index = _randselect(indexMin);
+	array arMaterialSelected = strHaiToArray(arMaterial[index]);
+	return arMaterialSelected;
 }
 
 int canDaiminkan(int nPlayer, string suteHai)
@@ -1009,13 +1035,58 @@ string OnSuteComplete(dict ref)
 	int completePlayer = ref["Reference0"];
 	string sute = ref["Reference1"];
 	string s = "\C\![lock,balloonrepaint]\![lock,repaint]\c\![set,balloontimeout,0]\0\b[2]\_q";
-	dict reservedNakuCopy = reservedNaku;
+	dict reservedNakuCopy;
+	reservedNakuCopy = ${
+		$(playerName[0], {}),
+		$(playerName[1], {}),
+		$(playerName[2], {}),
+		$(playerName[3], {})
+	};
+	for (int i = 0; i <= 3; i++)
+	{
+		string action = reservedNaku[playerName[i]][0];
+		if (action != "")
+			reservedNakuCopy[playerName[i]] = reservedNaku[playerName[i]];
+	}
 	reservedNaku = ${
 		$(playerName[0], {}),
 		$(playerName[1], {}),
 		$(playerName[2], {}),
 		$(playerName[3], {})
 	};
+	//レスポンスが無かったプレイヤーの行動の補完
+	array arActionPlayer = {};
+	for (int i = 1; i <= 3; i++)
+	{
+		int index = (i + completePlayer) % 4;
+		arActionPlayer += index;
+	}
+	for (int x = 0; arActionPlayer[x] != nil; x++)
+	{
+		int i = arActionPlayer[x];
+		string action = reservedNakuCopy[playerName[i]][0];
+		if (action == "" && i != 3)
+		{
+			if (canRon(i, sute))
+			{
+				reservedNakuCopy[playerName[i]] = {"ron"};
+			}
+			else if (shouldPon(i, sute))
+			{
+				reservedNakuCopy[playerName[i]] = {"pon"};
+			}
+			else if ((completePlayer + 1) % 4 == i && shouldChi(i, sute))
+			{
+				array a = getChiMaterialBest(i, sute);
+				reservedNakuCopy[playerName[i]] = {"chi", a[0], a[1]};
+			}
+			else if (shouldDaiminkan(i, sute))
+			{
+				reservedNakuCopy[playerName[i]] = {"kan"};
+			}
+		}
+	}
+	//TODO:副露の優先順位を考慮
 	for (int i = 0; i <= 3; i++)
 	{
 		string action = reservedNakuCopy[playerName[i]][0];
@@ -1040,10 +1111,10 @@ string OnSuteComplete(dict ref)
 				arSavedWordCommand += {"Menu_NextTurn"};
 				s += si;
 				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-				s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
+				s += "\x\![raise,OnRonScore," + i + "," + completePlayer + "," + sute + "]";
 				s += "\e";
 				isLockedSingleClick = 0;
-				reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
+				reservedClickScript = "\![raise,OnRonScore," + i + "," + completePlayer + "," + sute + "]";
 				return s;
 			}
 			if (action == "pon")
@@ -1143,134 +1214,6 @@ string OnSuteComplete(dict ref)
 				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 				s += "\e";
 				return s;
-			}
-		}
-		else if (i != 3)//お任せモードの場合
-		{
-			if (i != completePlayer)
-			{
-				if (canRon(i, sute))
-				{
-					s += showStatus("", sute, completePlayer, i, {0, 0, 0});
-					//発声通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",say," + playerName[i] + ",ron]";
-					string si;
-					string animNo;
-					animNo = "500001";
-					si += "\![anim,offset," + animNo + ",0,0]";
-					si += "\i[" + animNo + "]";
-					arSavedTehai[3] += animNo;
-					animNo = "500199";
-					si += "\![anim,offset," + animNo + ",0,0]";
-					si += "\i[" + animNo + "]";
-					arSavedTehai[3] += animNo;
-					arSavedWordCommand += {"Menu_NextTurn"};
-					s += si;
-					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-					s += "\x\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
-					s += "\e";
-					isLockedSingleClick = 0;
-					reservedClickScript = "\![raise,OnChoiceSelectEx,,Menu_Ron," + i + "," + completePlayer + "," + sute + "]";
-					return s;
-				}
-				if (shouldPon(i, sute))
-				{
-					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-					//発声通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",say," + playerName[i] + ",pon]";
-					s += "\_w[2000]";
-					//晒した牌通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + "]";
-					//捨て牌問い合わせ
-					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-						+ ",sutehai?]";
-					setKyotaku(completePlayer);
-					setFuro(i, completePlayer, sute, sute + sute);
-					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
-					_create_thread("TH_WaitResponse");
-					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-					s += "\e";
-					return s;
-				}
-				if ((completePlayer + 1) % 4 == i && shouldChi(i, sute))
-				{
-					s += showStatus("", "", i, -1, {0, 0, 0}, 1);
-					string bafuHai = getBafuHai();
-					string jifuHai = getJifuHai(i);
-					array arMaterial = getChiMaterial(arTehai[i], sute);
-					int shantenMin = 99;
-					array indexMin = {};
-					for (int j = 0; arMaterial[j] != nil; j++)
-					{
-						string haiChanged = removeHai(arTehai[i], arMaterial[j]) + "<" + _arystr(sortHai(strHaiToArray(arMaterial[j] + sute))) + ">";
-						int shantenTmp = getShantenYaku(haiChanged, bafuHai, jifuHai);
-						if (shantenTmp < shantenMin)
-						{
-							shantenMin = shantenTmp;
-							indexMin = {j};
-						}
-						else if (shantenTmp == shantenMin)
-						{
-							indexMin += j;
-						}
-					}
-					int index = _randselect(indexMin);
-					array arMaterialSelected = strHaiToArray(arMaterial[index]);
-					string hai1 = arMaterialSelected[0];
-					string hai2 = arMaterialSelected[1];
-					string furoHai = _arystr(sortHai(strHaiToArray(sute + hai1 + hai2)));
-					//発声通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",say," + playerName[i] + ",chi]";
-					s += "\_w[2000]";
-					//晒した牌通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + playerName[completePlayer] + "," + furoHai + "]";
-					//捨て牌問い合わせ
-					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-						+ ",sutehai?]";
-					setKyotaku(completePlayer);
-					setFuro(i, completePlayer, sute, hai1 + hai2);
-					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + ",]";
-					_create_thread("TH_WaitResponse");
-					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-					s += "\e";
-					return s;
-				}
-				if (shouldDaiminkan(i, sute))
-				{
-					isRinshanChance = 1;
-					setKyotaku(completePlayer);
-					setFuro(i, completePlayer, sute, sute + sute + sute);
-					string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-					dorahyouji += strDorahyoujiNew;
-					string tsumo = arYama[nYamaIndex++];
-					s += showStatus(tsumo, "", i, -1, {0, 0, 0}, 1);
-					//発声通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",say," + playerName[i] + ",kan]";
-					s += "\_w[2000]";
-					//晒した牌通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",open," + playerName[completePlayer] + "," + sute + sute + sute + sute + "]";
-					//ツモ通知
-					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-						+ ",tsumo," + playerName[i] + "," + getLeftYama() + "," + tsumo + "]";
-					//捨て牌問い合わせ
-					s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-						+ ",sutehai?]";
-					//dora通知
-					s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-						+ ",dora," + strDorahyoujiNew + "]";
-					reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + i + "," + tsumo + "]";
-					_create_thread("TH_WaitResponse");
-					s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-					s += "\e";
-					return s;
-				}
 			}
 		}
 	}
@@ -2070,6 +2013,12 @@ string Menu_Ankan(dict ref)
 	return sr + s;
 }
 
+string Menu_Tsumo(dict ref)
+{
+	int nAgariPlayer = ref["Reference2"];
+	return "\C\0\b[2]\![raise,OnTsumoScore," + nAgariPlayer + "]\e";
+}
+
 string Menu_Pon(dict ref)
 {
 	int nFuroPlayer = ref["Reference2"];
@@ -2099,6 +2048,14 @@ string Menu_Daiminkan(dict ref)
 	string sute = ref["Reference4"];
 	string name = playerName[nFuroPlayer];
 	reservedNaku[name] = {"kan"};
+	return "\C\0\b[2]\![raise,OnChoiceSelectEx,,Menu_NextTurn]\e";
+}
+
+string Menu_Ron(dict ref)
+{
+	int nAgariPlayer = ref["Reference2"];
+	string name = playerName[nAgariPlayer];
+	reservedNaku[name] = {"ron"};
 	return "\C\0\b[2]\![raise,OnChoiceSelectEx,,Menu_NextTurn]\e";
 }
 
