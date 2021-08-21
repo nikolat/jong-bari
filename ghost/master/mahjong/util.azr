@@ -416,7 +416,8 @@ string OnSuteSelect(dict ref)
 				+ ",say," + playerName[selectPlayer] + ",richi]";
 			wait += "\_w[2000]";
 		}
-		else if (reservedAnkan && canAnkan(selectPlayer, tsumo))
+		else if (reservedAnkan && canAnkan(selectPlayer, tsumo) && arRichiJunme[selectPlayer] == -1
+			|| reservedAnkan && canAnkan(selectPlayer, tsumo) && arRichiJunme[selectPlayer] >= 0 && tsumo == reservedSelectedHai)
 		{
 			isActionAccepted = 1;
 			reservedAnkan = 0;
@@ -536,6 +537,8 @@ string OnSuteSelect(dict ref)
 			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
 			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer], selectPlayer);
 			string ankanHai = _randselect(arAnkanHaiUseful);
+			if (arRichiJunme[selectPlayer] >= 0)
+				ankanHai = tsumo;
 			isRinshanChance = 1;
 			setAnkan(selectPlayer, ankanHai);
 			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
@@ -1010,9 +1013,25 @@ int canAnkan(int nPlayer, string tsumoHai)
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
 		return 0;
 	array arAnkanHai = getAnkanHai(addHai(arTehai[nPlayer], tsumoHai));
-	if (_aryvn(arAnkanHai) > 0)
-		return 1;
-	return 0;
+	if (_aryvn(arAnkanHai) == 0)
+		return 0;
+	//リーチ後の場合
+	if (arRichiJunme[nPlayer] >= 0)
+	{
+		//送りカンの場合
+		if (ASEARCH(tsumoHai, arAnkanHai) == -1)
+			return 0;
+		//和了の形が変わる場合
+		array a = getShantenWithMentsu(arTehai[nPlayer], getBafuHai(), getJifuHai(nPlayer));
+		array arPattern = a[1];
+		for (int i = 0; arPattern[i] != nil; i++)
+		{
+			array ap = _strsplit(arPattern[i], ",");
+			if (ASEARCH(tsumoHai + tsumoHai + tsumoHai, ap) == -1)//常に暗刻でないとダメ
+				return 0;
+		}
+	}
+	return 1;
 }
 
 int shouldAnkan(int nPlayer, string tsumoHai)
@@ -1827,7 +1846,11 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		if (canKakan(pUser, tsumo) || canAnkan(pUser, tsumo))
 		{
 			array arKakanHai = getKakanHai(addHai(arTehai[pUser], tsumo));
-			array arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
+			array arAnkanHai;
+			if (arRichiJunme[pUser] == -1)
+				arAnkanHai = getAnkanHai(addHai(arTehai[pUser], tsumo));
+			else if (arRichiJunme[pUser] >= 0 && canAnkan(pUser, tsumo))
+				arAnkanHai = {tsumo};
 			if (_aryvn(arKakanHai) + _aryvn(arAnkanHai) == 1)
 			{
 				array saveCommand;
