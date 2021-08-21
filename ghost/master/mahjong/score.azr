@@ -24,8 +24,8 @@ string OnTsumoScore(dict ref)
 string OnRyukyokuScore(dict ref)
 {
 	string reason = ref["Reference0"];
-	array arTenpaiPlayerFlag = {};
-	if (reason == "kouhai")
+	array arTenpaiPlayerFlag = {0, 0, 0, 0};
+	if (reason == "kouhai" || reason == "3ron")
 		arTenpaiPlayerFlag = _strary(ref["Reference1"]);
 	isLockedSingleClick = 0;
 	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag, reason);
@@ -220,7 +220,8 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			$("kouhai", "荒牌平局"),
 			$("4renda", "四風子連打"),
 			$("4kan", "四開槓"),
-			$("4richi", "四家立直")
+			$("4richi", "四家立直"),
+			$("3ron", "三家和")
 		};
 		if (modeEx)
 		{
@@ -239,7 +240,9 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		nKyotaku = kyotaku;
 		kyotaku = 0;
 	}
-	array arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag);
+	array arScoreAdd = {0, 0, 0, 0};
+	if (nAgariPlayer >= 0 || reason == "kouhai")
+		arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag);
 	if (modeEx)
 		s += "\_l[,180]";
 	for (int i = 0; playerName[i] != nil; i++)
@@ -258,7 +261,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		s += showHai(hai13, atariHai, nAgariPlayer, 0, 1, 1);
 		s += "\n\f[height,default]\n";
 	}
-	else if (modeEx && reason == "kouhai")
+	else if (modeEx)
 	{
 		for (int i = 0; i <= 3; i++)
 		{

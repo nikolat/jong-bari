@@ -1107,17 +1107,27 @@ string OnSuteComplete(dict ref)
 	}
 	//副露の優先順位を考慮
 	int p = -1;
-	array arActions = {"ron", "pon", "kan", "chi"};
-	for (int j = 0; arActions[j] != nil; j++)
+	int isTripleRon = 0;
+	if (reservedNakuCopy[playerName[arActionPlayer[0]]][0] == "ron"
+		&& reservedNakuCopy[playerName[arActionPlayer[1]]][0] == "ron"
+		&& reservedNakuCopy[playerName[arActionPlayer[2]]][0] == "ron")
 	{
-		for (int x = 0; arActionPlayer[x] != nil; x++)
+		isTripleRon = 1;
+	}
+	else
+	{
+		array arActions = {"ron", "pon", "kan", "chi"};
+		for (int j = 0; arActions[j] != nil; j++)
 		{
-			int i = arActionPlayer[x];
-			string action = reservedNakuCopy[playerName[i]][0];
-			if (p >= 0 && p != i && action != "")
-				reservedNakuCopy[playerName[i]] = {};//優先順位の低いアクションは全てキャンセルする
-			else if (action == arActions[j])
-				p = i;
+			for (int x = 0; arActionPlayer[x] != nil; x++)
+			{
+				int i = arActionPlayer[x];
+				string action = reservedNakuCopy[playerName[i]][0];
+				if (p >= 0 && p != i && action != "")
+					reservedNakuCopy[playerName[i]] = {};//優先順位の低いアクションは全てキャンセルする
+				else if (action == arActions[j])
+					p = i;
+			}
 		}
 	}
 	//予定されたアクションの実行
@@ -1269,11 +1279,28 @@ string OnSuteComplete(dict ref)
 	{
 		reason = "4richi";
 	}
+	//三家和
+	if (isTripleRon)
+	{
+		reason = "3ron";
+		//発声通知
+		for (int x = 0; x < 3; x++)
+		{
+			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+				+ ",say," + playerName[arActionPlayer[x]] + ",ron]";
+		}
+	}
 	//途中流局
 	if (reason != "")
 	{
+		array arTenpaiPlayerFlag = {0, 0, 0};
+		if (reason == "3ron")
+		{
+			arTenpaiPlayerFlag = {1, 1, 1, 1};
+			arTenpaiPlayerFlag[completePlayer] = 0;
+		}
 		isLockedSingleClick = 0;
-		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag);
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -1289,7 +1316,7 @@ string OnSuteComplete(dict ref)
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\x[noclear]";
 		string rcs = "";
-		rcs += "\![raise,OnRyukyokuScore," + reason + "]";
+		rcs += "\![raise,OnRyukyokuScore," + reason + "," + _arystr(arTenpaiPlayerFlag) + "]";
 		reservedClickScript = rcs;
 		s += rcs + "\_q\e";
 		return s;
@@ -1298,7 +1325,7 @@ string OnSuteComplete(dict ref)
 	if (_aryvn(arYama) == nYamaIndex)
 	{
 		isLockedSingleClick = 0;
-		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+		s += showStatus("", "", -1, -1, {0, 0, 0});
 		string si;
 		string animNo;
 		animNo = "500001";
