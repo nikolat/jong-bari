@@ -6,7 +6,7 @@ string OnRonScore(dict ref)
 	string hai13 = arTehai[nAgariPlayer];
 	string sute = ref["Reference2"];
 	isLockedSingleClick = 0;
-	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {});
+	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, sute, {}, "");
 }
 
 //ツモ
@@ -17,19 +17,22 @@ string OnTsumoScore(dict ref)
 	string hai13 = arTehai[nAgariPlayer];
 	string tsumo = arYama[nYamaIndex - 1];
 	isLockedSingleClick = 0;
-	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {});
+	return showScoreResult(nAgariPlayer, nFurikomiPlayer, hai13, tsumo, {}, "");
 }
 
 //流局
 string OnRyukyokuScore(dict ref)
 {
-	array arTenpaiPlayerFlag = _strary(ref["Reference0"]);
+	string reason = ref["Reference0"];
+	array arTenpaiPlayerFlag = {};
+	if (reason == "kouhai")
+		arTenpaiPlayerFlag = _strary(ref["Reference1"]);
 	isLockedSingleClick = 0;
-	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag);
+	return showScoreResult(-1, -1, {}, "", arTenpaiPlayerFlag, reason);
 }
 
 //点数画面表示
-string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, string atariHai, array arTenpaiPlayerFlag)
+string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, string atariHai, array arTenpaiPlayerFlag, string reason)
 {
 	string s;
 	s += "\![set,balloontimeout,0]\![set,choicetimeout,0]\0\s[0]\b[2]\_q";
@@ -210,6 +213,23 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		}
 		s += "\n";
 	}
+	//流局理由表示
+	if (reason != "")
+	{
+		dict d = ${
+			$("kouhai", "荒牌平局"),
+			$("renda", "四風子連打")
+		};
+		if (modeEx)
+		{
+			s += "\_l[,380]";
+			s += "\_l[300,]" + d[reason] + "\n";
+		}
+		else
+		{
+			s += d[reason] + "\n";
+		}
+	}
 	//プレイヤー持ち点表示
 	int nKyotaku;
 	if (nAgariPlayer >= 0)
@@ -236,7 +256,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		s += showHai(hai13, atariHai, nAgariPlayer, 0, 1, 1);
 		s += "\n\f[height,default]\n";
 	}
-	else if (modeEx)
+	else if (modeEx && reason == "kouhai")
 	{
 		for (int i = 0; i <= 3; i++)
 		{

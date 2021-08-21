@@ -1229,8 +1229,38 @@ string OnSuteComplete(dict ref)
 			return s;
 		}
 	}
-	setKyotaku(completePlayer);
-	//流局
+	//途中流局(四風子連打)
+	if (nYamaIndex == 70 && arChihouChance[completePlayer] == 1)
+	{
+		if (
+			(sute == "1z" || sute == "2z" || sute == "3z" || sute == "4z")
+			&& (arKawa[0][0] == arKawa[1][0] && arKawa[0][0] == arKawa[2][0] && arKawa[0][0] == arKawa[3][0])
+		)
+		{
+			isLockedSingleClick = 0;
+			s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+			string si;
+			string animNo;
+			animNo = "500001";
+			si += "\![anim,offset," + animNo + ",0,0]";
+			si += "\i[" + animNo + "]";
+			arSavedTehai[3] += animNo;
+			animNo = "500199";
+			si += "\![anim,offset," + animNo + ",0,0]";
+			si += "\i[" + animNo + "]";
+			arSavedTehai[3] += animNo;
+			arSavedWordCommand += {"Menu_NextTurn"};
+			s += si;
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			s += "\x[noclear]";
+			string rcs = "";
+			rcs += "\![raise,OnRyukyokuScore,renda]";
+			reservedClickScript = rcs;
+			s += rcs + "\_q\e";
+			return s;
+		}
+	}
+	//流局(荒牌平局)
 	if (_aryvn(arYama) == nYamaIndex)
 	{
 		isLockedSingleClick = 0;
@@ -1264,11 +1294,12 @@ string OnSuteComplete(dict ref)
 				isRecievedResponse = 0;
 			}
 		}
-		rcs += "\![notify,OnNotifyPrepareRyukyoku]";
+		rcs += "\![notify,OnNotifyPrepareRyukyoku,kouhai]";
 		reservedClickScript = rcs;
 		s += rcs + "\_q\e";
 		return s;
 	}
+	setKyotaku(completePlayer);
 	int nextPlayer = (completePlayer + 1) % 4;
 	string tsumo;
 	//userがツモ
@@ -1320,13 +1351,16 @@ setKyotaku(int nPlayer)
 
 string OnNotifyPrepareRyukyoku(dict ref)
 {
-	reservedScript = "\C\0\b[2]\![raise,OnRyukyoku]";
+	reservedScript = "\C\0\b[2]\![raise,OnRyukyoku," + ref["Reference0"] + "]";
 	_create_thread("TH_WaitResponse");
 	return "";
 }
 
 string OnRyukyoku(dict ref)
 {
+	string reason = ref["Reference0"];
+	if (reason != "kouhai")
+		return "\![raise,OnRyukyokuScore," + reason + "]\e";
 	string m;
 	array arTenpaiPlayerFlag = {0, 0, 0};
 	for (int i = 0; i < 3; i++)
@@ -1367,10 +1401,10 @@ string OnRyukyoku(dict ref)
 	arSavedTehai[3] += animNo;
 	arSavedWordCommand += {"Menu_NextTurn"};
 	s += si;
-	s += "\x\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
+	s += "\x\![raise,OnRyukyokuScore," + reason + "," + _arystr(arTenpaiPlayerFlag) + "]";
 	s += "\e";
 	isLockedSingleClick = 0;
-	reservedClickScript = "\![raise,OnRyukyokuScore," + _arystr(arTenpaiPlayerFlag) + "]";
+	reservedClickScript = "\![raise,OnRyukyokuScore," + reason + "," + _arystr(arTenpaiPlayerFlag) + "]";
 	return s;
 }
 
