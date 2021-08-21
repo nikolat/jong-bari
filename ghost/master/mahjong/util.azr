@@ -2131,10 +2131,12 @@ string Menu_Richi(dict ref)
 	arRichiJunme[3] = _aryvn(arKawa[3]);
 	string tsumo = arYama[nYamaIndex - 1];
 	string s;
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+	string sr;
+	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",say,user,richi]";
 	s += "\0\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0) + "\_q\e";
-	return s;
+	lastScript = s;
+	return sr + s;
 }
 
 string Menu_Kakan(dict ref)
