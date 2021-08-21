@@ -1337,6 +1337,10 @@ string OnSuteComplete(dict ref)
 			arTenpaiPlayerFlag = {1, 1, 1, 1};
 			arTenpaiPlayerFlag[completePlayer] = 0;
 		}
+		else if (reason == "4richi")
+		{
+			setKyotaku(completePlayer);
+		}
 		isLockedSingleClick = 0;
 		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, 0);
 		string si;
