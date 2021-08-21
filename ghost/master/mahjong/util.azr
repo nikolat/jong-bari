@@ -342,7 +342,7 @@ string startKyoku()
 		+ ",dora," + dorahyouji + "]";
 
 	s += "\![set,balloontimeout,0]\0\b[2]\_q";
-	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0});
+	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, 0);
 	//userがツモ
 	if (oyaIndex == 3)
 	{
@@ -381,7 +381,7 @@ string OnSuteSelect(dict ref)
 	if (reservedTsumo)
 	{
 		reservedTsumo = 0;
-		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
+		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
 		//発声通知
 		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",say," + playerName[selectPlayer] + ",tsumo]";
@@ -497,7 +497,7 @@ string OnSuteSelect(dict ref)
 				$("ErrorDescription", "failed requested action")
 			};
 			openTehai = 1;
-			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}) + "\1Error\![unlock,balloonrepaint]\![unlock,repaint]\e";
+			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}, 0) + "\1Error\![unlock,balloonrepaint]\![unlock,repaint]\e";
 		}
 		sute = reservedSelectedHai;
 		reservedSelectedHai = "";
@@ -509,7 +509,7 @@ string OnSuteSelect(dict ref)
 	{
 		if (canTsumo(selectPlayer, tsumo))
 		{
-			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0});
+			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[selectPlayer] + ",tsumo]";
 			string si;
@@ -624,7 +624,7 @@ string OnSuteSelect(dict ref)
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(tehai, sute);
-	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0}, 0);
 	//捨て牌通知
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
@@ -1155,7 +1155,7 @@ string OnSuteComplete(dict ref)
 		string action = reservedNakuCopy[playerName[p]][0];
 		if (action == "ron")
 		{
-			s += showStatus("", sute, completePlayer, p, {0, 0, 0});
+			s += showStatus("", sute, completePlayer, p, {0, 0, 0}, 0);
 			//発声通知
 			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 				+ ",say," + playerName[p] + ",ron]";
@@ -1319,7 +1319,7 @@ string OnSuteComplete(dict ref)
 			arTenpaiPlayerFlag[completePlayer] = 0;
 		}
 		isLockedSingleClick = 0;
-		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag);
+		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, 0);
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -1344,7 +1344,7 @@ string OnSuteComplete(dict ref)
 	if (_aryvn(arYama) == nYamaIndex)
 	{
 		isLockedSingleClick = 0;
-		s += showStatus("", "", -1, -1, {0, 0, 0});
+		s += showStatus("", "", -1, -1, {0, 0, 0}, 0);
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -1388,7 +1388,7 @@ string OnSuteComplete(dict ref)
 		isLockedSingleClick = 0;
 		isLockedDoubleClick = 0;
 		tsumo = arYama[nYamaIndex++];
-		s += showStatus(tsumo, "", 3, -1, {0, 0, 0});
+		s += showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0);
 		s += "\_q";
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\e";
@@ -1399,7 +1399,7 @@ string OnSuteComplete(dict ref)
 	isLockedSingleClick = 1;
 	isLockedDoubleClick = 1;
 	tsumo = arYama[nYamaIndex++];
-	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0});
+	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0}, 0);
 	//ツモ通知
 	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
 		+ ",tsumo," + playerName[nextPlayer] + "," + getLeftYama() + "," + tsumo + "]";
@@ -1483,7 +1483,7 @@ string OnRyukyoku(dict ref)
 	else
 		arTenpaiPlayerFlag += 0;
 	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
-	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag);
+	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, 0);
 	s += m;
 	string si;
 	string animNo;
@@ -1568,7 +1568,7 @@ string Menu_Sutehai(dict ref)
 	//userが捨て
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(addHai(arTehai[selectPlayer], tsumo), sute);
-	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0});
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0}, 0);
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
 	isRecievedResponse = 1;
@@ -1638,7 +1638,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 		}
 		else
 		{
-			if (isMinkan && i == _aryvn(arDorahyouji))
+			if (isMinkan && i == _aryvn(arDorahyouji) - 1)
 			{
 				wanpai += "tb";
 			}
