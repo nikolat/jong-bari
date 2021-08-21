@@ -1229,36 +1229,45 @@ string OnSuteComplete(dict ref)
 			return s;
 		}
 	}
-	//途中流局(四風子連打)
+	string reason = "";
+	//四風子連打
 	if (nYamaIndex == 70 && arChihouChance[completePlayer] == 1)
 	{
 		if (
 			(sute == "1z" || sute == "2z" || sute == "3z" || sute == "4z")
 			&& (arKawa[0][0] == arKawa[1][0] && arKawa[0][0] == arKawa[2][0] && arKawa[0][0] == arKawa[3][0])
 		)
-		{
-			isLockedSingleClick = 0;
-			s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
-			string si;
-			string animNo;
-			animNo = "500001";
-			si += "\![anim,offset," + animNo + ",0,0]";
-			si += "\i[" + animNo + "]";
-			arSavedTehai[3] += animNo;
-			animNo = "500199";
-			si += "\![anim,offset," + animNo + ",0,0]";
-			si += "\i[" + animNo + "]";
-			arSavedTehai[3] += animNo;
-			arSavedWordCommand += {"Menu_NextTurn"};
-			s += si;
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\x[noclear]";
-			string rcs = "";
-			rcs += "\![raise,OnRyukyokuScore,renda]";
-			reservedClickScript = rcs;
-			s += rcs + "\_q\e";
-			return s;
-		}
+			reason = "renda";
+	}
+	//四家立直
+	if (arRichiJunme[0] >= 0 && arRichiJunme[1] >= 0 && arRichiJunme[2] >= 0 && arRichiJunme[3] >= 0)
+	{
+		reason = "4richi";
+	}
+	//途中流局
+	if (reason != "")
+	{
+		isLockedSingleClick = 0;
+		s += showStatus("", sute, completePlayer, -1, {0, 0, 0});
+		string si;
+		string animNo;
+		animNo = "500001";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		animNo = "500199";
+		si += "\![anim,offset," + animNo + ",0,0]";
+		si += "\i[" + animNo + "]";
+		arSavedTehai[3] += animNo;
+		arSavedWordCommand += {"Menu_NextTurn"};
+		s += si;
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+		s += "\x[noclear]";
+		string rcs = "";
+		rcs += "\![raise,OnRyukyokuScore," + reason + "]";
+		reservedClickScript = rcs;
+		s += rcs + "\_q\e";
+		return s;
 	}
 	//流局(荒牌平局)
 	if (_aryvn(arYama) == nYamaIndex)
