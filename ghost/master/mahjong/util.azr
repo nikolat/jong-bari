@@ -676,6 +676,9 @@ int canPon(int nPlayer, string suteHai)
 		return 0;
 	if (_aryvn(arYama) == nYamaIndex)
 		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
+		return 0;
 	if (_aryvn(ASEARCHEX(suteHai, strHaiToArrayWithoutFuro(arTehai[nPlayer]))) >= 2)
 		return 1;
 	return 0;
@@ -701,6 +704,9 @@ int canChi(int nPlayer, string suteHai)
 	if (arRichiJunme[nPlayer] >= 0)
 		return 0;
 	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
 		return 0;
 	array a = getChiMaterial(arTehai[nPlayer], suteHai);
 	if (_aryvn(a) > 0)
@@ -781,6 +787,9 @@ int canDaiminkan(int nPlayer, string suteHai)
 	if (arRichiJunme[nPlayer] >= 0)
 		return 0;
 	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
 		return 0;
 	if (_aryvn(ASEARCHEX(suteHai, strHaiToArrayWithoutFuro(arTehai[nPlayer]))) >= 3)
 		return 1;
@@ -917,6 +926,9 @@ int canRichi(int nPlayer, string tsumoHai)
 
 int canKakan(int nPlayer, string tsumoHai)
 {
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
+		return 0;
 	array arKakanHai = getKakanHai(addHai(arTehai[nPlayer], tsumoHai));
 	if (_aryvn(arKakanHai) > 0)
 		return 1;
@@ -925,6 +937,8 @@ int canKakan(int nPlayer, string tsumoHai)
 
 int shouldKakan(int nPlayer, string tsumoHai)
 {
+	if (!canKakan(nPlayer, tsumoHai))
+		return 0;
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
 	array arKakanHaiUseful = getKakanHaiUseful(tehai, nPlayer);
 	if (_aryvn(arKakanHaiUseful) > 0)
@@ -973,6 +987,9 @@ array getKakanHaiUseful(string hai, int nPlayer)
 
 int canAnkan(int nPlayer, string tsumoHai)
 {
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
+		return 0;
 	array arAnkanHai = getAnkanHai(addHai(arTehai[nPlayer], tsumoHai));
 	if (_aryvn(arAnkanHai) > 0)
 		return 1;
@@ -981,6 +998,8 @@ int canAnkan(int nPlayer, string tsumoHai)
 
 int shouldAnkan(int nPlayer, string tsumoHai)
 {
+	if (!canAnkan(nPlayer, tsumoHai))
+		return 0;
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
 	array arAnkanHaiUseful = getAnkanHaiUseful(tehai, nPlayer);
 	if (_aryvn(arAnkanHaiUseful) > 0)
@@ -1237,7 +1256,13 @@ string OnSuteComplete(dict ref)
 			(sute == "1z" || sute == "2z" || sute == "3z" || sute == "4z")
 			&& (arKawa[0][0] == arKawa[1][0] && arKawa[0][0] == arKawa[2][0] && arKawa[0][0] == arKawa[3][0])
 		)
-			reason = "renda";
+			reason = "4renda";
+	}
+	//四開槓
+	if (countKantsu(completePlayer) > 0)
+	{
+		if (countKantsu(0) + countKantsu(1) + countKantsu(2) + countKantsu(3) == 4 && countKantsu(completePlayer) != 4)
+			reason = "4kan";
 	}
 	//四家立直
 	if (arRichiJunme[0] >= 0 && arRichiJunme[1] >= 0 && arRichiJunme[2] >= 0 && arRichiJunme[3] >= 0)
@@ -1341,6 +1366,20 @@ string OnSuteComplete(dict ref)
 	reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + nextPlayer + "," + tsumo + "]";
 	_create_thread("TH_WaitResponse");
 	return s;
+}
+
+int countKantsu(int nPlayer)
+{
+	int count = 0;
+	array arHai = strHaiToArrayWithFuro(arTehai[nPlayer]);
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (arHai[i][0] == "furo" && _strlen(arHai[i][1]) == 8)
+			count++;
+		else if (arHai[i][0] == "ankan")
+			count++;
+	}
+	return count;
 }
 
 setKyotaku(int nPlayer)

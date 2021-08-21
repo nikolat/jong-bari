@@ -218,7 +218,8 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	{
 		dict d = ${
 			$("kouhai", "荒牌平局"),
-			$("renda", "四風子連打"),
+			$("4renda", "四風子連打"),
+			$("4kan", "四開槓"),
 			$("4richi", "四家立直")
 		};
 		if (modeEx)
