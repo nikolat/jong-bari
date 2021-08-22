@@ -1401,8 +1401,33 @@ string OnSuteComplete(dict ref)
 		s += si;
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\x[noclear]";
-		isRecievedResponse = 1;
 		string rcs = "";
+		//流し満貫判定
+		string strYaochu = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
+		for (int i = 0; i < 4; i++)
+		{
+			if (_aryvn(arFuroJunme[i]) == 0)//鳴かれてない
+			{
+				int isNagashimangan = 1;
+				for (int j = 0; arKawa[i][j] != nil; j++)
+				{
+					if (_strstr(strYaochu, arKawa[i][j], 0) == -1)
+					{
+						isNagashimangan = 0;
+						break;
+					}
+				}
+				if (isNagashimangan)
+				{
+					rcs += "\![notify,OnNotifyPrepareRyukyoku,nagashimangan," + i + "]";
+					reservedClickScript = rcs;
+					s += rcs + "\_q\e";
+					return s;
+				}
+			}
+		}
+		//テンパイ判定
+		isRecievedResponse = 1;
 		for (int i = 0; i < 3; i++)
 		{
 			int shanten = getShanten(arTehai[i]);
@@ -1489,7 +1514,7 @@ setKyotaku(int nPlayer)
 
 string OnNotifyPrepareRyukyoku(dict ref)
 {
-	reservedScript = "\C\0\b[2]\![raise,OnRyukyoku," + ref["Reference0"] + "]";
+	reservedScript = "\C\0\b[2]\![raise,OnRyukyoku," + ref["Reference0"] + "," + ref["Reference1"] + "]";
 	_create_thread("TH_WaitResponse");
 	return "";
 }
@@ -1497,6 +1522,8 @@ string OnNotifyPrepareRyukyoku(dict ref)
 string OnRyukyoku(dict ref)
 {
 	string reason = ref["Reference0"];
+	if (reason == "nagashimangan")
+		return "\![raise,OnRyukyokuScore," + reason + "," + ref["Reference1"] + "]\e";
 	if (reason != "kouhai")
 		return "\![raise,OnRyukyokuScore," + reason + "]\e";
 	string m;
@@ -2930,7 +2957,7 @@ string showKawa(int nPlayer, int p, int agariPlayer)
 	}
 	for (int i = 0; savedTehai[i] != nil; i++)
 	{
-		arSavedTehai[nPlayer] += savedTehai[i];
+		arSavedTehai[p] += savedTehai[i];
 	}
 	if (modeEx)
 		return si;
