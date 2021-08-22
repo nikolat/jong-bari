@@ -378,9 +378,98 @@ string OnSuteSelect(dict ref)
 	string sute;
 	string tehai = addHai(arTehai[selectPlayer], tsumo);
 	string wait = "";
+	//要求されたアクションが可能かチェック
+	string action;
+	string selectedHai;
+	string errorMessage;
 	if (reservedTsumo)
 	{
-		reservedTsumo = 0;
+		if (canTsumo(selectPlayer, tsumo))
+			action = "tsumo";
+		else
+			errorMessage = "failed requested action 'tsumo' with " + arTehai[selectPlayer] + " " + tsumo + " from " + playerName[selectPlayer];
+	}
+	else if (reservedRichi)
+	{
+		if (canRichi(selectPlayer, tsumo))
+			action = "richi";
+		else
+			errorMessage = "failed requested action 'richi' with " + reservedSelectedHai + " from " + playerName[selectPlayer] + " [" + tehai + "]";
+	}
+	else if (reservedAnkan)
+	{
+		if (canAnkan(selectPlayer, tsumo) && (arRichiJunme[selectPlayer] == -1 || arRichiJunme[selectPlayer] >= 0 && tsumo == reservedSelectedHai))
+			action = "ankan";
+		else
+			errorMessage = "failed requested action 'ankan' with " + reservedSelectedHai + " from " + playerName[selectPlayer] + " [" + tehai + "]";
+	}
+	else if (reservedKakan)
+	{
+		if (canKakan(selectPlayer, tsumo))
+			action = "kakan";
+		else
+			errorMessage = "failed requested action 'kakan' with " + reservedSelectedHai + " from " + playerName[selectPlayer] + " [" + tehai + "]";
+	}
+	if (reservedSelectedHai != "")
+		selectedHai = reservedSelectedHai;
+	reservedTsumo = 0;
+	reservedRichi = 0;
+	reservedAnkan = 0;
+	reservedKakan = 0;
+	reservedSelectedHai = "";
+	if (errorMessage != "")
+	{
+		//指定されたアクションが不可能だった
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", errorMessage)
+		};
+	}
+	if (action == "" && selectedHai == "")//auto
+	{
+		if (tsumo == "")//カン以外の副露直後
+		{
+			selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+		}
+		else
+		{
+			if (canTsumo(selectPlayer, tsumo))
+			{
+				action = "tsumo";
+			}
+			else if (shouldAnkan(selectPlayer, tsumo))
+			{
+				action = "ankan";
+				array arAnkanHaiUseful = getAnkanHaiUseful(tehai, selectPlayer);
+				string ankanHai = _randselect(arAnkanHaiUseful);
+				if (arRichiJunme[selectPlayer] >= 0)
+					ankanHai = tsumo;
+				selectedHai = ankanHai;
+			}
+			else if (shouldKakan(selectPlayer, tsumo))
+			{
+				action = "kakan";
+				array arKakanHaiUseful = getKakanHaiUseful(tehai, selectPlayer);
+				string kakanHai = _randselect(arKakanHaiUseful);
+				selectedHai = kakanHai;
+			}
+			else if (canRichi(selectPlayer, tsumo))
+			{
+				action = "richi";
+				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+			}
+			else
+			{
+				if (arRichiJunme[selectPlayer] >= 0)
+					selectedHai = tsumo;
+				else
+					selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+			}
+		}
+	}
+	//予定されたアクションの実行
+	if (action == "tsumo")
+	{
 		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
 		//発声通知
 		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
@@ -404,225 +493,85 @@ string OnSuteSelect(dict ref)
 		reservedClickScript = "\![raise,OnTsumoScore," + selectPlayer + "]";
 		return s;
 	}
-	else if (reservedSelectedHai != "")
+	else if (action == "ankan")
 	{
-		int isActionAccepted = 0;
-		if (reservedRichi && canRichi(selectPlayer, tsumo))
-		{
-			isActionAccepted = 1;
-			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",richi]";
-			wait += "\_w[2000]";
-		}
-		else if (reservedAnkan && canAnkan(selectPlayer, tsumo) && arRichiJunme[selectPlayer] == -1
-			|| reservedAnkan && canAnkan(selectPlayer, tsumo) && arRichiJunme[selectPlayer] >= 0 && tsumo == reservedSelectedHai)
-		{
-			isActionAccepted = 1;
-			reservedAnkan = 0;
-			string ankanHai = reservedSelectedHai;
-			reservedSelectedHai = "";
-			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			isRinshanChance = 1;
-			setAnkan(selectPlayer, ankanHai);
-			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-			dorahyouji += strDorahyoujiNew;
-			tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",kan]";
-			s += "\_w[2000]";
-			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
-			//ツモ通知
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-			//dora通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",dora," + strDorahyoujiNew + "]";
-			//捨て牌問い合わせ
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			s += "\_q";
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\e";
-			return s;
-		}
-		else if (reservedKakan && canKakan(selectPlayer, tsumo))
-		{
-			isActionAccepted = 1;
-			reservedKakan = 0;
-			string kakanHai = reservedSelectedHai;
-			reservedSelectedHai = "";
-			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			isRinshanChance = 1;
-			setKakan(selectPlayer, kakanHai);
-			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-			dorahyouji += strDorahyoujiNew;
-			tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
-			//この時点でロン(槍槓)を受け付ける必要があるんだけどどうしよう
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",kan]";
-			s += "\_w[2000]";
-			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[selectPlayer] + "," + kakanHai + "]";
-			//ツモ通知
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-			//捨て牌問い合わせ
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			//dora通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",dora," + strDorahyoujiNew + "]";
-			s += "\_q";
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\e";
-			return s;
-		}
-		if (!isActionAccepted && (reservedRichi || reservedAnkan || reservedKakan))
-		{
-			//指定されたアクションが不可能だった
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", "failed requested action")
-			};
-			openTehai = 1;
-			return "\0\b[2]\s[0]\_q" + showStatus(tsumo, sute, selectPlayer, -1, {0, 0, 0}, 0) + "\1Error\![unlock,balloonrepaint]\![unlock,repaint]\e";
-		}
-		sute = reservedSelectedHai;
-		reservedSelectedHai = "";
-		reservedRichi = 0;
-		reservedAnkan = 0;
-		reservedKakan = 0;
+		string ankanHai = selectedHai;
+		arTehai[selectPlayer] = tehai;
+		isRinshanChance = 1;
+		setAnkan(selectPlayer, ankanHai);
+		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
+		dorahyouji += strDorahyoujiNew;
+		tsumo = arYama[nYamaIndex++];
+		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
+		//発声通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",say," + playerName[selectPlayer] + ",kan]";
+		s += "\_w[2000]";
+		//晒した牌通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
+		//ツモ通知
+		s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+			+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+		//dora通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",dora," + strDorahyoujiNew + "]";
+		//捨て牌問い合わせ
+		s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+			+ ",sutehai?]";
+		s += "\_q";
+		reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
+		_create_thread("TH_WaitResponse");
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+		s += "\e";
+		return s;
 	}
-	else if (tsumo != "")//auto カン以外の副露直後を除く
+	else if (action == "kakan")
 	{
-		if (canTsumo(selectPlayer, tsumo))
-		{
-			s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",tsumo]";
-			string si;
-			string animNo;
-			animNo = "500001";
-			si += "\![anim,offset," + animNo + ",0,0]";
-			si += "\i[" + animNo + "]";
-			arSavedTehai[3] += animNo;
-			animNo = "500199";
-			si += "\![anim,offset," + animNo + ",0,0]";
-			si += "\i[" + animNo + "]";
-			arSavedTehai[3] += animNo;
-			arSavedWordCommand += {"Menu_NextTurn"};
-			s += si;
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\x\![raise,OnTsumoScore," + selectPlayer + "]";
-			s += "\e";
-			isLockedSingleClick = 0;
-			reservedClickScript = "\![raise,OnTsumoScore," + selectPlayer + "]";
-			return s;
-		}
-		if (shouldAnkan(selectPlayer, tsumo))
-		{
-			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			array arAnkanHaiUseful = getAnkanHaiUseful(arTehai[selectPlayer], selectPlayer);
-			string ankanHai = _randselect(arAnkanHaiUseful);
-			if (arRichiJunme[selectPlayer] >= 0)
-				ankanHai = tsumo;
-			isRinshanChance = 1;
-			setAnkan(selectPlayer, ankanHai);
-			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-			dorahyouji += strDorahyoujiNew;
-			tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",kan]";
-			s += "\_w[2000]";
-			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
-			//ツモ通知
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-			//dora通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",dora," + strDorahyoujiNew + "]";
-			//捨て牌問い合わせ
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			s += "\_q";
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\e";
-			return s;
-		}
-		else if (shouldKakan(selectPlayer, tsumo))
-		{
-			arTehai[selectPlayer] = addHai(arTehai[selectPlayer], tsumo);
-			array arKakanHaiUseful = getKakanHaiUseful(arTehai[selectPlayer], selectPlayer);
-			string kakanHai = _randselect(arKakanHaiUseful);
-			isRinshanChance = 1;
-			setKakan(selectPlayer, kakanHai);
-			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-			dorahyouji += strDorahyoujiNew;
-			tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
-			//この時点でロン(槍槓)を受け付ける必要があるんだけどどうしよう
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",kan]";
-			s += "\_w[2000]";
-			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[selectPlayer] + "," + kakanHai + "]";
-			//ツモ通知
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-			//捨て牌問い合わせ
-			s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			//dora通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",dora," + strDorahyoujiNew + "]";
-			s += "\_q";
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
-			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
-			s += "\e";
-			return s;
-		}
-		else if (canRichi(selectPlayer, tsumo))
-		{
-			arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
-			sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
-			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[selectPlayer] + ",richi]";
-			wait += "\_w[2000]";
-		}
-		else
-		{
-			if (arRichiJunme[selectPlayer] >= 0)
-				sute = tsumo;
-			else
-				sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
-		}
+		string kakanHai = selectedHai;
+		arTehai[selectPlayer] = tehai;
+		isRinshanChance = 1;
+		setKakan(selectPlayer, kakanHai);
+		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
+		dorahyouji += strDorahyoujiNew;
+		tsumo = arYama[nYamaIndex++];
+		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
+		//この時点でロン(槍槓)を受け付ける必要があるんだけどどうしよう
+		//発声通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",say," + playerName[selectPlayer] + ",kan]";
+		s += "\_w[2000]";
+		//晒した牌通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",open," + playerName[selectPlayer] + "," + kakanHai + "]";
+		//ツモ通知
+		s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+			+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+		//捨て牌問い合わせ
+		s += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
+			+ ",sutehai?]";
+		//dora通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",dora," + strDorahyoujiNew + "]";
+		s += "\_q";
+		reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
+		_create_thread("TH_WaitResponse");
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+		s += "\e";
+		return s;
 	}
-	else//auto カン以外の副露直後
+	else if (action == "richi")
 	{
-		sute = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+		sute = selectedHai;
+		arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
+		//発声通知
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",say," + playerName[selectPlayer] + ",richi]";
+		wait += "\_w[2000]";
+	}
+	else
+	{
+		sute = selectedHai;
 	}
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
