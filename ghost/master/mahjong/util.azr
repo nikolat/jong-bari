@@ -165,7 +165,8 @@ TH_WaitResponse()
 	}
 	string s = reservedScript;
 	reservedScript = "";
-	_speak(s);
+	if (s != "")
+		_speak(s);
 }
 
 string getVersion()
@@ -541,12 +542,7 @@ string OnSuteSelect(dict ref)
 		arTehai[selectPlayer] = tehai;
 		isRinshanChance = 1;
 		setKakan(selectPlayer, kakanHai);
-		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
-		dorahyouji += strDorahyoujiNew;
-		tsumo = arYama[nYamaIndex++];
-		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
 		string sr;
-		//この時点でロン(槍槓)を受け付ける必要があるんだけどどうしよう
 		//発声通知
 		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",say," + playerName[selectPlayer] + ",kan]";
@@ -554,6 +550,50 @@ string OnSuteSelect(dict ref)
 		//晒した牌通知
 		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",open," + playerName[selectPlayer] + "," + kakanHai + "]";
+		//この時点でロン(槍槓)を受け付ける必要がある
+//		s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, 1, 1);
+//		if (selectPlayer != 3)
+//		{
+//			if (canRon(3, kakanHai))
+//			{
+//				s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+//				s += sr + "\x\0\b[2]";
+//				sr = "";
+//				isLockedSingleClick = 0;
+//			}
+//			else
+//			{
+//				isLockedSingleClick = 1;
+//			}
+//		}
+		isRecievedResponse = 1;
+		string rcs = "";
+		for (int i = 0; i < 3; i++)
+		{
+			if (i != selectPlayer)
+			{
+				if (canRon(i, kakanHai))
+				{
+					rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
+						+ ",naku?," + kakanHai + ",ron]";
+					dResponseNeed[playerName[i]] = 1;
+					isRecievedResponse = 0;
+				}
+			}
+		}
+		if (rcs != "")
+		{
+			rcs += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + kakanHai + "]";
+			reservedClickScript = rcs;
+			s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, 1, 1);
+			s += rcs + "\_q";
+			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+			return s + sr + "\e";//ロンされなかったらどうしよう
+		}
+		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
+		dorahyouji += strDorahyoujiNew;
+		tsumo = arYama[nYamaIndex++];
+		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
 		//ツモ通知
 		if (selectPlayer != 3)
 			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
@@ -565,18 +605,18 @@ string OnSuteSelect(dict ref)
 		//dora通知
 		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",dora," + strDorahyoujiNew + "]";
-		s += "\_q";
-		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
+		rcs += "\_q";
+		rcs += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		if (selectPlayer == 3)
 		{
-			lastScript = s + "\e";
+			lastScript = s + rcs + "\e";
 		}
 		else
 		{
-			reservedScript = "\C\0\b[2]\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
-			_create_thread("TH_WaitResponse");
+			rcs += "\![notify,OnNotifyPrepareSuteSelect," + selectPlayer + "," + tsumo + "]";
+			reservedClickScript = rcs + sr;
 		}
-		return s + sr + "\e";
+		return s + rcs + sr + "\e";
 	}
 	else if (action == "richi")
 	{
@@ -1046,6 +1086,15 @@ array getAnkanHaiUseful(string hai, int nPlayer)
 			arAnkanHaiUseful += h;
 	}
 	return arAnkanHaiUseful;
+}
+
+string OnNotifyPrepareSuteSelect(dict ref)
+{
+	int selectPlayer = ref["Reference0"];
+	string tsumo = ref["Reference1"];
+	reservedScript = "\C\![raise,OnSuteSelect," + selectPlayer + "," + tsumo + "]";
+	_create_thread("TH_WaitResponse");
+	return "";
 }
 
 string OnNotifyPrepareSuteComplete(dict ref)
@@ -1578,7 +1627,7 @@ string clearAnimation()
 	return si;
 }
 
-string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro)
+string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro, int isKakan)
 {
 	string s = "";
 	string si = "";
@@ -1895,7 +1944,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			offset += 110;
 			arSavedWordCommand += {"Menu_Pon", 3, nPlayer, sute};
 		}
-		if (nPlayer + 1 == pUser && canChi(pUser, sute))
+		if (nPlayer + 1 == pUser && canChi(pUser, sute) && !isKakan)
 		{
 			array arMaterial = getChiMaterial(arTehai[pUser], sute);
 			if (_aryvn(arMaterial) == 1)
@@ -2273,14 +2322,14 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen)
+string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen, int isScore)
 {
 	string s;
 	string si;
 	array savedTehai = {};
 	string animNo;
 	array arHai = strHaiToArrayWithFuro(strHai);
-	if (showPlayer != 3)
+	if (showPlayer != 3 || isScore)
 	{
 		string sFuro;
 		int nFuro;
