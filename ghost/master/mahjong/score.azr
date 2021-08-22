@@ -28,6 +28,8 @@ string OnRyukyokuScore(dict ref)
 	int nAgariPlayer = -1;
 	if (reason == "nagashimangan")
 		nAgariPlayer = ref["Reference1"];
+	else if (reason == "4richi")
+		arTenpaiPlayerFlag = {1, 1, 1, 1};
 	else if (reason == "kouhai" || reason == "3ron" || reason == "touhai")
 		arTenpaiPlayerFlag = _strary(ref["Reference1"]);
 	string tsumo;
