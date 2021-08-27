@@ -66,11 +66,23 @@ string OnMahjongResponse(dict ref)
 	if (version != getVersion())
 		return "";
 	string command = ref["Reference1"];
+	string name = ref["Sender"];
+	if (command != "hello")
+	{
+		if (dResponseNeed[name] != command)
+		{
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", name + "'s '" + command + "' command failed, maybe timeout.")
+			};
+			return "\C\0\_q\_l[0,0]timeout?\_q\e";
+		}
+		dResponseNeed[name] = "";
+	}
 	switch (command)
 	{
 	case "hello":
 		array a = _strsplit(ref["Reference3"], "=");
-		string name;
 		if (a[0] == "name")
 			name = a[1];
 		else
@@ -91,16 +103,6 @@ string OnMahjongResponse(dict ref)
 		}
 		break;
 	case "sutehai?":
-		string name = ref["Sender"];
-		if (!dResponseNeed[name])
-		{
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", name + "'s 'sutehai?' command failed, maybe timeout.")
-			};
-			return "";
-		}
-		dResponseNeed[name] = 0;
 		string action = ref["Reference2"];
 		switch (action)
 		{
@@ -130,42 +132,24 @@ string OnMahjongResponse(dict ref)
 		isRecievedResponse = 1;
 		break;
 	case "naku?":
-		string name = ref["Sender"];
-		if (!dResponseNeed[name])
-		{
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", name + "'s 'naku?' command failed, maybe timeout.")
-			};
-			return "";
-		}
-		dResponseNeed[name] = 0;
 		reservedNaku[name] = {ref["Reference2"], ref["Reference3"], ref["Reference4"]};
 		int count = 0;
 		for (int i = 0; i < 3; i++)
 		{
-			count += dResponseNeed[playerName[i]];
+			if (dResponseNeed[playerName[i]] == command)
+				count++;
 		}
 		if (count == 0)
 			isRecievedResponse = 1;
 		break;
 	case "tenpai?":
-		string name = ref["Sender"];
-		if (!dResponseNeed[name])
-		{
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", name + "'s 'tenpai?' command failed, maybe timeout.")
-			};
-			return "";
-		}
-		dResponseNeed[name] = 0;
 		string action = ref["Reference2"];
 		reservedTenpai[name] = action;
 		int count = 0;
 		for (int i = 0; i < 3; i++)
 		{
-			count += dResponseNeed[playerName[i]];
+			if (dResponseNeed[playerName[i]] == command)
+				count++;
 		}
 		if (count == 0)
 			isRecievedResponse = 1;
@@ -193,12 +177,28 @@ TH_WaitResponse()
 	}
 	for (int i = 0; i < 3; i++)
 	{
-		dResponseNeed[playerName[i]] = 0;
+		if (dResponseNeed[playerName[i]] != "")
+		{
+			_speak("\![raise,OnMahjongResponseTimeout," + playerName[i] + "," + dResponseNeed[playerName[i]] + "]");
+			dResponseNeed[playerName[i]] = "";
+			_sleep(wait);
+		}
 	}
 	string s = reservedScript;
 	reservedScript = "";
 	if (s != "")
 		_speak(s);
+}
+
+string OnMahjongResponseTimeout(dict ref)
+{
+	string name = ref["Reference0"];
+	string command = ref["Reference1"];
+	dAdditionalHeader = ${
+		$("ErrorLevel", "info"),
+		$("ErrorDescription", name + "'s '" + command + "' command timeout.")
+	};
+	return "";
 }
 
 string getVersion()
@@ -355,9 +355,9 @@ string startKyoku()
 		$(playerName[2], "")
 	};
 	dResponseNeed = ${
-		$(playerName[0], 0),
-		$(playerName[1], 0),
-		$(playerName[2], 0)
+		$(playerName[0], ""),
+		$(playerName[1], ""),
+		$(playerName[2], "")
 	};
 	string tsumo = arYama[nYamaIndex++];
 	string s;
@@ -395,7 +395,7 @@ string startKyoku()
 		+ ",sutehai?]";
 	s += "\![notify,OnNotifyPrepareSuteSelect," + oyaIndex + "," + tsumo + "]";
 	s += "\e";
-	dResponseNeed[playerName[oyaIndex]] = 1;
+	dResponseNeed[playerName[oyaIndex]] = "sutehai?";
 	isRecievedResponse = 0;
 	return s;
 }
@@ -558,7 +558,7 @@ string OnSuteSelect(dict ref)
 		{
 			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",sutehai?]";
-			dResponseNeed[playerName[selectPlayer]] = 1;
+			dResponseNeed[playerName[selectPlayer]] = "sutehai?";
 			isRecievedResponse = 0;
 		}
 		s += "\_q";
@@ -613,7 +613,7 @@ string OnSuteSelect(dict ref)
 				{
 					rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 						+ ",naku?," + kakanHai + ",ron]";
-					dResponseNeed[playerName[i]] = 1;
+					dResponseNeed[playerName[i]] = "naku?";
 					isRecievedResponse = 0;
 				}
 			}
@@ -640,7 +640,7 @@ string OnSuteSelect(dict ref)
 		{
 			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
 				+ ",sutehai?]";
-			dResponseNeed[playerName[selectPlayer]] = 1;
+			dResponseNeed[playerName[selectPlayer]] = "sutehai?";
 			isRecievedResponse = 0;
 		}
 		//dora通知
@@ -713,7 +713,7 @@ string OnSuteSelect(dict ref)
 				//鳴くか問い合わせ
 				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",naku?," + sute + "," + JOIN(command, ",") + "]";
-				dResponseNeed[playerName[i]] = 1;
+				dResponseNeed[playerName[i]] = "naku?";
 				isRecievedResponse = 0;
 			}
 		}
@@ -1275,7 +1275,7 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + ",]";
-				dResponseNeed[playerName[p]] = 1;
+				dResponseNeed[playerName[p]] = "sutehai?";
 				isRecievedResponse = 0;
 			}
 			else
@@ -1307,7 +1307,7 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + ",]";
-				dResponseNeed[playerName[p]] = 1;
+				dResponseNeed[playerName[p]] = "sutehai?";
 				isRecievedResponse = 0;
 			}
 			else
@@ -1343,7 +1343,7 @@ string OnSuteComplete(dict ref)
 				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
 					+ ",sutehai?]";
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + "," + tsumo + "]";
-				dResponseNeed[playerName[p]] = 1;
+				dResponseNeed[playerName[p]] = "sutehai?";
 				isRecievedResponse = 0;
 			}
 			else
@@ -1481,7 +1481,7 @@ string OnSuteComplete(dict ref)
 				//テンパイ宣言問い合わせ
 				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",tenpai?]";
-				dResponseNeed[playerName[i]] = 1;
+				dResponseNeed[playerName[i]] = "tenpai?";
 				isRecievedResponse = 0;
 			}
 		}
@@ -1521,7 +1521,7 @@ string OnSuteComplete(dict ref)
 	s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 	s += "\![notify,OnNotifyPrepareSuteSelect," + nextPlayer + "," + tsumo + "]";
 	s += "\e";
-	dResponseNeed[playerName[nextPlayer]] = 1;
+	dResponseNeed[playerName[nextPlayer]] = "sutehai?";
 	isRecievedResponse = 0;
 	return s;
 }
