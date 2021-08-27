@@ -3,6 +3,8 @@
 //******************************************************************************
 //手牌オープン
 int openTehai = 0;
+//通信のタイムアウト設定(s)
+double timeout = 2.000;
 
 //******************************************************************************
 // グローバル変数
@@ -89,6 +91,16 @@ string OnMahjongResponse(dict ref)
 		}
 		break;
 	case "sutehai?":
+		string name = ref["Sender"];
+		if (!dResponseNeed[name])
+		{
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", name + "'s 'sutehai?' command failed, maybe timeout.")
+			};
+			return "";
+		}
+		dResponseNeed[name] = 0;
 		string action = ref["Reference2"];
 		switch (action)
 		{
@@ -119,8 +131,16 @@ string OnMahjongResponse(dict ref)
 		break;
 	case "naku?":
 		string name = ref["Sender"];
-		reservedNaku[name] = {ref["Reference2"], ref["Reference3"], ref["Reference4"]};
+		if (!dResponseNeed[name])
+		{
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", name + "'s 'naku?' command failed, maybe timeout.")
+			};
+			return "";
+		}
 		dResponseNeed[name] = 0;
+		reservedNaku[name] = {ref["Reference2"], ref["Reference3"], ref["Reference4"]};
 		int count = 0;
 		for (int i = 0; i < 3; i++)
 		{
@@ -130,10 +150,18 @@ string OnMahjongResponse(dict ref)
 			isRecievedResponse = 1;
 		break;
 	case "tenpai?":
-		string action = ref["Reference2"];
 		string name = ref["Sender"];
-		reservedTenpai[name] = action;
+		if (!dResponseNeed[name])
+		{
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", name + "'s 'tenpai?' command failed, maybe timeout.")
+			};
+			return "";
+		}
 		dResponseNeed[name] = 0;
+		string action = ref["Reference2"];
+		reservedTenpai[name] = action;
 		int count = 0;
 		for (int i = 0; i < 3; i++)
 		{
@@ -151,7 +179,7 @@ string OnMahjongResponse(dict ref)
 TH_WaitResponse()
 {
 	double wait = 0.125;
-	int nLoop = 8 * 2;
+	int nLoop = 8 * timeout;
 	for (int i = 0; i < nLoop; i++)
 	{
 		if (isSoloMode)
