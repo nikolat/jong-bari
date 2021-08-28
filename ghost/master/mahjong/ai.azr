@@ -1,19 +1,8 @@
-//本来は他家の捨て牌とか諸々の情報が必要
-string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji)
-{
-	string s = getDahai(hai, kawa, bafuHai, jifuHai, dorahyouji);
-	if (s == "")
-	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"naniwokiru\" with " + hai)
-		};
-	}
-	return s;
-}
-
+//******************************************************************************
+// 何を切るか
+//******************************************************************************
 //テンパイに近づける
-string getDahai(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji)
+string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji)
 {
 	array arDahai;
 	int point = -1;
@@ -196,4 +185,442 @@ array convertNumArray(array hai)
 		arNum += (int)_substr(hai[i], 0, 1);
 	}
 	return arNum;
+}
+
+//******************************************************************************
+// アクション判断(副露・リーチ等)
+//******************************************************************************
+//==========================================================
+// 暗槓
+//==========================================================
+int shouldAnkan(int nPlayer, string tsumoHai)
+{
+	if (!canAnkan(nPlayer, tsumoHai))
+		return 0;
+	string tehai = addHai(arTehai[nPlayer], tsumoHai);
+	array arAnkanHaiUseful = getAnkanHaiUseful(tehai, nPlayer);
+	if (_aryvn(arAnkanHaiUseful) > 0)
+		return 1;
+	return 0;
+}
+
+int canAnkan(int nPlayer, string tsumoHai)
+{
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
+		return 0;
+	array arAnkanHai = getAnkanHai(addHai(arTehai[nPlayer], tsumoHai));
+	if (_aryvn(arAnkanHai) == 0)
+		return 0;
+	//リーチ後の場合
+	if (arRichiJunme[nPlayer] >= 0)
+	{
+		//送りカンの場合
+		if (ASEARCH(tsumoHai, arAnkanHai) == -1)
+			return 0;
+		//和了の形が変わる場合
+		array a = getShantenWithMentsu(arTehai[nPlayer], getBafuHai(), getJifuHai(nPlayer));
+		array arPattern = a[1];
+		for (int i = 0; arPattern[i] != nil; i++)
+		{
+			array ap = _strsplit(arPattern[i], ",");
+			if (ASEARCH(tsumoHai + tsumoHai + tsumoHai, ap) == -1)//常に暗刻でないとダメ
+				return 0;
+		}
+	}
+	return 1;
+}
+
+array getAnkanHai(string hai)
+{
+	array arHai = strHaiToArrayWithoutFuro(hai);
+	array arRet;
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (ASEARCH(arHai[i], arRet) == -1)
+		{
+			if (_aryvn(ASEARCHEX(arHai[i], arHai)) >= 4)
+				arRet += arHai[i];
+		}
+	}
+	return arRet;
+}
+
+array getAnkanHaiUseful(string hai, int nPlayer)
+{
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	array arAnkanHai = getAnkanHai(hai);
+	int shantenBefore = getShantenYaku(hai, bafuHai, jifuHai);
+	array arAnkanHaiUseful;
+	for (int i = 0; arAnkanHai[i] != nil; i++)
+	{
+		string h = arAnkanHai[i];
+		string strTehai = removeHai(hai, h + h + h + h) + "(" + h + h + h + h + ")";
+		int shantenAfter = getShantenYaku(strTehai, bafuHai, jifuHai);
+		if (shantenBefore >= shantenAfter)
+			arAnkanHaiUseful += h;
+	}
+	return arAnkanHaiUseful;
+}
+
+//==========================================================
+// 加槓
+//==========================================================
+int shouldKakan(int nPlayer, string tsumoHai)
+{
+	if (!canKakan(nPlayer, tsumoHai))
+		return 0;
+	string tehai = addHai(arTehai[nPlayer], tsumoHai);
+	array arKakanHaiUseful = getKakanHaiUseful(tehai, nPlayer);
+	if (_aryvn(arKakanHaiUseful) > 0)
+		return 1;
+	return 0;
+}
+
+int canKakan(int nPlayer, string tsumoHai)
+{
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
+		return 0;
+	array arKakanHai = getKakanHai(addHai(arTehai[nPlayer], tsumoHai));
+	if (_aryvn(arKakanHai) > 0)
+		return 1;
+	return 0;
+}
+
+array getKakanHai(string hai)
+{
+	array arHai = strHaiToArrayWithFuro(hai);
+	array arHaiWithoutFuro;
+	array arMinko;
+	array arRet;
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (arHai[i][0] == "normal")
+			arHaiWithoutFuro += arHai[i][1];
+		else if (arHai[i][0] == "furo" && _strlen(arHai[i][1]) == 6 && _substr(arHai[i][1], 0, 2) == _substr(arHai[i][1], 2, 2))
+			arMinko += _substr(arHai[i][1], 0, 2);
+	}
+	for (int i = 0; arMinko[i] != nil; i++)
+	{
+		if (ASEARCH(arMinko[i], arHaiWithoutFuro) >= 0)
+			arRet += arMinko[i];
+	}
+	return arRet;
+}
+
+array getKakanHaiUseful(string hai, int nPlayer)
+{
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	array arKakanHai = getKakanHai(hai);
+	int shantenBefore = getShantenYaku(hai, bafuHai, jifuHai);
+	array arKakanHaiUseful;
+	for (int i = 0; arKakanHai[i] != nil; i++)
+	{
+		string h = arKakanHai[i];
+		string strTehai = _strreplace(removeHai(hai, h), h + h + h, h + h + h + h);
+		int shantenAfter = getShantenYaku(strTehai, bafuHai, jifuHai);
+		if (shantenBefore >= shantenAfter)
+			arKakanHaiUseful += h;
+	}
+	return arKakanHaiUseful;
+}
+
+//==========================================================
+// リーチ
+//==========================================================
+int canRichi(int nPlayer, string tsumoHai)
+{
+	int shanten = getShanten(addHai(arTehai[nPlayer], tsumoHai));
+	if (shanten <= 0 && arRichiJunme[nPlayer] == -1 && isMenzenPlayer(nPlayer) && getLeftYama() >= 4)
+		return 1;
+	return 0;
+}
+
+int isMenzenPlayer(int nPlayer)
+{
+	if (_strstr(arTehai[nPlayer], "<") == -1)
+		return 1;
+	return 0;
+}
+
+//==========================================================
+// ツモ
+//==========================================================
+int canTsumo(int nPlayer, string atariHai)
+{
+	if (atariHai == "")
+		return 0;
+	//和了かどうか(シャンテン数が-1かどうか)検証する
+	string hai14 = addHai(arTehai[nPlayer], atariHai);
+	int shanten = getShanten(hai14);
+	if (shanten != -1)
+		return 0;
+	//役があるかどうか検証する
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string strDora = "";
+	int isTsumo = 1;
+	int isRichi = 0;
+	int isIppatsu = 0;
+	int isChankan = 0;
+	int isRinshan = isRinshanChance;
+	int isFinalTileWin = 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		isFinalTileWin = 1;
+	int is1stRound = 0;
+	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"score\" in \"canTsumo\" with " + arTehai[nPlayer] + " " + atariHai)
+		};
+		return 0;
+	}
+	int score = d["Result"];
+	if (score <= 0)
+		return 0;
+	return 1;
+}
+
+//==========================================================
+// 倒牌
+//==========================================================
+int canTouhai(int nPlayer, string tsumoHai)
+{
+	if (arChihouChance[nPlayer] == 0)
+		return 0;
+	array arHai = uniq(sortHai(strHaiToArray(addHai(arTehai[nPlayer], tsumoHai))));
+	array arYaochu = {"1m", "9m", "1p", "9p", "1s", "9s", "1z", "2z", "3z", "4z", "5z", "6z", "7z"};
+	int count = 0;
+	for (int i = 0; arHai[i] != nil; i++)
+	{
+		if (ASEARCH(arHai[i], arYaochu) >= 0)
+			count++;
+	}
+	if (count >= 9)
+		return 1;
+	return 0;
+}
+
+//==========================================================
+// 大明槓
+//==========================================================
+int shouldDaiminkan(int nPlayer, string suteHai)
+{
+	if (!canDaiminkan(nPlayer, suteHai))
+		return 0;
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string hai13 = arTehai[nPlayer];
+	string hai14 = removeHai(hai13, suteHai + suteHai + suteHai) + "<" + suteHai + suteHai + suteHai + suteHai + ">";
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
+	if (shantenAfter <= shantenBefore)
+		return (int)_randselect(0, 1);
+	return 0;
+}
+
+int canDaiminkan(int nPlayer, string suteHai)
+{
+	if (arRichiJunme[nPlayer] >= 0)
+		return 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
+		return 0;
+	if (_aryvn(ASEARCHEX(suteHai, strHaiToArrayWithoutFuro(arTehai[nPlayer]))) >= 3)
+		return 1;
+	return 0;
+}
+
+//==========================================================
+// ポン
+//==========================================================
+int shouldPon(int nPlayer, string suteHai)
+{
+	if (!canPon(nPlayer, suteHai))
+		return 0;
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string hai13 = arTehai[nPlayer];
+	string hai14 = removeHai(hai13, suteHai + suteHai) + "<" + suteHai + suteHai + suteHai + ">";
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
+	if (shantenAfter < shantenBefore)
+		return 1;
+	return 0;
+}
+
+int canPon(int nPlayer, string suteHai)
+{
+	if (arRichiJunme[nPlayer] >= 0)
+		return 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
+		return 0;
+	if (_aryvn(ASEARCHEX(suteHai, strHaiToArrayWithoutFuro(arTehai[nPlayer]))) >= 2)
+		return 1;
+	return 0;
+}
+
+//==========================================================
+// チー
+//==========================================================
+int shouldChi(int nPlayer, string suteHai)
+{
+	if (!canChi(nPlayer, suteHai))
+		return 0;
+	array a = getChiMaterial(arTehai[nPlayer], suteHai);
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string hai13 = arTehai[nPlayer];
+	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
+	for (int i = 0; a[i] != nil; i++)
+	{
+		string hai14 = removeHai(hai13, a[i]) + "<" + _arystr(sortHai(strHaiToArray(a[i] + suteHai))) + ">";
+		int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
+		if (shantenAfter < shantenBefore)
+			return 1;
+	}
+	return 0;
+}
+
+int canChi(int nPlayer, string suteHai)
+{
+	if (arRichiJunme[nPlayer] >= 0)
+		return 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		return 0;
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
+		return 0;
+	array a = getChiMaterial(arTehai[nPlayer], suteHai);
+	if (_aryvn(a) > 0)
+		return 1;
+	return 0;	
+}
+
+array getChiMaterial(string strTehai, string suteHai)
+{
+	int n = _substr(suteHai, 0, 1);
+	string color = _substr(suteHai, 1, 1);
+	if (color == "z")
+		return {};
+	array arTehaiPlayer = strHaiToArrayWithoutFuro(strTehai);
+	array a;
+	for (int i = 0; arTehaiPlayer[i] != nil; i++)
+	{
+		if (_substr(arTehaiPlayer[i], 1, 1) == color)
+			a += (int)_substr(arTehaiPlayer[i], 0, 1);
+	}
+	array arRet;
+	if (ASEARCH(n - 2, a) >= 0 && ASEARCH(n - 1, a) >= 0)
+		arRet += "" + (n - 2) + color + (n - 1) + color;
+	if (ASEARCH(n - 1, a) >= 0 && ASEARCH(n + 1, a) >= 0)
+		arRet += "" + (n - 1) + color + (n + 1) + color;
+	if (ASEARCH(n + 1, a) >= 0 && ASEARCH(n + 2, a) >= 0)
+		arRet += "" + (n + 1) + color + (n + 2) + color;
+	return arRet;
+}
+
+array getChiMaterialBest(int nPlayer, string suteHai)
+{
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	array arMaterial = getChiMaterial(arTehai[nPlayer], suteHai);
+	int shantenMin = 99;
+	array indexMin = {};
+	for (int i = 0; arMaterial[i] != nil; i++)
+	{
+		string haiChanged = removeHai(arTehai[nPlayer], arMaterial[i]) + "<" + _arystr(sortHai(strHaiToArray(arMaterial[i] + suteHai))) + ">";
+		int shantenTmp = getShantenYaku(haiChanged, bafuHai, jifuHai);
+		if (shantenTmp < shantenMin)
+		{
+			shantenMin = shantenTmp;
+			indexMin = {i};
+		}
+		else if (shantenTmp == shantenMin)
+		{
+			indexMin += i;
+		}
+	}
+	int index = _randselect(indexMin);
+	array arMaterialSelected = strHaiToArray(arMaterial[index]);
+	return arMaterialSelected;
+}
+
+//==========================================================
+// ロン
+//==========================================================
+int canRon(int nPlayer, string atariHai)
+{
+	//和了かどうか(シャンテン数が-1かどうか)検証する
+	string hai14 = addHai(arTehai[nPlayer], atariHai);
+	int shanten = getShanten(hai14);
+	if (shanten != -1)
+		return 0;
+	//フリテンかどうか検証する
+	dict d = _saorirequest("MahjongUtil", "machi", arTehai[nPlayer]);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"machi\" in \"canRon\" with " + arTehai[nPlayer])
+		};
+		return 0;
+	}
+	array arMachi = strHaiToArray(d["Result"]);
+	int isRichi = 0;
+	if (arRichiJunme[nPlayer] >= 0)
+		isRichi = 1;
+	for (int i = 0; arMachi[i] != nil; i++)
+	{
+		string strMachi = arMachi[i];
+		if (ASEARCH(strMachi, arKawa[nPlayer]) >= 0)
+			return 0;
+		if (isRichi)
+		{
+			int index = ASEARCH(strMachi, arFuritenCheckRichi[nPlayer]);
+			if (index >= 0 && index != _aryvn(arFuritenCheckRichi[nPlayer]) - 1)
+				return 0;
+		}
+		if (ASEARCH(strMachi, arFuritenCheckTurn[nPlayer]) >= 0)
+		{
+			int index = ASEARCH(strMachi, arFuritenCheckTurn[nPlayer]);
+			if (index >= 0 && index != _aryvn(arFuritenCheckTurn[nPlayer]) - 1)
+				return 0;
+		}
+	}
+	//役があるかどうか検証する
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	string strDora = "";
+	int isTsumo = 0;
+	int isIppatsu = 0;
+	int isChankan = isRinshanChance;
+	int isRinshan = 0;
+	int isFinalTileWin = 0;
+	if (_aryvn(arYama) == nYamaIndex)
+		isFinalTileWin = 1;
+	int is1stRound = 0;
+	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"score\" in \"canRon\" with " + arTehai[nPlayer] + " " + atariHai)
+		};
+		return 0;
+	}
+	int score = d["Result"];
+	if (score <= 0)
+		return 0;
+	return 1;
 }
