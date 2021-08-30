@@ -75,7 +75,7 @@ string OnMahjongResponse(dict ref)
 				$("ErrorLevel", "warning"),
 				$("ErrorDescription", name + "'s '" + command + "' command failed, maybe timeout.")
 			};
-			return "\C\0\_q\_l[0,0]timeout?\_q\e";
+			return "";
 		}
 		dResponseNeed[name] = "";
 	}

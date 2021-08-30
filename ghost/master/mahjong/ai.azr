@@ -79,19 +79,13 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 						array ap = _strsplit(arPattern[j], ",");
 						array arTatsu13 = {};
 						if (ap[0] != "")
-						{
 							elementPoint += 40;//雀頭
-						}
 						for (int k = 1; ap[k] != nil; k++)
 						{
 							if (_strlen(ap[k]) == 6)
-							{
 								elementPoint += 90;//面子
-							}
 							else if (_strlen(ap[k]) == 4)
-							{
 								arTatsu13 += ap[k];
-							}
 						}
 						for (int k = 0; arTatsu13[k] != nil; k++)
 						{
