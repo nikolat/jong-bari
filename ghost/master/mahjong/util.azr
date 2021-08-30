@@ -727,7 +727,7 @@ string OnSuteSelect(dict ref)
 				command += "ron";
 			if (canPon(i, sute))
 				command += "pon";
-			if (selectPlayer + 1 == i && canChi(i, sute))
+			if ((selectPlayer + 1) % 4 == i && canChi(i, sute))
 				command += "chi";
 			if (canDaiminkan(i, sute))
 				command += "kan";
