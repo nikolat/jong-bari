@@ -2,12 +2,13 @@
 // 何を切るか
 //******************************************************************************
 //テンパイに近づける
-string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji)
+string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji, array arGenbutsu)
 {
 	array arDahai;
 	int point = -1;
 	//副露を除く
 	array hai14 = strHaiToArrayWithoutFuro(hai);
+	array sutehaiKouho = uniq(hai14);
 	//ドラ
 	array arDorahyouji = strHaiToArray(dorahyouji);
 	array arDora;
@@ -17,121 +18,134 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 	}
 	//孤立牌
 	array arKoritsuhai = getKoritsuHai(hai14);
-	for (int i = 0; hai14[i] != nil; i++)
+	for (int i = 0; sutehaiKouho[i] != nil; i++)
 	{
-		if (ASEARCH(hai14[i], arDahai) == -1)
+		string sutehai = sutehaiKouho[i];
+		string strTehai13 = removeHai(hai, sutehai);
+		array a = getShantenWithMentsu(strTehai13, bafuHai, jifuHai);
+		int shanten13 = a[0];
+		array arPattern = a[1];
+		int shantenPoint = 10000 * (10 - shanten13);
+		int machiPoint = 0;
+		int elementMaxPoint = 0;
+		//テンパイ時は待ちの広さ・和了点の高さを考慮
+		if (shanten13 == 0)
 		{
-			string strTehai13 = removeHai(hai, hai14[i]);
-			array a = getShantenWithMentsu(strTehai13, bafuHai, jifuHai);
-			int shanten13 = a[0];
-			array arPattern = a[1];
-			int shantenPoint = 10000 * (10 - shanten13);
-			int machiPoint = 0;
-			int elementMaxPoint = 0;
-			//テンパイ時は待ちの広さ・和了点の高さを考慮
-			if (shanten13 == 0)
+			dict d = _saorirequest("MahjongUtil", "machi", strTehai13);
+			if (d["head"] == "SAORI/1.0 400 Bad Request")
 			{
-				dict d = _saorirequest("MahjongUtil", "machi", strTehai13);
+				dAdditionalHeader = ${
+					$("ErrorLevel", "warning"),
+					$("ErrorDescription", "failed \"machi\" in \"getDahai\" with " + strTehai13)
+				};
+				return "";
+			}
+			array arMachi = strHaiToArray(d["Result"]);
+			for (int j = 0; arMachi[j] != nil; j++)
+			{
+				string strDora = _arystr(arDora);
+				int isTsumo = 1;
+				int isRichi = 0;
+				int isIppatsu = 0;
+				int isChankan = 0;
+				int isRinshan = 0;
+				int isFinalTileWin = 0;
+				int is1stRound = 0;
+				dict d = _saorirequest("MahjongUtil", "score", strTehai13, arMachi[j], bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 				if (d["head"] == "SAORI/1.0 400 Bad Request")
 				{
 					dAdditionalHeader = ${
 						$("ErrorLevel", "warning"),
-						$("ErrorDescription", "failed \"machi\" in \"getDahai\" with " + strTehai13)
+						$("ErrorDescription", "failed \"score\" in \"getDahai\" with " + strTehai13 + " " + arMachi[j])
 					};
 					return "";
 				}
-				array arMachi = strHaiToArray(d["Result"]);
-				for (int j = 0; arMachi[j] != nil; j++)
+				int score = d["Result"];
+				if (score > 0)
+					machiPoint += score;
+			}
+			shantenPoint += 10000;//テンパイを崩してまでオリないこととする
+		}
+		else
+		{
+			for (int j = 0; arPattern[j] != nil; j++)
+			{
+				int elementPoint = 0;
+				if (arPattern[j] == "chitoitsu" || arPattern[j] == "kokushimusou")
 				{
-					string strDora = _arystr(arDora);
-					int isTsumo = 1;
-					int isRichi = 0;
-					int isIppatsu = 0;
-					int isChankan = 0;
-					int isRinshan = 0;
-					int isFinalTileWin = 0;
-					int is1stRound = 0;
-					dict d = _saorirequest("MahjongUtil", "score", strTehai13, arMachi[j], bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
-					if (d["head"] == "SAORI/1.0 400 Bad Request")
+					elementPoint = 0;
+				}
+				else
+				{
+					array ap = _strsplit(arPattern[j], ",");
+					array arTatsu13 = {};
+					if (ap[0] != "")
+						elementPoint += 40;//雀頭
+					for (int k = 1; ap[k] != nil; k++)
 					{
-						dAdditionalHeader = ${
-							$("ErrorLevel", "warning"),
-							$("ErrorDescription", "failed \"score\" in \"getDahai\" with " + strTehai13 + " " + arMachi[j])
-						};
-						return "";
+						if (_strlen(ap[k]) == 6)
+							elementPoint += 90;//面子
+						else if (_strlen(ap[k]) == 4)
+							arTatsu13 += ap[k];
 					}
-					int score = d["Result"];
-					if (score > 0)
-						machiPoint += score;
+					for (int k = 0; arTatsu13[k] != nil; k++)
+					{
+						array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
+						if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
+							elementPoint += 60;//両面
+						else if (arTatsuNum[0] == arTatsuNum[1])
+							elementPoint += 40;//対子
+						else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
+							elementPoint += 20;//辺張
+						else
+							elementPoint += 30;//嵌張
+					}
+				}
+				if (elementMaxPoint < elementPoint)
+					elementMaxPoint = elementPoint;
+			}
+		}
+		//孤立牌を優先的に切る
+		int koritsuPoint = 0;
+		if (ASEARCH(sutehai, arKoritsuhai) >= 0)
+		{
+			koritsuPoint = 500;
+		}
+		//既に捨てた牌を優先的に切る
+		int furitenPoint = 0;
+		if (ASEARCH(sutehai, kawa) >= 0)
+		{
+			furitenPoint = 10;
+		}
+		//ドラは残しておきたい
+		int doraPoint = 0;
+		if (ASEARCH(sutehai, arDora) >= 0)
+		{
+			doraPoint = -50;
+		}
+		//現物を優先的に切る
+		int genbutsuPoint = 0;
+		for (int j = 0; arGenbutsu[j] != nil; j++)
+		{
+			if (arGenbutsu[j] != "")
+			{
+				if (_strstr(arGenbutsu[j], sutehai) >= 0)
+				{
+					genbutsuPoint += 4000;
+					if (j == 0)//親のリーチは特に避けたい
+						genbutsuPoint += 2000;
 				}
 			}
-			else
-			{
-				for (int j = 0; arPattern[j] != nil; j++)
-				{
-					int elementPoint = 0;
-					if (arPattern[j] == "chitoitsu" || arPattern[j] == "kokushimusou")
-					{
-						elementPoint = 0;
-					}
-					else
-					{
-						array ap = _strsplit(arPattern[j], ",");
-						array arTatsu13 = {};
-						if (ap[0] != "")
-							elementPoint += 40;//雀頭
-						for (int k = 1; ap[k] != nil; k++)
-						{
-							if (_strlen(ap[k]) == 6)
-								elementPoint += 90;//面子
-							else if (_strlen(ap[k]) == 4)
-								arTatsu13 += ap[k];
-						}
-						for (int k = 0; arTatsu13[k] != nil; k++)
-						{
-							array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
-							if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
-								elementPoint += 60;//両面
-							else if (arTatsuNum[0] == arTatsuNum[1])
-								elementPoint += 40;//対子
-							else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
-								elementPoint += 20;//辺張
-							else
-								elementPoint += 30;//嵌張
-						}
-					}
-					if (elementMaxPoint < elementPoint)
-						elementMaxPoint = elementPoint;
-				}
-			}
-			//孤立牌を優先的に切る
-			int koritsuPoint = 0;
-			if (ASEARCH(hai14[i], arKoritsuhai) >= 0)
-			{
-				koritsuPoint = 500;
-			}
-			//既に捨てた牌を優先的に切る
-			int furitenPoint = 0;
-			if (ASEARCH(hai14[i], kawa) >= 0)
-			{
-				furitenPoint = 10;
-			}
-			//ドラは残しておきたい
-			int doraPoint = 0;
-			if (ASEARCH(hai14[i], arDora) >= 0)
-			{
-				doraPoint = -50;
-			}
-			int dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint + doraPoint;
-			if (point < dahaiPoint)
-			{
-				point = dahaiPoint;
-				arDahai = {hai14[i]};
-			}
-			else if (point == dahaiPoint)
-			{
-				arDahai += hai14[i];
-			}
+		}
+		int dahaiPoint = shantenPoint + machiPoint + elementMaxPoint + koritsuPoint + furitenPoint + doraPoint + genbutsuPoint;
+		if (point < dahaiPoint)
+		{
+			point = dahaiPoint;
+			arDahai = {sutehai};
+		}
+		else if (point == dahaiPoint)
+		{
+			arDahai += sutehai;
 		}
 	}
 	return _randselect(arDahai);
@@ -387,7 +401,7 @@ int canTouhai(int nPlayer, string tsumoHai)
 {
 	if (arChihouChance[nPlayer] == 0)
 		return 0;
-	array arHai = uniq(sortHai(strHaiToArray(addHai(arTehai[nPlayer], tsumoHai))));
+	array arHai = sortHai(uniq(strHaiToArray(addHai(arTehai[nPlayer], tsumoHai))));
 	array arYaochu = {"1m", "9m", "1p", "9p", "1s", "9s", "1z", "2z", "3z", "4z", "5z", "6z", "7z"};
 	int count = 0;
 	for (int i = 0; arHai[i] != nil; i++)

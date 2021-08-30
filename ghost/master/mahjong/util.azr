@@ -406,6 +406,28 @@ int getLeftYama()
 	return _aryvn(arYama) - nYamaIndex;
 }
 
+//東家を先頭にしてリーチ済の他家の現物を返す
+array getGenbutsu(int p)
+{
+	array r;
+	int findOya = 0;
+	int i = 0;
+	while (_aryvn(r) < 4)
+	{
+		if (i == oyaIndex)
+			findOya = 1;
+		if (findOya)
+		{
+			if (i != p && _aryvn(arFuritenCheckRichi[i]) > 0)
+				r += JOIN(sortHai(uniq(strHaiToArray(JOIN(arKawa[i], "") + JOIN(arFuritenCheckRichi[i], "")))), "");
+			else
+				r += "";
+		}
+		i = (i + 1) % 4;
+	}
+	return r;
+}
+
 string OnSuteSelect(dict ref)
 {
 	int selectPlayer = ref["Reference0"];
@@ -465,7 +487,7 @@ string OnSuteSelect(dict ref)
 	{
 		if (tsumo == "")//カン以外の副露直後
 		{
-			selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+			selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
 		}
 		else
 		{
@@ -492,14 +514,14 @@ string OnSuteSelect(dict ref)
 			else if (canRichi(selectPlayer, tsumo))
 			{
 				action = "richi";
-				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
 			}
 			else
 			{
 				if (arRichiJunme[selectPlayer] >= 0)
 					selectedHai = tsumo;
 				else
-					selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji);
+					selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
 			}
 		}
 	}
