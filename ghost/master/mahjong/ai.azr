@@ -2,7 +2,7 @@
 // 何を切るか
 //******************************************************************************
 //テンパイに近づける
-string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string dorahyouji, array arGenbutsu)
+string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string strDorahyouji, array arGenbutsu)
 {
 	array arDahai;
 	int point = -1;
@@ -10,12 +10,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 	array hai14 = strHaiToArrayWithoutFuro(hai);
 	array sutehaiKouho = uniq(hai14);
 	//ドラ
-	array arDorahyouji = strHaiToArray(dorahyouji);
-	array arDora;
-	for (int i = 0; arDorahyouji[i] != nil; i++)
-	{
-		arDora += getDoraFromDorahyouji(arDorahyouji[i]);
-	}
+	array arDora = getDoraArray(strDorahyouji);
 	//孤立牌
 	array arKoritsuhai = getKoritsuHai(hai14);
 	for (int i = 0; sutehaiKouho[i] != nil; i++)
@@ -195,6 +190,17 @@ array convertNumArray(array hai)
 	return arNum;
 }
 
+array getDoraArray(string strDorahyouji)
+{
+	array arDorahyouji = strHaiToArray(strDorahyouji);
+	array arDora;
+	for (int i = 0; arDorahyouji[i] != nil; i++)
+	{
+		arDora += getDoraFromDorahyouji(arDorahyouji[i]);
+	}
+	return arDora;
+}
+
 //******************************************************************************
 // アクション判断(副露・リーチ等)
 //******************************************************************************
@@ -207,9 +213,22 @@ int shouldAnkan(int nPlayer, string tsumoHai)
 		return 0;
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
 	array arAnkanHaiUseful = getAnkanHaiUseful(tehai, nPlayer);
-	if (_aryvn(arAnkanHaiUseful) > 0)
+	if (_aryvn(arAnkanHaiUseful) == 0)
+		return 0;
+	//自身がリーチしている場合OK
+	if (arRichiJunme[nPlayer] >= 0)
 		return 1;
-	return 0;
+	//三槓子・四槓子狙い
+	if (isMenzenPlayer(nPlayer) && countKantsu(nPlayer) >= 2)
+		return 1;
+	//他家がリーチしている場合NG
+	for (int i = 0; i < 4; i++)
+	{
+		if (arRichiJunme[i] >= 0)
+			return 0;
+	}
+	//基本OK
+	return 1;
 }
 
 int canAnkan(int nPlayer, string tsumoHai)
@@ -281,9 +300,19 @@ int shouldKakan(int nPlayer, string tsumoHai)
 		return 0;
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
 	array arKakanHaiUseful = getKakanHaiUseful(tehai, nPlayer);
-	if (_aryvn(arKakanHaiUseful) > 0)
+	if (_aryvn(arKakanHaiUseful) == 0)
+		return 0;
+	//三槓子・四槓子狙い
+	if (countKantsu(nPlayer) >= 2)
 		return 1;
-	return 0;
+	//他家がリーチしている場合NG
+	for (int i = 0; i < 4; i++)
+	{
+		if (arRichiJunme[i] >= 0)
+			return 0;
+	}
+	//基本OK
+	return 1;
 }
 
 int canKakan(int nPlayer, string tsumoHai)
@@ -423,12 +452,47 @@ int shouldDaiminkan(int nPlayer, string suteHai)
 		return 0;
 	string bafuHai = getBafuHai();
 	string jifuHai = getJifuHai(nPlayer);
+	string strDorahyouji = dorahyouji;
 	string hai13 = arTehai[nPlayer];
 	string hai14 = removeHai(hai13, suteHai + suteHai + suteHai) + "<" + suteHai + suteHai + suteHai + suteHai + ">";
 	int shantenBefore = getShantenYaku(hai13, bafuHai, jifuHai);
 	int shantenAfter = getShantenYaku(hai14, bafuHai, jifuHai);
-	if (shantenAfter <= shantenBefore)
-		return (int)_randselect(0, 1);
+	//カンが3回行われている場合
+	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
+	if (ak[0] + ak[1] + ak[2] + ak[3] == 3)
+	{
+		//自身が三槓子で門前でない場合は四槓子狙い(門前の場合は四暗刻単騎)
+		if (ak[nPlayer] == 3 && !isMenzenPlayer(nPlayer))
+			return 1;
+		//自身がノーテンの場合は四開槓で流局させる
+		if (shantenBefore > 0)
+			return 1;
+	}
+	//門前だったらもったいない
+	if (isMenzenPlayer(nPlayer))
+		return 0;
+	//シャンテン数が増えたら本末転倒
+	if (shantenAfter > shantenBefore)
+		return 0;
+	//三槓子狙いはアリ
+	if (ak[nPlayer] == 2)
+		return 1;
+	//テンパイでなかったらやめとけ
+	if (shantenAfter > 0)
+		return 0;
+	//対象がドラである場合
+	if (ASEARCH(suteHai, getDoraArray(strDorahyouji)) >= 0)
+	{
+		//誰もリーチしてなくて残り枚数が少なければ…
+		for (int i = 0; i < 4; i++)
+		{
+			if (arRichiJunme[i] >= 0)
+				return 0;
+		}
+		if (getLeftYama() <= 4)
+			return 1;
+	}
+	//基本NG
 	return 0;
 }
 
