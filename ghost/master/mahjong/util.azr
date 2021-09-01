@@ -511,7 +511,7 @@ string OnSuteSelect(dict ref)
 				string kakanHai = _randselect(arKakanHaiUseful);
 				selectedHai = kakanHai;
 			}
-			else if (canRichi(selectPlayer, tsumo))
+			else if (shouldRichi(selectPlayer, tsumo))
 			{
 				action = "richi";
 				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));

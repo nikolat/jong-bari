@@ -368,6 +368,34 @@ array getKakanHaiUseful(string hai, int nPlayer)
 //==========================================================
 // リーチ
 //==========================================================
+int shouldRichi(int nPlayer, string tsumoHai)
+{
+	if (!canRichi(nPlayer, tsumoHai))
+		return 0;
+	string tehai = addHai(arTehai[nPlayer], tsumoHai);
+	string bafuHai = getBafuHai();
+	string jifuHai = getJifuHai(nPlayer);
+	//別の役について一向聴である場合はリーチしない
+	dict d = _saorirequest("MahjongUtil", "shanten_yaku", tehai, bafuHai, jifuHai);
+	if (d["head"] == "SAORI/1.0 400 Bad Request")
+	{
+		dAdditionalHeader = ${
+			$("ErrorLevel", "warning"),
+			$("ErrorDescription", "failed \"shouldRichi\" with " + tehai)
+		};
+		return 0;
+	}
+	if (d["Result"] == "")
+		return 0;
+	for (int i = 0; d["Value" + i] != nil; i++)
+	{
+		string s = d["Value" + i] + "E";
+		if (_strstr(s, ",1E") >= 0)
+			return 0;
+	}
+	return 1;
+}
+
 int canRichi(int nPlayer, string tsumoHai)
 {
 	int shanten = getShanten(addHai(arTehai[nPlayer], tsumoHai));
