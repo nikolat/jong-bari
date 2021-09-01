@@ -428,6 +428,39 @@ array getGenbutsu(int p)
 	return r;
 }
 
+//現在見えている牌
+string getVisiblePai(int p)
+{
+	string strDorahyouji = dorahyouji;
+	string tehai = _regex_replace(arTehai[p], "[()<>]", "");
+	string furo;
+	string kawa;
+	for (int i = 0; i < 4; i++)
+	{
+		if (i != p)
+		{
+			array arHai = strHaiToArrayWithFuro(arTehai[i]);
+			for (int i = 0; arHai[i] != nil; i++)
+			{
+				if (arHai[i][0] == "furo" || arHai[i][0] == "ankan")
+					furo += arHai[i][1];
+			}
+		}
+		kawa += JOIN(arKawa[i], "");
+	}
+	string r = strDorahyouji + tehai + furo + kawa;
+	r = _arystr(sortHai(strHaiToArray(r)));
+	//鳴かれた牌が河に含まれているので除く
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; arFuroHistory[i][j] != nil; j++)
+		{
+			r = removeHai(r, arFuroHistory[i][j][0]);
+		}
+	}
+	return r;
+}
+
 string OnSuteSelect(dict ref)
 {
 	int selectPlayer = ref["Reference0"];
@@ -487,7 +520,7 @@ string OnSuteSelect(dict ref)
 	{
 		if (tsumo == "")//カン以外の副露直後
 		{
-			selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
+			selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer), getVisiblePai(selectPlayer));
 		}
 		else
 		{
@@ -514,14 +547,14 @@ string OnSuteSelect(dict ref)
 			else if (shouldRichi(selectPlayer, tsumo))
 			{
 				action = "richi";
-				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
+				selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer), getVisiblePai(selectPlayer));
 			}
 			else
 			{
 				if (arRichiJunme[selectPlayer] >= 0)
 					selectedHai = tsumo;
 				else
-					selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer));
+					selectedHai = naniwokiru(tehai, arKawa[selectPlayer], getBafuHai(), getJifuHai(selectPlayer), dorahyouji, getGenbutsu(selectPlayer), getVisiblePai(selectPlayer));
 			}
 		}
 	}

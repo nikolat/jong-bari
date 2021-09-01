@@ -2,7 +2,7 @@
 // 何を切るか
 //******************************************************************************
 //テンパイに近づける
-string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string strDorahyouji, array arGenbutsu)
+string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string strDorahyouji, array arGenbutsu, string visiblePai)
 {
 	array arDahai;
 	int point = -1;
@@ -57,9 +57,15 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 				}
 				int score = d["Result"];
 				if (score > 0)
-					machiPoint += score;
+				{
+					int nNokori = 4 - _aryvn(ASEARCHEX(arMachi[j], strHaiToArray(visiblePai)));
+					machiPoint += score * nNokori;
+				}
 			}
-			shantenPoint += 10000;//テンパイを崩してまでオリないこととする
+			if (machiPoint > 0)
+				shantenPoint += 10000;//テンパイを崩してまでオリないこととする
+			else
+				shantenPoint -= 100000;//待ち牌が無いならむしろテンパイを崩して立て直すべき
 		}
 		else
 		{
@@ -75,7 +81,10 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 					array ap = _strsplit(arPattern[j], ",");
 					array arTatsu13 = {};
 					if (ap[0] != "")
-						elementPoint += 40;//雀頭
+					{
+						int nNokori = 4 - _aryvn(ASEARCHEX(_substr(ap[0], 0, 2), strHaiToArray(visiblePai)));
+						elementPoint += 20 * nNokori;//雀頭
+					}
 					for (int k = 1; ap[k] != nil; k++)
 					{
 						if (_strlen(ap[k]) == 6)
@@ -86,14 +95,32 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 					for (int k = 0; arTatsu13[k] != nil; k++)
 					{
 						array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
+						string color = _substr(arTatsu13[k], 1, 1);
 						if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
-							elementPoint += 60;//両面
+						{
+							int nNokori1 = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[0] - 1) + color, strHaiToArray(visiblePai)));
+							int nNokori2 = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[1] + 1) + color, strHaiToArray(visiblePai)));
+							elementPoint += 10 * (nNokori1 + nNokori2);//両面
+						}
 						else if (arTatsuNum[0] == arTatsuNum[1])
-							elementPoint += 40;//対子
+						{
+							int nNokori = 4 - _aryvn(ASEARCHEX(_substr(arTatsu13[k], 0, 2), strHaiToArray(visiblePai)));
+							elementPoint += 20 * nNokori;//対子
+						}
 						else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
-							elementPoint += 20;//辺張
+						{
+							int nNokori;
+							if (arTatsuNum[0] == 1)
+								nNokori = 4 - _aryvn(ASEARCHEX("3" + color, strHaiToArray(visiblePai)));
+							else
+								nNokori = 4 - _aryvn(ASEARCHEX("7" + color, strHaiToArray(visiblePai)));
+							elementPoint += 10 * nNokori - 5;//辺張
+						}
 						else
-							elementPoint += 30;//嵌張
+						{
+							int nNokori = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[0] + 1) + color, strHaiToArray(visiblePai)));
+							elementPoint += 10 * nNokori;//嵌張
+						}
 					}
 				}
 				if (elementMaxPoint < elementPoint)
@@ -375,18 +402,24 @@ int shouldRichi(int nPlayer, string tsumoHai)
 	string tehai = addHai(arTehai[nPlayer], tsumoHai);
 	string bafuHai = getBafuHai();
 	string jifuHai = getJifuHai(nPlayer);
-	//別の役について一向聴である場合はリーチしない
-	dict d = _saorirequest("MahjongUtil", "shanten_yaku", tehai, bafuHai, jifuHai);
+	//シャンテン数が戻る場合がある
+	string suteHai = naniwokiru(tehai, arKawa[nPlayer], getBafuHai(), getJifuHai(nPlayer), dorahyouji, getGenbutsu(nPlayer), getVisiblePai(nPlayer));
+	string removedTehai = removeHai(tehai, suteHai);
+	dict d = _saorirequest("MahjongUtil", "shanten_yaku", removedTehai, bafuHai, jifuHai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
 		dAdditionalHeader = ${
 			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"shouldRichi\" with " + tehai)
+			$("ErrorDescription", "failed \"shouldRichi\" with " + removedTehai)
 		};
 		return 0;
 	}
 	if (d["Result"] == "")
 		return 0;
+	int shanten = d["Result"];
+	if (shanten > 0)
+		return 0;
+	//別の役について一向聴である場合はリーチしない
 	for (int i = 0; d["Value" + i] != nil; i++)
 	{
 		string s = d["Value" + i] + "E";
@@ -651,6 +684,7 @@ array getChiMaterialBest(int nPlayer, string suteHai)
 			indexMin += i;
 		}
 	}
+	//今はシャンテン数のみ見ているが面子の形も考慮したいところ
 	int index = _randselect(indexMin);
 	array arMaterialSelected = strHaiToArray(arMaterial[index]);
 	return arMaterialSelected;
