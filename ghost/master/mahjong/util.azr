@@ -364,6 +364,12 @@ string startKyoku()
 	//kyokustart通知
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",kyokustart," + arBafu[bafu] + "," + playerName[oyaIndex] + "," + tsumibou + "," + kyotaku + "]";
+	//point通知
+	for (int i = 0; i < 3; i++)
+	{
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
+			+ ",point," + playerName[i] + ",=," + arScore[i] + "]";
+	}
 	//haipai通知
 	for (int i = 0; i < 3; i++)
 	{
@@ -1130,7 +1136,6 @@ string OnSuteComplete(dict ref)
 			int shanten = getShanten(arTehai[i]);
 			if (shanten == 0)
 			{
-				reservedTenpai[playerName[i]] = "yes";//デフォルトでyes
 				//テンパイ宣言問い合わせ
 				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
 					+ ",tenpai?]";
@@ -1229,6 +1234,22 @@ string OnRyukyoku(dict ref)
 	for (int i = 0; i < 3; i++)
 	{
 		string action = reservedTenpai[playerName[i]];
+		if (action == "")
+		{
+			if (shouldSayTenpai(i))
+				action = "yes";
+			else
+				action = "no";
+		}
+		if (action != "yes" && arRichiJunme[i] >= 0)//リーチかけてたらテンパイ宣言させる
+		{
+			action = "yes";
+			//指定されたアクションが不可能だった
+			dAdditionalHeader = ${
+				$("ErrorLevel", "warning"),
+				$("ErrorDescription", "failed requested action '" + action + "' in 'tenpai?' command.")
+			};
+		}
 		if (action == "yes")
 		{
 			arTenpaiPlayerFlag[i] = 1;

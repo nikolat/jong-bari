@@ -373,15 +373,16 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			tsumibou = 0;
 		else
 			tsumibou++;
-		kyoku++;
-		if (kyoku == 5)
+		if (!arTenpaiPlayerFlag[oyaIndex])
 		{
-			kyoku = 1;
-			bafu++;
+			kyoku++;
+			if (kyoku == 5)
+			{
+				kyoku = 1;
+				bafu++;
+			}
+			oyaIndex = (oyaIndex + 1) % 4;
 		}
-		oyaIndex++;
-		if (oyaIndex == 4)
-			oyaIndex = 0;
 	}
 	//終了
 	clearStatus();
