@@ -425,7 +425,7 @@ array getGenbutsu(int p)
 		if (findOya)
 		{
 			if (i != p && _aryvn(arFuritenCheckRichi[i]) > 0)
-				r += JOIN(sortHai(uniq(strHaiToArray(JOIN(arKawa[i], "") + JOIN(arFuritenCheckRichi[i], "")))), "");
+				r += _arystr(sortHai(uniq(strHaiToArray(_arystr(arKawa[i]) + _arystr(arFuritenCheckRichi[i])))));
 			else
 				r += "";
 		}
@@ -452,7 +452,7 @@ string getVisiblePai(int p)
 					furo += arHai[i][1];
 			}
 		}
-		kawa += JOIN(arKawa[i], "");
+		kawa += _arystr(arKawa[i]);
 	}
 	string r = strDorahyouji + tehai + furo + kawa;
 	r = _arystr(sortHai(strHaiToArray(r)));

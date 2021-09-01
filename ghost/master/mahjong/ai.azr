@@ -764,7 +764,7 @@ int canRon(int nPlayer, string atariHai)
 //==========================================================
 int shouldSayTenpai(int nPlayer)
 {
-	//オーラスで東家で未リーチで現在1位で2位との差が4000点ならノーテン宣言する
+	//オーラスで東家で未リーチで現在1位で2位との差が4000点より多いならノーテン宣言する
 	if (!(bafu == 1 && kyoku == 4 && oyaIndex == nPlayer && arRichiJunme[nPlayer] == -1))
 		return 1;
 	int secondScore = 0;
