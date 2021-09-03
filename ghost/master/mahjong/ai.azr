@@ -7,6 +7,16 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 	array arDahai;
 	int point = -1;
 	array arVisiblePai = strHaiToArray(visiblePai);
+	array arVisibleNum = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0
+	};
+	for (int i = 0; arVisiblePai[i] != nil; i++)
+	{
+		arVisibleNum[getSortCode(arVisiblePai[i])]++;
+	}
 	//副露を除く
 	array hai14 = strHaiToArrayWithoutFuro(hai);
 	array sutehaiKouho = uniq(hai14);
@@ -59,7 +69,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 				int score = d["Result"];
 				if (score > 0)
 				{
-					int nNokori = 4 - _aryvn(ASEARCHEX(arMachi[j], arVisiblePai));
+					int nNokori = 4 - arVisibleNum[getSortCode(arMachi[j])];
 					machiPoint += score * nNokori;
 				}
 			}
@@ -83,7 +93,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 					array arTatsu13 = {};
 					if (ap[0] != "")
 					{
-						int nNokori = 4 - _aryvn(ASEARCHEX(_substr(ap[0], 0, 2), arVisiblePai));
+						int nNokori = 4 - arVisibleNum[getSortCode(_substr(ap[0], 0, 2))];
 						elementPoint += 20 * nNokori;//雀頭
 					}
 					for (int k = 1; ap[k] != nil; k++)
@@ -101,27 +111,27 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 						string color = _substr(tatsu, 1, 1);
 						if ((n1 != 1) && (n1 + 1 == n2) && (n2 != 9))
 						{
-							int nNokori1 = 4 - _aryvn(ASEARCHEX("" + (n1 - 1) + color, arVisiblePai));
-							int nNokori2 = 4 - _aryvn(ASEARCHEX("" + (n2 + 1) + color, arVisiblePai));
+							int nNokori1 = 4 - arVisibleNum[getSortCode("" + (n1 - 1) + color)];
+							int nNokori2 = 4 - arVisibleNum[getSortCode("" + (n2 + 1) + color)];
 							elementPoint += 10 * (nNokori1 + nNokori2);//両面
 						}
 						else if (n1 == n2)
 						{
-							int nNokori = 4 - _aryvn(ASEARCHEX("" + n1 + color, arVisiblePai));
+							int nNokori = 4 - arVisibleNum[getSortCode("" + n1 + color)];
 							elementPoint += 20 * nNokori;//対子
 						}
 						else if ((n1 == 1) && (n2 == 2) || (n1 == 8) && (n2 == 9))
 						{
 							int nNokori;
 							if (n1 == 1)
-								nNokori = 4 - _aryvn(ASEARCHEX("3" + color, arVisiblePai));
+								nNokori = 4 - arVisibleNum[getSortCode("3" + color)];
 							else
-								nNokori = 4 - _aryvn(ASEARCHEX("7" + color, arVisiblePai));
+								nNokori = 4 - arVisibleNum[getSortCode("7" + color)];
 							elementPoint += 10 * nNokori - 5;//辺張
 						}
 						else
 						{
-							int nNokori = 4 - _aryvn(ASEARCHEX("" + (n1 + 1) + color, arVisiblePai));
+							int nNokori = 4 - arVisibleNum[getSortCode("" + (n1 + 1) + color)];
 							elementPoint += 10 * nNokori;//嵌張
 						}
 					}
