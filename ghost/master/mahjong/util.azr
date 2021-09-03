@@ -21,6 +21,7 @@ array arFuroJunme = {{}, {}, {}, {}};
 array arFuroHistory = {{}, {}, {}, {}};
 array arKakanHistory =  {{}, {}, {}, {}};
 string dorahyouji;
+string visiblePai;
 int nYamaIndex;
 int isGameStarted = 0;
 int bafu = 0;//東:0, 南:1
@@ -342,6 +343,7 @@ string startKyoku()
 	arChihouChance = {1, 1, 1, 1};
 	arWRichi = {0, 0, 0, 0};
 	dorahyouji = arYama[52];
+	visiblePai = dorahyouji;
 	nYamaIndex = 66;//王牌14枚(from 52 to 65)抜く
 	reservedNaku = ${
 		$(playerName[0], {}),
@@ -437,34 +439,7 @@ array getGenbutsu(int p)
 //現在見えている牌
 string getVisiblePai(int p)
 {
-	string strDorahyouji = dorahyouji;
-	string tehai = _regex_replace(arTehai[p], "[()<>]", "");
-	string furo;
-	string kawa;
-	for (int i = 0; i < 4; i++)
-	{
-		if (i != p)
-		{
-			array arHai = strHaiToArrayWithFuro(arTehai[i]);
-			for (int i = 0; arHai[i] != nil; i++)
-			{
-				if (arHai[i][0] == "furo" || arHai[i][0] == "ankan")
-					furo += arHai[i][1];
-			}
-		}
-		kawa += _arystr(arKawa[i]);
-	}
-	string r = strDorahyouji + tehai + furo + kawa;
-	r = _arystr(sortHai(strHaiToArray(r)));
-	//鳴かれた牌が河に含まれているので除く
-	for (int i = 0; i < 4; i++)
-	{
-		for (int j = 0; arFuroHistory[i][j] != nil; j++)
-		{
-			r = removeHai(r, arFuroHistory[i][j][0]);
-		}
-	}
-	return r;
+	return visiblePai + removeFuro(arTehai[p]);
 }
 
 string OnSuteSelect(dict ref)
@@ -598,6 +573,7 @@ string OnSuteSelect(dict ref)
 		setAnkan(selectPlayer, ankanHai);
 		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
 		dorahyouji += strDorahyoujiNew;
+		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
 		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
 		string sr;
@@ -691,6 +667,7 @@ string OnSuteSelect(dict ref)
 		}
 		string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
 		dorahyouji += strDorahyoujiNew;
+		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
 		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
 		//ツモ通知
@@ -984,6 +961,7 @@ string OnSuteComplete(dict ref)
 			setFuro(p, completePlayer, sute, sute + sute + sute);
 			string strDorahyoujiNew = arYama[52 + (_strlen(dorahyouji) / 2)];
 			dorahyouji += strDorahyoujiNew;
+			visiblePai += strDorahyoujiNew;
 			string tsumo = arYama[nYamaIndex++];
 			s += showStatus(tsumo, "", p, -1, {0, 0, 0}, 1);
 			//発声通知
@@ -1296,6 +1274,7 @@ string OnRyukyoku(dict ref)
 setSutehai(string sute, int nPlayer)
 {
 	arKawa[nPlayer] += sute;
+	visiblePai += sute;
 	for (int i = 0; i < 4; i++)
 	{
 		if (arRichiJunme[i] >= 0)
@@ -1946,6 +1925,7 @@ setFuro(int nFuroPlayer, int nSutePlayer, string sute, string haiUsed)
 	arFuroHistory[nFuroPlayer] += {sute, nSutePlayer};
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {0, 0, 0, 0};
+	visiblePai += haiUsed;
 }
 
 setKakan(int nFuroPlayer, string kakanHai)
@@ -1955,6 +1935,7 @@ setKakan(int nFuroPlayer, string kakanHai)
 	arKakanHistory[nFuroPlayer] += kakanHai;
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {0, 0, 0, 0};
+	visiblePai += kakanHai;
 }
 
 setAnkan(int nFuroPlayer, string ankanHai)
@@ -1963,6 +1944,7 @@ setAnkan(int nFuroPlayer, string ankanHai)
 	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai, "(", ")");;
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {0, 0, 0, 0};
+	visiblePai += ankanHai + ankanHai + ankanHai + ankanHai;
 }
 
 string addFuro(string tehai, string furo, string s1, string s2)
@@ -2024,6 +2006,7 @@ clearStatus()
 	arChihouChance = {1, 1, 1, 1};
 	arWRichi = {0, 0, 0, 0};
 	dorahyouji = "";
+	visiblePai = "";
 	nYamaIndex = 0;
 	lastScript = "";
 }
@@ -2813,6 +2796,22 @@ array strHaiToArrayWithoutFuro(string strHai)
 		i++;
 	}
 	return arRet;
+}
+
+string removeFuro(string strHai)
+{
+	int n1 = _strstr(strHai, "<");
+	int n2 = _strstr(strHai, "(");
+	if (n1 == -1 && n2 == -1)
+		return strHai;
+	else if (n2 == -1)
+		return _substr(strHai, 0, n1);
+	else if (n1 == -1)
+		return _substr(strHai, 0, n2);
+	else if (n1 < n2)
+		return _substr(strHai, 0, n1);
+	else
+		return _substr(strHai, 0, n2);
 }
 
 array strHaiToArrayWithFuro(string strHai)

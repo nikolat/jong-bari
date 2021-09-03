@@ -6,6 +6,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 {
 	array arDahai;
 	int point = -1;
+	array arVisiblePai = strHaiToArray(visiblePai);
 	//副露を除く
 	array hai14 = strHaiToArrayWithoutFuro(hai);
 	array sutehaiKouho = uniq(hai14);
@@ -58,7 +59,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 				int score = d["Result"];
 				if (score > 0)
 				{
-					int nNokori = 4 - _aryvn(ASEARCHEX(arMachi[j], strHaiToArray(visiblePai)));
+					int nNokori = 4 - _aryvn(ASEARCHEX(arMachi[j], arVisiblePai));
 					machiPoint += score * nNokori;
 				}
 			}
@@ -82,7 +83,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 					array arTatsu13 = {};
 					if (ap[0] != "")
 					{
-						int nNokori = 4 - _aryvn(ASEARCHEX(_substr(ap[0], 0, 2), strHaiToArray(visiblePai)));
+						int nNokori = 4 - _aryvn(ASEARCHEX(_substr(ap[0], 0, 2), arVisiblePai));
 						elementPoint += 20 * nNokori;//雀頭
 					}
 					for (int k = 1; ap[k] != nil; k++)
@@ -94,31 +95,33 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 					}
 					for (int k = 0; arTatsu13[k] != nil; k++)
 					{
-						array arTatsuNum = convertNumArray(strHaiToArray(arTatsu13[k]));
-						string color = _substr(arTatsu13[k], 1, 1);
-						if ((arTatsuNum[0] != 1) && (arTatsuNum[0] + 1 == arTatsuNum[1]) && (arTatsuNum[1] != 9))
+						string tatsu = arTatsu13[k];
+						int n1 = _substr(tatsu, 0, 1);
+						int n2 = _substr(tatsu, 2, 1);
+						string color = _substr(tatsu, 1, 1);
+						if ((n1 != 1) && (n1 + 1 == n2) && (n2 != 9))
 						{
-							int nNokori1 = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[0] - 1) + color, strHaiToArray(visiblePai)));
-							int nNokori2 = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[1] + 1) + color, strHaiToArray(visiblePai)));
+							int nNokori1 = 4 - _aryvn(ASEARCHEX("" + (n1 - 1) + color, arVisiblePai));
+							int nNokori2 = 4 - _aryvn(ASEARCHEX("" + (n2 + 1) + color, arVisiblePai));
 							elementPoint += 10 * (nNokori1 + nNokori2);//両面
 						}
-						else if (arTatsuNum[0] == arTatsuNum[1])
+						else if (n1 == n2)
 						{
-							int nNokori = 4 - _aryvn(ASEARCHEX(_substr(arTatsu13[k], 0, 2), strHaiToArray(visiblePai)));
+							int nNokori = 4 - _aryvn(ASEARCHEX("" + n1 + color, arVisiblePai));
 							elementPoint += 20 * nNokori;//対子
 						}
-						else if ((arTatsuNum[0] == 1) && (arTatsuNum[1] == 2) || (arTatsuNum[0] == 8) && (arTatsuNum[1] == 9))
+						else if ((n1 == 1) && (n2 == 2) || (n1 == 8) && (n2 == 9))
 						{
 							int nNokori;
-							if (arTatsuNum[0] == 1)
-								nNokori = 4 - _aryvn(ASEARCHEX("3" + color, strHaiToArray(visiblePai)));
+							if (n1 == 1)
+								nNokori = 4 - _aryvn(ASEARCHEX("3" + color, arVisiblePai));
 							else
-								nNokori = 4 - _aryvn(ASEARCHEX("7" + color, strHaiToArray(visiblePai)));
+								nNokori = 4 - _aryvn(ASEARCHEX("7" + color, arVisiblePai));
 							elementPoint += 10 * nNokori - 5;//辺張
 						}
 						else
 						{
-							int nNokori = 4 - _aryvn(ASEARCHEX("" + (arTatsuNum[0] + 1) + color, strHaiToArray(visiblePai)));
+							int nNokori = 4 - _aryvn(ASEARCHEX("" + (n1 + 1) + color, arVisiblePai));
 							elementPoint += 10 * nNokori;//嵌張
 						}
 					}
