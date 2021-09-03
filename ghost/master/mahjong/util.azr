@@ -365,7 +365,7 @@ string startKyoku()
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 		+ ",kyokustart," + arBafu[bafu] + "," + playerName[oyaIndex] + "," + tsumibou + "," + kyotaku + "]";
 	//point通知
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
 			+ ",point," + playerName[i] + ",=," + arScore[i] + "]";
