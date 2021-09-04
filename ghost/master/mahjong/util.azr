@@ -305,14 +305,44 @@ string Menu_StartKyoku(dict ref)
 
 string Menu_EndGame(dict ref)
 {
-	string s = "\0\s[0]";
+	string s = "\![set,balloontimeout,0]\0\s[0]\_q";
 	//gameend通知
 	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
 	for (int i = 0; playerName[i] != nil; i++)
 	{
 		s += "," + playerName[i] + _bytechar(1) + arScore[i];
 	}
-	s += "]\e";
+	s += "]";
+	//点数表示
+	array sortedIndex;
+	while (_aryvn(sortedIndex) < _aryvn(arScore))
+	{
+		int maxScore = -1000000;
+		int maxIndex = -1;
+		for (int i = 0; arScore[i] != nil; i++)
+		{
+			if (ASEARCH(i, sortedIndex) == -1)
+			{
+				if (arScore[i] > maxScore)
+				{
+					maxScore = arScore[i];
+					maxIndex = i;
+				}
+			}
+		}
+		sortedIndex += maxIndex;
+	}
+	int x = 0;
+	if (modeEx)
+	{
+		s += "\_l[,300]";
+		x = 300;
+	}
+	for (int i = 0; sortedIndex[i] != nil; i++)
+	{
+		s += "\_l[" + x + ",]" + (i + 1) + ": " + playerName[sortedIndex[i]] + "\_l[" + (x + 150) + ",]" + arScore[sortedIndex[i]] + "\n";
+	}
+	s += "\_q\e";
 	isGameStarted = 0;
 	playerName = {};
 	arScore = {25000, 25000, 25000, 25000};
