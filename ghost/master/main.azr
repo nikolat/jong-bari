@@ -8,10 +8,12 @@ load()
 	_script_load("mahjong\shanten");
 	_script_load("mahjong\util");
 
+	_saoriload("saori\HandUtil\HandUtil.dll", "HandUtil");
 	_saoriload("saori\MahjongUtil\MahjongUtil.dll", "MahjongUtil");
 }
 unload()
 {
+	_saoriunload("HandUtil");
 	_saoriunload("MahjongUtil");
 }
 dict dAdditionalHeader;

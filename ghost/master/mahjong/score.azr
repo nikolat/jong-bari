@@ -335,19 +335,17 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	//通知
 	if (nAgariPlayer >= 0)
 	{
-		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",agari," + playerName[nAgariPlayer] + "," + nFu;
+		array a = {"agari", playerName[nAgariPlayer], nFu};
 		array arYaku = _dickeyget(dYakuAndHan);
 		for (int i = 0; arYaku[i] != nil; i++)
 		{
-			s += ",\"" + arYaku[i] + "," + dYakuAndHan[arYaku[i]] + "\"";
+			a += arYaku[i] + "," + dYakuAndHan[arYaku[i]];
 		}
-		s += "]";
+		s += notifyAll(a);
 	}
 	else
 	{
-		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",ryukyoku]";
+		s += notifyAll({"ryukyoku"});
 	}
 	for (int i = 0; i < 3; i++)
 	{
@@ -357,11 +355,9 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		else if (arScoreAdd[i] < 0)
 			fugo = "-";
 		if (fugo != "")
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",point," + playerName[i] + "," + fugo + "," + (int)_fabs(arScoreAdd[i]) + "]";
+			s += notifyAll({"point", playerName[i], fugo, (int)_fabs(arScoreAdd[i])});
 	}
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",kyokuend]";
+	s += notifyAll({"kyokuend"});
 	//連荘判定
 	if (nAgariPlayer == oyaIndex)
 	{

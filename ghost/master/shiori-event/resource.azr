@@ -55,6 +55,10 @@ string sakura.portalsites()
 string sakura.recommendsites()
 {
 	string s = "";
+	s += "UKADOC Project SHIORI Eventリスト（外部）" + _bytechar(1)
+		+ "http://ssp.shillest.net/ukadoc/manual/list_shiori_event_ex.html#OnMahjong" + _bytechar(1)
+		+ _bytechar(1)
+		+ _bytechar(2);
 	s += "UMP - オープンネットワーク麻雀 Wiki - オープンネットワーク麻雀 - OSDN" + _bytechar(1)
 		+ "https://osdn.net/projects/openmj/wiki/UMP" + _bytechar(1)
 		+ _bytechar(1)

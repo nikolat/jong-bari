@@ -9,3 +9,4 @@ craftmanurl,http://nikolat.herokuapp.com/
 homeurl,https://raw.githubusercontent.com/nikolat/jong-bari/main/
 icon,icon.ico
 don't need onmousemove,1
+readme.charset,UTF-8

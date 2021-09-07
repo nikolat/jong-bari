@@ -5,6 +5,8 @@
 int openTehai = 0;
 //通信のタイムアウト設定(s)
 double timeout = 2.000;
+//通信にDirectSSTPを使用する
+int useDSSTP = 1;
 
 //******************************************************************************
 // グローバル変数
@@ -23,7 +25,6 @@ array arKakanHistory =  {{}, {}, {}, {}};
 string dorahyouji;
 string visiblePai;
 int nYamaIndex;
-int isGameStarted = 0;
 int bafu = 0;//東:0, 南:1
 array arBafu = {"東", "南"};
 int kyoku = 0;//1 - 4
@@ -96,7 +97,10 @@ string OnMahjongResponse(dict ref)
 		if (_aryvn(playerName) == 3)
 		{
 			playerName += "user";
-			return showBalloon();
+			reservedScript = "\![raise,OnMahjongGameStart]";
+			isRecievedResponse = 1;
+			_create_thread("TH_WaitResponse");
+			return "";
 		}
 		else
 		{
@@ -178,7 +182,7 @@ TH_WaitResponse()
 	}
 	for (int i = 0; i < 3; i++)
 	{
-		if (dResponseNeed[playerName[i]] != "")
+		if (dResponseNeed[playerName[i]] != "" && dResponseNeed[playerName[i]] != nil)
 		{
 			_speak("\![raise,OnMahjongResponseTimeout," + playerName[i] + "," + dResponseNeed[playerName[i]] + "]");
 			dResponseNeed[playerName[i]] = "";
@@ -245,50 +249,96 @@ string showBalloon()
 		}
 		return s;
 	}
-	//gamestart通知
-	if (!isGameStarted)
-	{
-		isGameStarted = 1;
-		bafu = 0;
-		kyoku = 1;
-		oyaIndex = _randselect({0, 1, 2, 3});
-		array seki = {"東", "南", "西", "北"};
-		dict dSeki;
-		array pNames;
-		for (int i = 0; playerName[i] != nil; i++)
-		{
-			pNames += playerName[(i + oyaIndex) % 4];
-		}
-		for (int i = 0; pNames[i] != nil; i++)
-		{
-			dSeki += $(pNames[i], seki[i]);
-		}
-		string s;
-		s += "\0";
-		for (int i = 0; i < 3; i++)
-		{
-			s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-				+ ",gamestart," + dSeki[playerName[i]] + "," + pNames[0] + "," + pNames[1] + "," + pNames[2] + "," + pNames[3] + "]";
-		}
-		s += "\_w[2000]\![raise,showBalloon]\e";
-		return s;
-	}
 	if (nYamaIndex > 0)
 		return lastScript;
 	else
 		return startKyoku();
 }
 
+//gamestart通知
+string OnMahjongGameStart(dict ref)
+{
+	bafu = 0;
+	kyoku = 1;
+	oyaIndex = _randselect({0, 1, 2, 3});
+	array seki = {"東", "南", "西", "北"};
+	dict dSeki;
+	array pNames;
+	for (int i = 0; playerName[i] != nil; i++)
+	{
+		pNames += playerName[(i + oyaIndex) % 4];
+	}
+	for (int i = 0; pNames[i] != nil; i++)
+	{
+		dSeki += $(pNames[i], seki[i]);
+	}
+	string s;
+	for (int i = 0; i < 3; i++)
+	{
+		s += notifyByIndex(i, {"gamestart", dSeki[playerName[i]], pNames[0], pNames[1], pNames[2], pNames[3]});
+	}
+	return s + "\_w[2000]\![raise,startKyoku]\e";
+}
+
 string Menu_SearchPlayer(dict ref)
 {
 	isSoloMode = 0;
-	return "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion() + ",hello]";
+	isRecievedResponse = 0;
+	if (useDSSTP)
+	{
+		array arFmo = _getfmo();
+		array names;
+		string txt = ".name" + _bytechar(1);
+		for (int i = 0; arFmo[i] != nil; i++)
+		{
+			if (_strstr(arFmo[i], txt) >= 0)
+			{
+				string name = _strsplit(arFmo[i], txt)[1];
+				if (name != _systemdict["OnNotifySelfInfo"]["Reference1"])
+					names += name;
+			}
+		}
+		for (int i = 0; names[i] != nil; i++)
+		{
+			dict d = notifyBySSTP(_getghosthwnd(names[i]), "hello");
+			redirectSSTPtoNotify(d, names[i]);
+		}
+		return "\e";//何か返さないとOnChoiceSelectEx -> OnChoiceSelect、と2回呼ばれてしまう
+	}
+	else
+	{
+		return "\![raiseother,__SYSTEM_ALL_GHOST__,OnMahjong," + getVersion() + ",hello]\e";
+	}
 }
+
+redirectSSTPtoNotify(dict d, string sender)
+{
+	if ((int)d["Result"] >= 3)
+	{
+		dict ref;
+		ref += $("Sender", sender);
+		for (int j = 0; d["Value" + j] != nil; j++)
+		{
+			if (_strstr(d["Value" + j], "X-SSTP-PassThru-") >= 0)
+			{
+				string header = _strsplit(d["Value" + j], "X-SSTP-PassThru-")[1];
+				array arHeader = _strsplit(header, ": ");
+				string key = arHeader[0];
+				string value = arHeader[1];
+				ref += $(key, value);
+			}
+		}
+		if (_dicvn(ref) > 1)
+		{
+			OnMahjongResponse(ref);
+		}
+	}
+}
+
 string Menu_StartWithoutPlayer(dict ref)
 {
 	isSoloMode = 1;
 	playerName = {"エミリ", "テディ", "エミリオ", "user"};
-	isGameStarted = 1;
 	bafu = 0;
 	kyoku = 1;
 	oyaIndex = _randselect({0, 1, 2, 3});
@@ -307,12 +357,12 @@ string Menu_EndGame(dict ref)
 {
 	string s = "\![set,balloontimeout,0]\0\s[0]\_q";
 	//gameend通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion() + ",gameend";
+	array arScoreNotify = {"gameend"};
 	for (int i = 0; playerName[i] != nil; i++)
 	{
-		s += "," + playerName[i] + _bytechar(1) + arScore[i];
+		arScoreNotify += playerName[i] + _bytechar(1) + arScore[i];
 	}
-	s += "]";
+	s += notifyAll(arScoreNotify);
 	//点数表示
 	array sortedIndex;
 	while (_aryvn(sortedIndex) < _aryvn(arScore))
@@ -343,7 +393,6 @@ string Menu_EndGame(dict ref)
 		s += "\_l[" + x + ",]" + (i + 1) + ": " + playerName[sortedIndex[i]] + "\_l[" + (x + 150) + ",]" + arScore[sortedIndex[i]] + "\n";
 	}
 	s += "\_q\e";
-	isGameStarted = 0;
 	playerName = {};
 	arScore = {25000, 25000, 25000, 25000};
 	tsumibou = 0;
@@ -394,23 +443,19 @@ string startKyoku()
 	string tsumo = arYama[nYamaIndex++];
 	string s;
 	//kyokustart通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",kyokustart," + arBafu[bafu] + "," + playerName[oyaIndex] + "," + tsumibou + "," + kyotaku + "]";
+	s += notifyAll({"kyokustart", arBafu[bafu], playerName[oyaIndex], tsumibou, kyotaku});
 	//point通知
 	for (int i = 0; i < 4; i++)
 	{
-		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",point," + playerName[i] + ",=," + arScore[i] + "]";
+		s += notifyAll({"point", playerName[i], "=", arScore[i]});
 	}
 	//haipai通知
 	for (int i = 0; i < 3; i++)
 	{
-		s += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-			+ ",haipai," + playerName[i] + "," + arTehai[i] + "]";
+		s += notifyByIndex(i, {"haipai", playerName[i], arTehai[i]});
 	}
 	//dora通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",dora," + dorahyouji + "]";
+	s += notifyAll({"dora", dorahyouji});
 	//userがツモ
 	if (oyaIndex == 3)
 	{
@@ -428,14 +473,10 @@ string startKyoku()
 	s += "\![set,balloontimeout,0]\0\b[2]\_q";
 	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, 0);
 	s += "\_q";
-	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
-		+ ",tsumo," + playerName[oyaIndex] + "," + getLeftYama() + "," + tsumo + "]";
-	s += "\![raiseother," + playerName[oyaIndex] + ",OnMahjong," + getVersion()
-		+ ",sutehai?]";
+	s += notifyByIndex(oyaIndex, {"tsumo", playerName[oyaIndex], getLeftYama(), tsumo});
+	s += notifyByIndex(oyaIndex, {"sutehai?"});
 	s += "\![notify,OnNotifyPrepareSuteSelect," + oyaIndex + "," + tsumo + "]";
 	s += "\e";
-	dResponseNeed[playerName[oyaIndex]] = "sutehai?";
-	isRecievedResponse = 0;
 	return s;
 }
 
@@ -574,8 +615,7 @@ string OnSuteSelect(dict ref)
 	{
 		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
 		//発声通知
-		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",say," + playerName[selectPlayer] + ",tsumo]";
+		s += notifyAll({"say", playerName[selectPlayer], "tsumo"});
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -608,26 +648,18 @@ string OnSuteSelect(dict ref)
 		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
 		string sr;
 		//発声通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",say," + playerName[selectPlayer] + ",kan]";
-		sr += "\_w[2000]";
+		sr += notifyAll({"say", playerName[selectPlayer], "kan"});
 		//晒した牌通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",open," + playerName[selectPlayer] + "," + ankanHai + ankanHai + ankanHai + ankanHai + "]";
+		sr += notifyAll({"open", playerName[selectPlayer], ankanHai + ankanHai + ankanHai + ankanHai});
 		//ツモ通知
 		if (selectPlayer != 3)
-			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+			sr += notifyByIndex(selectPlayer, {"tsumo", playerName[selectPlayer], getLeftYama(), tsumo});
 		//dora通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",dora," + strDorahyoujiNew + "]";
+		sr += notifyAll({"dora", strDorahyoujiNew});
 		//捨て牌問い合わせ
 		if (selectPlayer != 3)
 		{
-			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			dResponseNeed[playerName[selectPlayer]] = "sutehai?";
-			isRecievedResponse = 0;
+			sr += notifyByIndex(selectPlayer, {"sutehai?"});
 		}
 		s += "\_q";
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
@@ -649,12 +681,9 @@ string OnSuteSelect(dict ref)
 		setKakan(selectPlayer, kakanHai);
 		string sr;
 		//発声通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",say," + playerName[selectPlayer] + ",kan]";
-		sr += "\_w[2000]";
+		sr += notifyAll({"say", playerName[selectPlayer], "kan"});
 		//晒した牌通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",open," + playerName[selectPlayer] + "," + kakanHai + "]";
+		sr += notifyAll({"open", playerName[selectPlayer], "kakanHai"});
 		//この時点でロン(槍槓)を受け付ける必要がある
 //		s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, 1, 1);
 //		if (selectPlayer != 3)
@@ -678,12 +707,7 @@ string OnSuteSelect(dict ref)
 			if (i != selectPlayer)
 			{
 				if (canRon(i, kakanHai))
-				{
-					rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-						+ ",naku?," + kakanHai + ",ron]";
-					dResponseNeed[playerName[i]] = "naku?";
-					isRecievedResponse = 0;
-				}
+					rcs += notifyByIndex(i, {"naku?", kakanHai, "ron"});
 			}
 		}
 		if (rcs != "")
@@ -700,21 +724,15 @@ string OnSuteSelect(dict ref)
 		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
 		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
-		//ツモ通知
-		if (selectPlayer != 3)
-			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",tsumo," + playerName[selectPlayer] + "," + getLeftYama() + "," + tsumo + "]";
-		//捨て牌問い合わせ
 		if (selectPlayer != 3)
 		{
-			sr += "\![raiseother," + playerName[selectPlayer] + ",OnMahjong," + getVersion()
-				+ ",sutehai?]";
-			dResponseNeed[playerName[selectPlayer]] = "sutehai?";
-			isRecievedResponse = 0;
+			//ツモ通知
+			sr += notifyByIndex(selectPlayer, {"tsumo", playerName[selectPlayer], getLeftYama(), tsumo});
+			//捨て牌問い合わせ
+			sr += notifyByIndex(selectPlayer, {"sutehai?"});
 		}
 		//dora通知
-		sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",dora," + strDorahyoujiNew + "]";
+		sr += notifyAll({"dora", strDorahyoujiNew});
 		rcs += "\_q";
 		rcs += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		if (selectPlayer == 3)
@@ -733,9 +751,7 @@ string OnSuteSelect(dict ref)
 		sute = selectedHai;
 		arRichiJunme[selectPlayer] = _aryvn(arKawa[selectPlayer]);
 		//発声通知
-		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-			+ ",say," + playerName[selectPlayer] + ",richi]";
-		wait += "\_w[2000]";
+		s += notifyAll({"say", playerName[selectPlayer], "richi"});
 	}
 	else
 	{
@@ -746,8 +762,7 @@ string OnSuteSelect(dict ref)
 	arTehai[selectPlayer] = removeHai(tehai, sute);
 	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0}, 0);
 	//捨て牌通知
-	s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",sutehai," + playerName[selectPlayer] + "," + sute + "]";
+	s += notifyAll({"sutehai", playerName[selectPlayer], sute});
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
 	if (selectPlayer != 3)
 	{
@@ -768,7 +783,7 @@ string OnSuteSelect(dict ref)
 	{
 		if (i != selectPlayer)
 		{
-			array command = {};
+			array command = {"naku?"};
 			if (canRon(i, sute))
 				command += "ron";
 			if (canPon(i, sute))
@@ -777,14 +792,9 @@ string OnSuteSelect(dict ref)
 				command += "chi";
 			if (canDaiminkan(i, sute))
 				command += "kan";
-			if (_aryvn(command) > 0)
-			{
+			if (_aryvn(command) > 1)
 				//鳴くか問い合わせ
-				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",naku?," + sute + "," + JOIN(command, ",") + "]";
-				dResponseNeed[playerName[i]] = "naku?";
-				isRecievedResponse = 0;
-			}
+				rcs += notifyByIndex(i, command);
 		}
 	}
 	rcs += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + sute + "]";
@@ -902,8 +912,7 @@ string OnSuteComplete(dict ref)
 		{
 			s += showStatus("", sute, completePlayer, p, {0, 0, 0}, 0);
 			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[p] + ",ron]";
+			s += notifyAll({"say", playerName[p], "ron"});
 			string si;
 			string animNo;
 			animNo = "500001";
@@ -929,20 +938,14 @@ string OnSuteComplete(dict ref)
 			setFuro(p, completePlayer, sute, sute + sute);
 			s += showStatus("", "", p, -1, {0, 0, 0}, 1);
 			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[p] + ",pon]";
-			s += "\_w[2000]";
+			s += notifyAll({"say", playerName[p], "pon"});
 			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[p] + "," + sute + sute + sute + "]";
+			s += notifyAll({"open", playerName[p], sute + sute + sute});
 			//捨て牌問い合わせ
 			if (p != 3)
 			{
-				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
+				s += notifyByIndex(p, {"sutehai?"});
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + ",]";
-				dResponseNeed[playerName[p]] = "sutehai?";
-				isRecievedResponse = 0;
 			}
 			else
 			{
@@ -961,20 +964,14 @@ string OnSuteComplete(dict ref)
 			setFuro(p, completePlayer, sute, hai1 + hai2);
 			s += showStatus("", "", p, -1, {0, 0, 0}, 1);
 			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[p] + ",chi]";
-			s += "\_w[2000]";
+			s += notifyAll({"say", playerName[p], "chi"});
 			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[p] + "," + furoHai + "]";
+			s += notifyAll({"open", playerName[p], furoHai});
 			//捨て牌問い合わせ
 			if (p != 3)
 			{
-				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
+				s += notifyByIndex(p, {"sutehai?"});
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + ",]";
-				dResponseNeed[playerName[p]] = "sutehai?";
-				isRecievedResponse = 0;
 			}
 			else
 			{
@@ -995,31 +992,23 @@ string OnSuteComplete(dict ref)
 			string tsumo = arYama[nYamaIndex++];
 			s += showStatus(tsumo, "", p, -1, {0, 0, 0}, 1);
 			//発声通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[p] + ",kan]";
-			s += "\_w[2000]";
+			s += notifyAll({"say", playerName[p], "kan"});
 			//晒した牌通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",open," + playerName[p] + "," + sute + sute + sute + sute + "]";
+			s += notifyAll({"open", playerName[p], sute + sute + sute + sute});
 			if (p != 3)
 			{
 				//ツモ通知
-				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
-					+ ",tsumo," + playerName[p] + "," + getLeftYama() + "," + tsumo + "]";
+				s += notifyByIndex(p, {"tsumo", playerName[p], getLeftYama(), tsumo});
 				//捨て牌問い合わせ
-				s += "\![raiseother," + playerName[p] + ",OnMahjong," + getVersion()
-					+ ",sutehai?]";
+				s += notifyByIndex(p, {"sutehai?"});
 				s += "\![notify,OnNotifyPrepareSuteSelect," + p + "," + tsumo + "]";
-				dResponseNeed[playerName[p]] = "sutehai?";
-				isRecievedResponse = 0;
 			}
 			else
 			{
 				isLockedSingleClick = 0;
 			}
 			//dora通知
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",dora," + strDorahyoujiNew + "]";
+			s += notifyAll({"dora", strDorahyoujiNew});
 			s += "\_q";
 			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 			s += "\e";
@@ -1054,8 +1043,7 @@ string OnSuteComplete(dict ref)
 		//発声通知
 		for (int x = 0; x < 3; x++)
 		{
-			s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[arActionPlayer[x]] + ",ron]";
+			s += notifyAll({"say", playerName[arActionPlayer[x]], "ron"});
 		}
 	}
 	//途中流局
@@ -1145,10 +1133,7 @@ string OnSuteComplete(dict ref)
 			if (shanten == 0)
 			{
 				//テンパイ宣言問い合わせ
-				rcs += "\![raiseother," + playerName[i] + ",OnMahjong," + getVersion()
-					+ ",tenpai?]";
-				dResponseNeed[playerName[i]] = "tenpai?";
-				isRecievedResponse = 0;
+				rcs += notifyByIndex(i, {"tenpai?"});
 			}
 		}
 		rcs += "\![notify,OnNotifyPrepareRyukyoku,kouhai]";
@@ -1178,17 +1163,13 @@ string OnSuteComplete(dict ref)
 	tsumo = arYama[nYamaIndex++];
 	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0}, 0);
 	//ツモ通知
-	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
-		+ ",tsumo," + playerName[nextPlayer] + "," + getLeftYama() + "," + tsumo + "]";
+	s += notifyByIndex(nextPlayer, {"tsumo", playerName[nextPlayer], getLeftYama(), tsumo});
 	//捨て牌問い合わせ
-	s += "\![raiseother," + playerName[nextPlayer] + ",OnMahjong," + getVersion()
-		+ ",sutehai?]";
+	s += notifyByIndex(nextPlayer, {"sutehai?"});
 	s += "\_q";
 	s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 	s += "\![notify,OnNotifyPrepareSuteSelect," + nextPlayer + "," + tsumo + "]";
 	s += "\e";
-	dResponseNeed[playerName[nextPlayer]] = "sutehai?";
-	isRecievedResponse = 0;
 	return s;
 }
 
@@ -1262,16 +1243,12 @@ string OnRyukyoku(dict ref)
 		if (action == "yes")
 		{
 			arTenpaiPlayerFlag[i] = 1;
-			m += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[i] + ",tenpai]";
-			m += "\_w[1000]";
+			m += notifyAll({"say", playerName[i], "tenpai"});
 		}
 		else
 		{
 			arTenpaiPlayerFlag[i] = 0;
-			m += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-				+ ",say," + playerName[i] + ",noten]";
-			m += "\_w[1000]";
+			m += notifyAll({"say", playerName[i], "noten"});
 		}
 	}
 	int shanten = getShanten(arTehai[3]);
@@ -1859,13 +1836,13 @@ string Menu_NextTurn(dict ref)
 string Menu_Richi(dict ref)
 {
 	isLockedSingleClick = 0;
-	arRichiJunme[3] = _aryvn(arKawa[3]);
+	int p = 3;
+	arRichiJunme[p] = _aryvn(arKawa[p]);
 	string tsumo = arYama[nYamaIndex - 1];
 	string s;
 	string sr;
-	sr += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion()
-		+ ",say,user,richi]";
-	s += "\0\b[2]\_q" + showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0) + "\_q\e";
+	sr += notifyAll({"say", playerName[p], "richi"});
+	s += "\0\b[2]\_q" + showStatus(tsumo, "", p, -1, {0, 0, 0}, 0) + "\_q\e";
 	lastScript = s;
 	return sr + s;
 }
@@ -3091,4 +3068,91 @@ string getSurfaceCode(string hai)
 		$("tb", "00")//Tile Back
 	};
 	return d[hai];
+}
+
+string notifyByIndex(int index, array a)
+{
+	string s;
+	if (useDSSTP)
+	{
+		dict d = notifyBySSTP(_getghosthwnd(playerName[index]), a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+		if (_strstr(a[0], "?") >= 0)
+		{
+			dResponseNeed[playerName[index]] = a[0];
+			isRecievedResponse = 0;
+			redirectSSTPtoNotify(d, playerName[index]);
+		}
+	}
+	else
+	{
+		if (_strstr(a[0], "?") >= 0)
+		{
+			dResponseNeed[playerName[index]] = a[0];
+			isRecievedResponse = 0;
+		}
+		s += "\![raiseother," + playerName[index] + ",OnMahjong," + getVersion();
+		for (int i = 0; a[i] != nil; i++)
+		{
+			s += "," + escapeText(a[i]);
+		}
+		s += "]";
+	}
+	return s;
+}
+
+string notifyAll(array a)
+{
+	string s;
+	if (useDSSTP)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			dict d = notifyBySSTP(_getghosthwnd(playerName[i]), a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+		}
+	}
+	else
+	{
+		s += "\![raiseother," + playerName[0] + _bytechar(1) + playerName[1] + _bytechar(1) + playerName[2] + ",OnMahjong," + getVersion();
+		for (int i = 0; a[i] != nil; i++)
+		{
+			s += "," + escapeText(a[i]);
+		}
+		s += "]";
+	}
+	if (a[0] == "say")
+		s += "\_w[2000]";
+	return s;
+}
+
+string escapeText(string s)
+{
+	if (_regex_match(s,"^.*[,\"\[\]].*$"))
+		return "\"" + _strreplace(s, "\"", "\"\"") + "\"";
+	else
+		return s;
+}
+
+dict notifyBySSTP(string strHwnd, string command, string a1, string a2, string a3, string a4, string a5, string a6, string a7, string a8)
+{
+	dict d = _saorirequest(
+		"HandUtil"
+		,"DSSTPSend"
+		,strHwnd
+		,"result"
+		,"NOTIFY SSTP/1.1"
+		,"Charset: Shift_JIS"
+		,"Sender: " + _systemdict["OnNotifySelfInfo"]["Reference1"]
+		,"Event: OnMahjong"
+		,"Reference0: " + getVersion()
+		,"Reference1: " + command
+		,"Reference2: " + a1
+		,"Reference3: " + a2
+		,"Reference4: " + a3
+		,"Reference5: " + a4
+		,"Reference6: " + a5
+		,"Reference7: " + a6
+		,"Reference8: " + a7
+		,"Reference9: " + a8
+	);
+	return d;
 }
