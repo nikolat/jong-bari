@@ -300,7 +300,7 @@ string Menu_SearchPlayer(dict ref)
 		}
 		for (int i = 0; names[i] != nil; i++)
 		{
-			dict d = notifyBySSTP(_getghosthwnd(names[i]), "hello");
+			dict d = notifyBySSTP(_getghosthwnd(names[i]), {"hello"});
 			redirectSSTPtoNotify(d, names[i]);
 		}
 		return "\e";//何か返さないとOnChoiceSelectEx -> OnChoiceSelect、と2回呼ばれてしまう
@@ -3075,7 +3075,7 @@ string notifyByIndex(int index, array a)
 	string s;
 	if (useDSSTP)
 	{
-		dict d = notifyBySSTP(_getghosthwnd(playerName[index]), a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+		dict d = notifyBySSTP(_getghosthwnd(playerName[index]), a);
 		if (_strstr(a[0], "?") >= 0)
 		{
 			dResponseNeed[playerName[index]] = a[0];
@@ -3107,7 +3107,7 @@ string notifyAll(array a)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			dict d = notifyBySSTP(_getghosthwnd(playerName[i]), a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+			dict d = notifyBySSTP(_getghosthwnd(playerName[i]), a);
 		}
 	}
 	else
@@ -3132,27 +3132,77 @@ string escapeText(string s)
 		return s;
 }
 
-dict notifyBySSTP(string strHwnd, string command, string a1, string a2, string a3, string a4, string a5, string a6, string a7, string a8)
+dict notifyBySSTP(string strHwnd, array a)
 {
-	dict d = _saorirequest(
-		"HandUtil"
-		,"DSSTPSend"
-		,strHwnd
-		,"result"
+	array arg = {"HandUtil", "DSSTPSend", strHwnd, "result"
 		,"NOTIFY SSTP/1.1"
 		,"Charset: Shift_JIS"
 		,"Sender: " + _systemdict["OnNotifySelfInfo"]["Reference1"]
 		,"Event: OnMahjong"
-		,"Reference0: " + getVersion()
-		,"Reference1: " + command
-		,"Reference2: " + a1
-		,"Reference3: " + a2
-		,"Reference4: " + a3
-		,"Reference5: " + a4
-		,"Reference6: " + a5
-		,"Reference7: " + a6
-		,"Reference8: " + a7
-		,"Reference9: " + a8
-	);
-	return d;
+		,"Reference0: " + getVersion()};
+	for (int i = 0; a[i] != nil; i++)
+	{
+		arg += "Reference" + (i + 1) + ": " + a[i];
+	}
+	return saorirequest2(arg);
+}
+
+dict saorirequest2(array a)
+{
+	switch (_aryvn(a))
+	{
+	case 1:
+		return _saorirequest(a[0]);
+	case 2:
+		return _saorirequest(a[0], a[1]);
+	case 3:
+		return _saorirequest(a[0], a[1], a[2]);
+	case 4:
+		return _saorirequest(a[0], a[1], a[2], a[3]);
+	case 5:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4]);
+	case 6:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5]);
+	case 7:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+	case 8:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]);
+	case 9:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+	case 10:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]);
+	case 11:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10]);
+	case 12:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11]);
+	case 13:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12]);
+	case 14:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13]);
+	case 15:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14]);
+	case 16:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14], a[15]);
+	case 17:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14], a[15], a[16]);
+	case 18:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14], a[15], a[16], a[17]);
+	case 19:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14], a[15], a[16], a[17], a[18]);
+	case 20:
+		return _saorirequest(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+			a[10], a[11], a[12], a[13], a[14], a[15], a[16], a[17], a[18], a[19]);
+	default:
+		dict d;
+		return d;
+	}
 }
