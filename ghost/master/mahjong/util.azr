@@ -3075,27 +3075,22 @@ string notifyByIndex(int index, array a)
 	string s;
 	if (useDSSTP)
 	{
-		dict d = notifyBySSTP(_getghosthwnd(playerName[index]), a);
-		if (_strstr(a[0], "?") >= 0)
-		{
-			dResponseNeed[playerName[index]] = a[0];
-			isRecievedResponse = 0;
-			redirectSSTPtoNotify(d, playerName[index]);
-		}
+		string delim = _bytechar(2);
+		s += "\![raise,OnDirectHandUtilCall," + playerName[index] + "," + JOIN(a, delim) + "]";
 	}
 	else
 	{
-		if (_strstr(a[0], "?") >= 0)
-		{
-			dResponseNeed[playerName[index]] = a[0];
-			isRecievedResponse = 0;
-		}
 		s += "\![raiseother," + playerName[index] + ",OnMahjong," + getVersion();
 		for (int i = 0; a[i] != nil; i++)
 		{
 			s += "," + escapeText(a[i]);
 		}
 		s += "]";
+	}
+	if (_strstr(a[0], "?") >= 0)
+	{
+		dResponseNeed[playerName[index]] = a[0];
+		isRecievedResponse = 0;
 	}
 	return s;
 }
@@ -3105,9 +3100,10 @@ string notifyAll(array a)
 	string s;
 	if (useDSSTP)
 	{
+		string delim = _bytechar(2);
 		for (int i = 0; i < 3; i++)
 		{
-			dict d = notifyBySSTP(_getghosthwnd(playerName[i]), a);
+			s += "\![raise,OnDirectHandUtilCall," + playerName[i] + "," + JOIN(a, delim) + "]";
 		}
 	}
 	else
@@ -3120,8 +3116,40 @@ string notifyAll(array a)
 		s += "]";
 	}
 	if (a[0] == "say")
-		s += "\_w[2000]";
+	{
+		switch (a[2])
+		{
+		case "chi":
+		case "pon":
+		case "kan":
+			s += "\_w[2000]";
+			break;
+		case "tenpai":
+		case "noten":
+			s += "\_w[1000]";
+			break;
+		case "ron":
+		case "tsumo":
+		case "richi":
+			break;
+		default:
+			break;
+		}
+	}
 	return s;
+}
+
+string OnDirectHandUtilCall(dict ref)
+{
+	string delim = _bytechar(2);
+	string name = ref["Reference0"];
+	array a = _strsplit(ref["Reference1"], delim);
+	dict d = notifyBySSTP(_getghosthwnd(name), a);
+	if (_strstr(a[0], "?") >= 0)
+	{
+		redirectSSTPtoNotify(d, name);
+	}
+	return "";
 }
 
 string escapeText(string s)
