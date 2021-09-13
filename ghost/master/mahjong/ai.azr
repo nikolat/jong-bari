@@ -91,15 +91,15 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 				{
 					array ap = _strsplit(arPattern[j], ",");
 					array arTatsu13 = {};
-					if (ap[0] != "")
+					if (ap[0] != "")//雀頭
 					{
 						int nNokori = 4 - arVisibleNum[getSortCode(_substr(ap[0], 0, 2))];
-						elementPoint += 20 * nNokori;//雀頭
+						elementPoint += 20 * nNokori;
 					}
 					for (int k = 1; ap[k] != nil; k++)
 					{
-						if (_strlen(ap[k]) == 6)
-							elementPoint += 90;//面子
+						if (_strlen(ap[k]) == 6)//面子
+							elementPoint += 90;
 						else if (_strlen(ap[k]) == 4)
 							arTatsu13 += ap[k];
 					}
@@ -109,30 +109,30 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 						int n1 = _substr(tatsu, 0, 1);
 						int n2 = _substr(tatsu, 2, 1);
 						string color = _substr(tatsu, 1, 1);
-						if ((n1 != 1) && (n1 + 1 == n2) && (n2 != 9))
+						if ((n1 != 1) && (n1 + 1 == n2) && (n2 != 9))//両面
 						{
 							int nNokori1 = 4 - arVisibleNum[getSortCode("" + (n1 - 1) + color)];
 							int nNokori2 = 4 - arVisibleNum[getSortCode("" + (n2 + 1) + color)];
-							elementPoint += 10 * (nNokori1 + nNokori2);//両面
+							elementPoint += 10 * (nNokori1 + nNokori2);
 						}
-						else if (n1 == n2)
+						else if (n1 == n2)//対子
 						{
 							int nNokori = 4 - arVisibleNum[getSortCode("" + n1 + color)];
-							elementPoint += 20 * nNokori;//対子
+							elementPoint += 20 * nNokori;
 						}
-						else if ((n1 == 1) && (n2 == 2) || (n1 == 8) && (n2 == 9))
+						else if ((n1 == 1) && (n2 == 2) || (n1 == 8) && (n2 == 9))//辺張
 						{
 							int nNokori;
 							if (n1 == 1)
 								nNokori = 4 - arVisibleNum[getSortCode("3" + color)];
 							else
 								nNokori = 4 - arVisibleNum[getSortCode("7" + color)];
-							elementPoint += 10 * nNokori - 5;//辺張
+							elementPoint += 10 * nNokori - 5;
 						}
-						else
+						else//嵌張
 						{
 							int nNokori = 4 - arVisibleNum[getSortCode("" + (n1 + 1) + color)];
-							elementPoint += 10 * nNokori;//嵌張
+							elementPoint += 10 * nNokori;
 						}
 					}
 				}
@@ -650,7 +650,7 @@ int canChi(int nPlayer, string suteHai)
 	array a = getChiMaterial(arTehai[nPlayer], suteHai);
 	if (_aryvn(a) > 0)
 		return 1;
-	return 0;	
+	return 0;
 }
 
 array getChiMaterial(string strTehai, string suteHai)
@@ -674,6 +674,8 @@ array getChiMaterial(string strTehai, string suteHai)
 	if (ASEARCH(n + 1, a) >= 0 && ASEARCH(n + 2, a) >= 0)
 		arRet += "" + (n + 1) + color + (n + 2) + color;
 	return arRet;
+	//喰い替え禁止ルールでは手配が禁止牌のみの場合は除外すべきだが、レアケースのため未実装
+	//例: 1m2m3m4m<1p1p1p><1s1s1s><9s9s9s>で1mをチーした場合などは詰む
 }
 
 array getChiMaterialBest(int nPlayer, string suteHai)

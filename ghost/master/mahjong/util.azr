@@ -464,7 +464,7 @@ string startKyoku()
 		isLockedSingleClick = 0;
 		isLockedDoubleClick = 0;
 		s += "\![set,balloontimeout,0]\![set,choicetimeout,0]\0\b[2]\_q";
-		s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, 0);
+		s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, "");
 		s += "\_q\e";
 		lastScript = s;
 		return s;
@@ -473,7 +473,7 @@ string startKyoku()
 	isLockedSingleClick = 1;
 	isLockedDoubleClick = 1;
 	s += "\![set,balloontimeout,0]\0\b[2]\_q";
-	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, 0);
+	s += showStatus(tsumo, "", oyaIndex, -1, {0, 0, 0}, "");
 	s += "\_q";
 	s += notifyByIndex(oyaIndex, {"tsumo", playerName[oyaIndex], getLeftYama(), tsumo});
 	s += notifyByIndex(oyaIndex, {"sutehai?"});
@@ -615,7 +615,7 @@ string OnSuteSelect(dict ref)
 	//予定されたアクションの実行
 	if (action == "tsumo")
 	{
-		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, 0);
+		s += showStatus(tsumo, "", selectPlayer, selectPlayer, {0, 0, 0}, "");
 		//発声通知
 		s += notifyAll({"say", playerName[selectPlayer], "tsumo"});
 		string si;
@@ -647,7 +647,7 @@ string OnSuteSelect(dict ref)
 		dorahyouji += strDorahyoujiNew;
 		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
-		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 0);
+		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, "");
 		string sr;
 		//発声通知
 		sr += notifyAll({"say", playerName[selectPlayer], "kan"});
@@ -687,7 +687,7 @@ string OnSuteSelect(dict ref)
 		//晒した牌通知
 		sr += notifyAll({"open", playerName[selectPlayer], "kakanHai"});
 		//この時点でロン(槍槓)を受け付ける必要がある
-//		s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, 1, 1);
+//		s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, kakanHai, 1);
 //		if (selectPlayer != 3)
 //		{
 //			if (canRon(3, kakanHai))
@@ -716,7 +716,7 @@ string OnSuteSelect(dict ref)
 		{
 			rcs += "\![notify,OnNotifyPrepareSuteComplete," + selectPlayer + "," + kakanHai + "]";
 			reservedClickScript = rcs;
-			s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, 1, 1);
+			s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, kakanHai, 1);
 			s += rcs + "\_q";
 			s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 			return s + sr + "\e";//ロンされなかったらどうしよう
@@ -725,7 +725,7 @@ string OnSuteSelect(dict ref)
 		dorahyouji += strDorahyoujiNew;
 		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
-		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, 1);
+		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, kakanHai);
 		if (selectPlayer != 3)
 		{
 			//ツモ通知
@@ -762,7 +762,7 @@ string OnSuteSelect(dict ref)
 	isRinshanChance = 0;
 	setSutehai(sute, selectPlayer);
 	arTehai[selectPlayer] = removeHai(tehai, sute);
-	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0}, 0);
+	s += showStatus("", sute, selectPlayer, -1, {0, 0, 0}, "");
 	//捨て牌通知
 	s += notifyAll({"sutehai", playerName[selectPlayer], sute});
 	//userが鳴く、ロンするのが可能な場合、\xを挟んで一時停止する canPonはcanDaiminkanを兼ねる
@@ -912,7 +912,7 @@ string OnSuteComplete(dict ref)
 		string action = reservedNakuCopy[playerName[p]][0];
 		if (action == "ron")
 		{
-			s += showStatus("", sute, completePlayer, p, {0, 0, 0}, 0);
+			s += showStatus("", sute, completePlayer, p, {0, 0, 0}, "");
 			//発声通知
 			s += notifyAll({"say", playerName[p], "ron"});
 			string si;
@@ -938,7 +938,7 @@ string OnSuteComplete(dict ref)
 		{
 			setKyotaku(completePlayer);
 			setFuro(p, completePlayer, sute, sute + sute);
-			s += showStatus("", "", p, -1, {0, 0, 0}, 1);
+			s += showStatus("", "", p, -1, {0, 0, 0}, sute + sute);
 			//発声通知
 			s += notifyAll({"say", playerName[p], "pon"});
 			//晒した牌通知
@@ -964,7 +964,7 @@ string OnSuteComplete(dict ref)
 			string furoHai = _arystr(sortHai(strHaiToArray(sute + hai1 + hai2)));
 			setKyotaku(completePlayer);
 			setFuro(p, completePlayer, sute, hai1 + hai2);
-			s += showStatus("", "", p, -1, {0, 0, 0}, 1);
+			s += showStatus("", "", p, -1, {0, 0, 0}, hai1 + hai2);
 			//発声通知
 			s += notifyAll({"say", playerName[p], "chi"});
 			//晒した牌通知
@@ -992,7 +992,7 @@ string OnSuteComplete(dict ref)
 			dorahyouji += strDorahyoujiNew;
 			visiblePai += strDorahyoujiNew;
 			string tsumo = arYama[nYamaIndex++];
-			s += showStatus(tsumo, "", p, -1, {0, 0, 0}, 1);
+			s += showStatus(tsumo, "", p, -1, {0, 0, 0}, sute + sute + sute);
 			//発声通知
 			s += notifyAll({"say", playerName[p], "kan"});
 			//晒した牌通知
@@ -1062,7 +1062,7 @@ string OnSuteComplete(dict ref)
 			setKyotaku(completePlayer);
 		}
 		isLockedSingleClick = 0;
-		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, 0);
+		s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, "");
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -1087,7 +1087,7 @@ string OnSuteComplete(dict ref)
 	if (_aryvn(arYama) == nYamaIndex)
 	{
 		isLockedSingleClick = 0;
-		s += showStatus("", "", -1, -1, {0, 0, 0}, 0);
+		s += showStatus("", "", -1, -1, {0, 0, 0}, "");
 		string si;
 		string animNo;
 		animNo = "500001";
@@ -1152,7 +1152,7 @@ string OnSuteComplete(dict ref)
 		isLockedSingleClick = 0;
 		isLockedDoubleClick = 0;
 		tsumo = arYama[nYamaIndex++];
-		s += showStatus(tsumo, "", 3, -1, {0, 0, 0}, 0);
+		s += showStatus(tsumo, "", 3, -1, {0, 0, 0}, "");
 		s += "\_q";
 		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		s += "\e";
@@ -1163,7 +1163,7 @@ string OnSuteComplete(dict ref)
 	isLockedSingleClick = 1;
 	isLockedDoubleClick = 1;
 	tsumo = arYama[nYamaIndex++];
-	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0}, 0);
+	s += showStatus(tsumo, "", nextPlayer, -1, {0, 0, 0}, "");
 	//ツモ通知
 	s += notifyByIndex(nextPlayer, {"tsumo", playerName[nextPlayer], getLeftYama(), tsumo});
 	//捨て牌問い合わせ
@@ -1259,7 +1259,7 @@ string OnRyukyoku(dict ref)
 	else
 		arTenpaiPlayerFlag += 0;
 	string s = "\![set,balloontimeout,0]\0\b[2]\_q";
-	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, 0);
+	s += showStatus("", "", -1, -1, arTenpaiPlayerFlag, "");
 	s += m;
 	string si;
 	string animNo;
@@ -1362,7 +1362,7 @@ string clearAnimation()
 	return si;
 }
 
-string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, int isFuro, int isKakan)
+string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array arTenpaiPlayerFlag, string openedHai, int isKakan)
 {
 	string s = "";
 	string si = "";
@@ -1374,7 +1374,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	array wanpai;
 	array arDorahyouji = strHaiToArray(dorahyouji);
 	int isMinkan = 0;
-	if (isFuro && tsumo != "")
+	if (openedHai != "" && tsumo != "")
 		isMinkan = 1;
 	for (int i = 0; i < 5; i++)
 	{
@@ -1474,14 +1474,14 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
 				tsumoShowing = tsumo;
-			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, 0, 1);
+			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, "", 1);
 		}
 		else
 		{
 			string tsumoShowing = "";
 			if (nPlayer == p && tsumo != "")
 				tsumoShowing = tsumo;
-			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, 0, 0);
+			s += showHai(arTehai[p], tsumoShowing, p, nPlayer, "", 0);
 		}
 		s += "\n";
 		s += showKawa(nPlayer, p, agariPlayer);
@@ -1503,7 +1503,7 @@ string showStatus(string tsumo, string sute, int nPlayer, int agariPlayer, array
 	string tsumoShowing = "";
 	if (nPlayer == pUser)
 		tsumoShowing = tsumo;
-	s += showHai(arTehai[pUser], tsumoShowing, pUser, nPlayer, isFuro, 1);
+	s += showHai(arTehai[pUser], tsumoShowing, pUser, nPlayer, openedHai, 1);
 	s += "\f[height,default]";
 	int n = getLeftYama();
 	if (n > 0 || tsumo != "")
@@ -1844,7 +1844,7 @@ string Menu_Richi(dict ref)
 	string s;
 	string sr;
 	sr += notifyAll({"say", playerName[p], "richi"});
-	s += "\0\b[2]\_q" + showStatus(tsumo, "", p, -1, {0, 0, 0}, 0) + "\_q\e";
+	s += "\0\b[2]\_q" + showStatus(tsumo, "", p, -1, {0, 0, 0}, "") + "\_q\e";
 	lastScript = s;
 	return sr + s;
 }
@@ -2044,7 +2044,7 @@ array getAllHai()
 	return a;
 }
 
-string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, int isFuro, int isOpen, int isScore)
+string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, string openedHai, int isOpen, int isScore)
 {
 	string s;
 	string si;
@@ -2165,6 +2165,28 @@ string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, 
 				offsetX -= 32 * 4;
 			}
 		}
+		array arKuikae = {};//喰い替え対象
+		if (_strlen(openedHai) == 4)
+		{
+			int n1 = _substr(openedHai, 0, 1);
+			int n2 = _substr(openedHai, 2, 1);
+			string color = _substr(openedHai, 1, 1);
+			if (n1 + 1 == n2)//チーで両面
+			{
+				if (n1 > 1)
+					arKuikae += "" + (n1 - 1) + color;
+				if (n2 < 9)
+					arKuikae += "" + (n2 + 1) + color;
+			}
+			else if (n1 + 2 == n2)//チーで嵌張
+			{
+				arKuikae += "" + (n1 + 1) + color;
+			}
+			else if (n1 == n2)//ポン
+			{
+				arKuikae += "" + n1 + color;
+			}
+		}
 		for (int i = 0; arHai[i] != nil; i++)
 		{
 			if (tsumoShowing != "")
@@ -2228,15 +2250,25 @@ string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, 
 					nNormal -= 3;
 				}
 			}
-			else if (isFuro && showPlayer == nPlayer && tsumoShowing == "")
+			else if (openedHai != "" && showPlayer == nPlayer && tsumoShowing == "")
 			{
 				if (arHai[i][0] == "normal")
 				{
-					s += "\__q[Menu_Sutehai," + arHai[i][1] + ",]" + convertUnicode(arHai[i][1]) + "\__q";
-					animNo = "40" + fillzero(i + 1) + getSurfaceCode(arHai[i][1]);
-					si += "\i[" + animNo + "]";
-					savedTehai += animNo;
-					si += "\i[40" + fillzero(i + 1) + "99]";
+					if (ASEARCH(arHai[i][1], arKuikae) >= 0)
+					{
+						s += "\f[color,gray]" + convertUnicode(arHai[i][1]) + "\f[color,default]";
+						animNo = "40" + fillzero(i + 1) + "" + ((int)getSurfaceCode(arHai[i][1]) + 50);
+						si += "\i[" + animNo + "]";
+						savedTehai += animNo;
+					}
+					else
+					{
+						s += "\__q[Menu_Sutehai," + arHai[i][1] + ",]" + convertUnicode(arHai[i][1]) + "\__q";
+						animNo = "40" + fillzero(i + 1) + getSurfaceCode(arHai[i][1]);
+						si += "\i[" + animNo + "]";
+						savedTehai += animNo;
+						si += "\i[40" + fillzero(i + 1) + "99]";
+					}
 				}
 				else if (arHai[i][0] == "furo")
 				{
