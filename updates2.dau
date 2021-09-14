@@ -3,7 +3,7 @@ ghost/master/akari.dll604e9d9fa66b8ad367d22ccd682a74e4size=889856date=2016-05
 ghost/master/descript.txt18603da14a7e47b6ca7b9fc3eadb6102size=289date=2021-09-07T22:34:31
 ghost/master/icon.ico9266143a2761a3f70a01997a73adde39size=1406date=2021-06-02T12:45:48
 ghost/master/mahjong/ai.azre4e25fe35ab4dce0d1c5af781ee94a13size=24149date=2021-09-14T07:20:56
-ghost/master/mahjong/score.azrc45c06e8bb5808bef11f1ada6c561e06size=16122date=2021-09-14T11:22:56
+ghost/master/mahjong/score.azr446e9de677ca255b25cd1fbe62cb8e33size=16236date=2021-09-14T11:59:18
 ghost/master/mahjong/shanten.azrffabe134dc8acc60385d27a38287c59dsize=3329date=2021-08-21T18:23:49
 ghost/master/mahjong/util.azr744c08a7c7914de43f5eff544982d384size=91610date=2021-09-14T09:53:52
 ghost/master/main.azrd1bd5c1c447de1936b114303ab30e39esize=1961date=2021-09-07T21:10:23
@@ -11,11 +11,11 @@ ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=3
 ghost/master/saori/HandUtil/HandUtil_readme.txt27422edfad98e1d957cc78f815587a2csize=4501date=2011-05-28T14:47:52
 ghost/master/saori/MahjongUtil/license.txte6495a244245de2720db05a580c7fb8dsize=3087date=2021-07-29T20:18:44
 ghost/master/saori/MahjongUtil/MahjongUtil.dll35dd69d234c4aea8a4d4050f2d0ad952size=225792date=2021-08-05T22:00:47
-ghost/master/saori/MahjongUtil/readme.txt68af1096ca17bc779a77477a24198c34size=8513date=2021-08-05T22:10:12
+ghost/master/saori/MahjongUtil/readme.txtf4d130f77eb3bc00fce46a5bbae18f96size=8524date=2021-09-12T07:42:38
 ghost/master/shiori-event/event.azr106d62fd2e685e24e00303a69078700csize=3218date=2021-08-16T16:46:54
 ghost/master/shiori-event/resource.azrcf3a2022f4ece9580beb9797258487b8size=3817date=2021-09-07T21:17:44
 install.txt11636e41a5a5040796817dfe77801416size=69date=2021-08-05T22:34:42
-readme.txt65985be4f3963f961b76ff6ba5bff6e6size=1636date=2021-09-07T22:34:05
+readme.txta490421f08697459cbb268a269b270b7size=1706date=2021-09-14T12:34:31
 shell/master/descript.txtcc1f66cd3d98f6a9c95ec6c49dc6c9ccsize=997date=2021-08-05T22:35:26
 shell/master/menu/menu_background.png48a5fc88903961896fc09bb50f2ce291size=153date=2021-06-02T12:26:20
 shell/master/menu/menu_foreground.png2a82ab6f42c59368e9a3f675105adfa9size=153date=2021-06-02T12:26:02

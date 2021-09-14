@@ -218,6 +218,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			}
 		}
 		//パオ判定
+		//先に晒した牌に暗槓がある場合もパオになるらしいが…レアケースのため未実装
 		if (isDaisangen)
 		{
 			int countSangenpai = 0;
