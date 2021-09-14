@@ -141,6 +141,9 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	int nFu;
 	dict dYakuman;
 	dict dYakuAndHan;
+	int nPaoPlayerDaisangen = -1;
+	int nPaoPlayerDaisushi = -1;
+	int countYakuman = 0;
 	if (nAgariPlayer >= 0 && reason == "")
 	{
 		string bafuHai = getBafuHai();
@@ -189,12 +192,19 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		if ((score >= 32000 && !isOya || score >= 48000 && isOya) && (int)d["Value1"] < 13)
 			isPureYakuman = 1;
 		int nHan;
+		int isDaisangen = 0;
+		int isDaisushi = 0;
 		if (isPureYakuman)
 		{
 			for (int i = 1; d["Value" + i] != nil; i++)
 			{
 				array a = _strsplit(d["Value" + i], ",");
 				dYakuman += $(a[0], (int)a[1]);
+				countYakuman++;
+				if (a[0] == "大三元")
+					isDaisangen = 1;
+				else if (a[0] == "大四喜")
+					isDaisushi = 1;
 			}
 		}
 		else
@@ -205,6 +215,35 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			{
 				array a = _strsplit(d["Value" + i], ",");
 				dYakuAndHan += $(a[0], (int)a[1]);
+			}
+		}
+		//パオ判定
+		if (isDaisangen)
+		{
+			int countSangenpai = 0;
+			for (int i = 0; arFuroHistory[nAgariPlayer][i] != nil; i++)
+			{
+				if (_strstr("5z6z7z", arFuroHistory[nAgariPlayer][i][0]) >= 0)
+					countSangenpai++;
+				if (countSangenpai == 3)
+				{
+					nPaoPlayerDaisangen = arFuroHistory[nAgariPlayer][i][1];
+					break;
+				}
+			}
+		}
+		else if (isDaisushi)
+		{
+			int countFupai = 0;
+			for (int i = 0; arFuroHistory[nAgariPlayer][i] != nil; i++)
+			{
+				if (_strstr("1z2z3z4z", arFuroHistory[nAgariPlayer][i][0]) >= 0)
+					countFupai++;
+				if (countFupai == 4)
+				{
+					nPaoPlayerDaisushi = arFuroHistory[nAgariPlayer][i][1];
+					break;
+				}
 			}
 		}
 		array arYakuman = _dickeyget(dYakuman);
@@ -283,7 +322,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	}
 	array arScoreAdd = {0, 0, 0, 0};
 	if (nAgariPlayer >= 0 || reason == "kouhai")
-		arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag);
+		arScoreAdd = getScoreAddWithPao(nAgariPlayer, nFurikomiPlayer, score, tsumibou, nKyotaku, arTenpaiPlayerFlag, nPaoPlayerDaisangen, nPaoPlayerDaisushi, countYakuman, oyaIndex);
 	if (modeEx)
 		s += "\_l[,180]";
 	for (int i = 0; playerName[i] != nil; i++)
@@ -411,6 +450,57 @@ string getJifuHai(int nPlayer)
 		dSeki += $(pNames[i], seki[i]);
 	}
 	return dSeki[playerName[nPlayer]];
+}
+
+array getScoreAddWithPao(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, array arTenpaiPlayerFlag, int nPaoPlayerDaisangen, int nPaoPlayerDaisushi, int countYakuman, int nOyaIndex)
+{
+	array arScoreAdd = {0, 0, 0, 0};
+	int nPaoPlayer = -1;
+	int paoScore = 0;
+	if (nPaoPlayerDaisangen >= 0)
+	{
+		nPaoPlayer = nPaoPlayerDaisangen;
+		paoScore = 32000;
+	}
+	else if (nPaoPlayerDaisushi >= 0)
+	{
+		nPaoPlayer = nPaoPlayerDaisushi;
+		paoScore = 64000;
+	}
+	if (nAgariPlayer == nOyaIndex)
+		paoScore = 1.5 * paoScore;
+	if (nPaoPlayer >= 0)
+	{
+		array arScoreAdd1;
+		array arScoreAdd2;
+		if (nFurikomiPlayer >= 0)
+		{
+			arScoreAdd1 = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score - (paoScore / 2), nTsumibou, nKyotaku, {});
+			arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore / 2, 0, 0, {});
+		}
+		else
+		{
+			if (countYakuman >= 2)
+			{
+				arScoreAdd1 = getScoreAdd(nAgariPlayer, -1, score - paoScore, nTsumibou, nKyotaku, {});
+				arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore, 0, 0, {});
+			}
+			else
+			{
+				arScoreAdd1 = getScoreAdd(nAgariPlayer, nPaoPlayer, score, nTsumibou, nKyotaku, {});
+				arScoreAdd2 = {0, 0, 0, 0};
+			}
+		}
+		for (int i = 0; i < 4; i++)
+		{
+			arScoreAdd[i] = arScoreAdd1[i] + arScoreAdd2[i];
+		}
+	}
+	else
+	{
+		arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, nTsumibou, nKyotaku, arTenpaiPlayerFlag);
+	}
+	return arScoreAdd;
 }
 
 array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, array arTenpaiPlayerFlag)

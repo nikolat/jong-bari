@@ -3153,7 +3153,7 @@ string notifyAll(array a)
 		}
 		s += "]";
 	}
-	if (a[0] == "say")
+	if (a[0] == "say" && a[1] != "user")
 	{
 		switch (a[2])
 		{
