@@ -288,6 +288,8 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	else if (reason == "nagashimangan")
 	{
 		score = 8000;
+		if (nAgariPlayer == oyaIndex)
+			score = 12000;
 		if (modeEx)
 			s += "\_l[300,380]流し満貫\n";
 		else
