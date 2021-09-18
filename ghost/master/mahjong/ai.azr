@@ -273,6 +273,8 @@ int shouldAnkan(int nPlayer, string tsumoHai)
 
 int canAnkan(int nPlayer, string tsumoHai)
 {
+	if (getLeftYama() == 0)
+		return 0;
 	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
 		return 0;
@@ -357,6 +359,8 @@ int shouldKakan(int nPlayer, string tsumoHai)
 
 int canKakan(int nPlayer, string tsumoHai)
 {
+	if (getLeftYama() == 0)
+		return 0;
 	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
 		return 0;
@@ -572,9 +576,9 @@ int shouldDaiminkan(int nPlayer, string suteHai)
 
 int canDaiminkan(int nPlayer, string suteHai)
 {
-	if (arRichiJunme[nPlayer] >= 0)
+	if (getLeftYama() == 0)
 		return 0;
-	if (_aryvn(arYama) == nYamaIndex)
+	if (arRichiJunme[nPlayer] >= 0)
 		return 0;
 	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4)
@@ -604,9 +608,9 @@ int shouldPon(int nPlayer, string suteHai)
 
 int canPon(int nPlayer, string suteHai)
 {
-	if (arRichiJunme[nPlayer] >= 0)
+	if (getLeftYama() == 0)
 		return 0;
-	if (_aryvn(arYama) == nYamaIndex)
+	if (arRichiJunme[nPlayer] >= 0)
 		return 0;
 	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
@@ -640,9 +644,9 @@ int shouldChi(int nPlayer, string suteHai)
 
 int canChi(int nPlayer, string suteHai)
 {
-	if (arRichiJunme[nPlayer] >= 0)
+	if (getLeftYama() == 0)
 		return 0;
-	if (_aryvn(arYama) == nYamaIndex)
+	if (arRichiJunme[nPlayer] >= 0)
 		return 0;
 	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
 	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
