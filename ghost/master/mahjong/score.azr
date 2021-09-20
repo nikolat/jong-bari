@@ -389,6 +389,13 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	{
 		s += notifyAll({"ryukyoku"});
 	}
+	if (arRichiJunme[nAgariPlayer] >= 0)
+	{
+		for (int i = 0; arUradorahyouji[i] != nil; i++)
+		{
+			s += notifyAll({"dora", arUradorahyouji[i]});
+		}
+	}
 	for (int i = 0; i < 3; i++)
 	{
 		string fugo = "";
