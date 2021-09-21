@@ -1,1 +1,1 @@
-balloon�ő��삷��p
+balloonで操作する用

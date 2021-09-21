@@ -5,6 +5,9 @@ name,master
 craftman,Don
 craftmanurl,http://nikolat.herokuapp.com/
 
+readme,readme.txt
+readme.charset,UTF-8
+
 //バルーン位置
 sakura.balloon.offsetx,0
 sakura.balloon.offsety,0
