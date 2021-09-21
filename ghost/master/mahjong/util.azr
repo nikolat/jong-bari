@@ -3141,7 +3141,7 @@ string notifyAll(array a)
 		string delim = _bytechar(2);
 		for (int i = 0; i < 3; i++)
 		{
-			s += "\![raise,OnDirectHandUtilCall," + playerName[i] + "," + JOIN(a, delim) + "]";
+			s += "\![raise,OnDirectHandUtilCall," + playerName[i] + "," + escapeText(JOIN(a, delim)) + "]";
 		}
 	}
 	else
