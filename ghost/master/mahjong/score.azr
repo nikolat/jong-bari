@@ -396,7 +396,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 			s += notifyAll({"dora", arUradorahyouji[i]});
 		}
 	}
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		string fugo = "";
 		if (arScoreAdd[i] > 0)
