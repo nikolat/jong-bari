@@ -685,7 +685,7 @@ string OnSuteSelect(dict ref)
 		//発声通知
 		sr += notifyAll({"say", playerName[selectPlayer], "kan"});
 		//晒した牌通知
-		sr += notifyAll({"open", playerName[selectPlayer], "kakanHai"});
+		sr += notifyAll({"open", playerName[selectPlayer], kakanHai});
 		//この時点でロン(槍槓)を受け付ける必要がある
 //		s += showStatus("", kakanHai, selectPlayer, -1, {0, 0, 0}, kakanHai, 1);
 //		if (selectPlayer != 3)
