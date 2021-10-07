@@ -648,6 +648,8 @@ string OnSuteSelect(dict ref)
 		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
 		s += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, "");
+		s += "\_q";
+		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		string sr;
 		//発声通知
 		sr += notifyAll({"say", playerName[selectPlayer], "kan"});
@@ -663,17 +665,17 @@ string OnSuteSelect(dict ref)
 		{
 			sr += notifyByIndex(selectPlayer, {"sutehai?"});
 		}
-		s += "\_q";
-		s += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		if (selectPlayer == 3)
 		{
 			lastScript = s + "\e";
+			s += sr;
 		}
 		else
 		{
+			s += sr;
 			s += "\![notify,OnNotifyPrepareSuteSelect," + selectPlayer + "," + tsumo + "]";
 		}
-		return s + sr + "\e";
+		return s + "\e";
 	}
 	else if (action == "kakan")
 	{
@@ -726,6 +728,8 @@ string OnSuteSelect(dict ref)
 		visiblePai += strDorahyoujiNew;
 		tsumo = arYama[nYamaIndex++];
 		rcs += showStatus(tsumo, "", selectPlayer, -1, {0, 0, 0}, kakanHai);
+		rcs += "\_q";
+		rcs += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		if (selectPlayer != 3)
 		{
 			//ツモ通知
@@ -735,18 +739,18 @@ string OnSuteSelect(dict ref)
 		}
 		//dora通知
 		sr += notifyAll({"dora", strDorahyoujiNew});
-		rcs += "\_q";
-		rcs += "\![unlock,balloonrepaint]\![unlock,repaint]";
 		if (selectPlayer == 3)
 		{
 			lastScript = s + rcs + "\e";
+			s += rcs + sr;
 		}
 		else
 		{
-			rcs += "\![notify,OnNotifyPrepareSuteSelect," + selectPlayer + "," + tsumo + "]";
+			s += rcs + sr;
+			s += "\![notify,OnNotifyPrepareSuteSelect," + selectPlayer + "," + tsumo + "]";
 			reservedClickScript = rcs + sr;
 		}
-		return s + rcs + sr + "\e";
+		return s + "\e";
 	}
 	else if (action == "richi")
 	{
