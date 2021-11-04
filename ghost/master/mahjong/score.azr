@@ -181,10 +181,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		dict d = _saorirequest("MahjongUtil", "score", hai13, atariHai, bafuHai, jifuHai, strDora, isTsumo, nRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 		if (d["head"] == "SAORI/1.0 400 Bad Request")
 		{
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", "failed \"score\" in \"showScoreResult\" with " + hai13 + " " + atariHai)
-			};
+			senderrorlog("warning", "failed \"score\" in \"showScoreResult\" with " + hai13 + " " + atariHai);
 			return "\0Error.\e";
 		}
 		score = d["Result"];

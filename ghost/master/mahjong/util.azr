@@ -73,10 +73,7 @@ string OnMahjongResponse(dict ref)
 	{
 		if (dResponseNeed[name] != command)
 		{
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", name + "'s '" + command + "' command failed, maybe timeout.")
-			};
+			senderrorlog("warning", name + "'s '" + command + "' command failed, maybe timeout.");
 			return "";
 		}
 		dResponseNeed[name] = "";
@@ -201,10 +198,7 @@ string OnMahjongResponseTimeout(dict ref)
 {
 	string name = ref["Reference0"];
 	string command = ref["Reference1"];
-	dAdditionalHeader = ${
-		$("ErrorLevel", "info"),
-		$("ErrorDescription", name + "'s '" + command + "' command timeout.")
-	};
+	senderrorlog("info", name + "'s '" + command + "' command timeout.");
 	return "";
 }
 
@@ -565,10 +559,7 @@ string OnSuteSelect(dict ref)
 	if (errorMessage != "")
 	{
 		//指定されたアクションが不可能だった
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", errorMessage)
-		};
+		senderrorlog("warning", errorMessage);
 	}
 	if (action == "" && selectedHai == "" && selectPlayer != 3)//auto
 	{
@@ -1241,10 +1232,7 @@ string OnRyukyoku(dict ref)
 		{
 			action = "yes";
 			//指定されたアクションが不可能だった
-			dAdditionalHeader = ${
-				$("ErrorLevel", "warning"),
-				$("ErrorDescription", "failed requested action '" + action + "' in 'tenpai?' command.")
-			};
+			senderrorlog("warning", "failed requested action '" + action + "' in 'tenpai?' command.");
 		}
 		if (action == "yes")
 		{

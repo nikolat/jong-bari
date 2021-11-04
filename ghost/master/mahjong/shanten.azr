@@ -4,10 +4,7 @@ int getShanten(string hai)
 	dict d = _saorirequest("MahjongUtil", "shanten", hai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"getShanten\" with " + hai)
-		};
+		senderrorlog("warning", "failed \"shanten\" in \"getShanten\" with " + hai);
 		return 99;
 	}
 	int shanten = d["Result"];
@@ -19,10 +16,7 @@ int getShantenYaku(string hai, string bafuHai, string jifuHai)
 	dict d = _saorirequest("MahjongUtil", "shanten_yaku", hai, bafuHai, jifuHai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"getShantenYaku\" with " + hai)
-		};
+		senderrorlog("warning", "failed \"shanten_yaku\" in \"getShantenYaku\" with " + hai);
 		return 99;
 	}
 	if (d["Result"] == "")
@@ -36,10 +30,7 @@ array getShantenWithMentsu(string hai, string bafuHai, string jifuHai)
 	dict d = _saorirequest("MahjongUtil", "shanten", hai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"getShantenWithMentsu\" with " + hai)
-		};
+		senderrorlog("warning", "failed \"shanten\" in \"getShantenWithMentsu\" with " + hai);
 		return {99, {}};
 	}
 	array arPattern;
@@ -51,87 +42,11 @@ array getShantenWithMentsu(string hai, string bafuHai, string jifuHai)
 	d = _saorirequest("MahjongUtil", "shanten_yaku", hai, bafuHai, jifuHai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"getShantenWithMentsu\" with " + hai)
-		};
+		senderrorlog("warning", "failed \"shanten_yaku\" in \"getShantenWithMentsu\" with " + hai);
 		return 99;
 	}
 	if (d["Result"] == "")
 		return 99;
 	int shanten = d["Result"];
 	return {shanten, arPattern};
-}
-
-array getShantenNormalWithMentsu(string hai)
-{
-	dict d = _saorirequest("MahjongUtil", "shanten_normal", hai);
-	if (d["head"] == "SAORI/1.0 400 Bad Request")
-	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"getShantenNormalWithMentsu\" with " + hai)
-		};
-		return {99, {}};
-	}
-	int shanten = d["Result"];
-	array arPattern;
-	for (int i = 0; d["Value" + i] != nil; i++)
-	{
-		arPattern += d["Value" + i];
-	}
-	return {shanten, arPattern};
-}
-
-//====================================================================
-
-//七対子
-int getShantenChitoitsu(array hai)
-{
-	int nToitsu = _aryvn(getToitsu(hai));
-	int nType = _aryvn(uniq(hai));
-	if (nType > 7)
-		nType = 7;
-	return 6 - nToitsu + (7 - nType);
-}
-
-//国士無双
-int getShantenKokushi(array hai)
-{
-	string strYaochu = "1m9m1p9p1s9s1z2z3z4z5z6z7z";
-	array haiYaochu;
-	for (int i = 0; hai[i] != nil; i++)
-	{
-		if (_strstr(strYaochu, hai[i]) >= 0)
-			haiYaochu += hai[i];
-	}
-	int nToitsu = _aryvn(getToitsu(haiYaochu));
-	int nType = _aryvn(uniq(haiYaochu));
-	int hasToitsu = 0;
-	if (nToitsu > 0)
-		hasToitsu = 1;
-	return 13 - nType - hasToitsu;
-}
-
-//2個以上同じ牌がある要素をすべて返す
-array getToitsu(array hai)
-{
-	return getDuplicatedElement(hai, 2);
-}
-
-//重複した要素を返す
-array getDuplicatedElement(array ary, int n)
-{
-	dict d;
-	for (int i = 0; ary[i] != nil; i++)
-	{
-		string key = ary[i];
-		if (d[key] == nil)
-		{
-			array a = ASEARCHEX(key, ary);
-			if (_aryvn(a) >= n)
-				d += $(key, 1);
-		}
-	}
-	return _dickeyget(d);
 }

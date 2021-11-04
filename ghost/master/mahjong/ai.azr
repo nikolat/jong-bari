@@ -40,10 +40,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 			dict d = _saorirequest("MahjongUtil", "machi", strTehai13);
 			if (d["head"] == "SAORI/1.0 400 Bad Request")
 			{
-				dAdditionalHeader = ${
-					$("ErrorLevel", "warning"),
-					$("ErrorDescription", "failed \"machi\" in \"getDahai\" with " + strTehai13)
-				};
+				senderrorlog("warning", "failed \"machi\" in \"getDahai\" with " + strTehai13);
 				return "";
 			}
 			array arMachi = strHaiToArray(d["Result"]);
@@ -60,10 +57,7 @@ string naniwokiru(string hai, array kawa, string bafuHai, string jifuHai, string
 				dict d = _saorirequest("MahjongUtil", "score", strTehai13, arMachi[j], bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 				if (d["head"] == "SAORI/1.0 400 Bad Request")
 				{
-					dAdditionalHeader = ${
-						$("ErrorLevel", "warning"),
-						$("ErrorDescription", "failed \"score\" in \"getDahai\" with " + strTehai13 + " " + arMachi[j])
-					};
+					senderrorlog("warning", "failed \"score\" in \"getDahai\" with " + strTehai13 + " " + arMachi[j]);
 					return "";
 				}
 				int score = d["Result"];
@@ -425,10 +419,7 @@ int shouldRichi(int nPlayer, string tsumoHai)
 	dict d = _saorirequest("MahjongUtil", "shanten_yaku", removedTehai, bafuHai, jifuHai);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"shouldRichi\" with " + removedTehai)
-		};
+		senderrorlog("warning", "failed \"shouldRichi\" with " + removedTehai);
 		return 0;
 	}
 	if (d["Result"] == "")
@@ -489,10 +480,7 @@ int canTsumo(int nPlayer, string atariHai)
 	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"score\" in \"canTsumo\" with " + arTehai[nPlayer] + " " + atariHai)
-		};
+		senderrorlog("warning", "failed \"score\" in \"canTsumo\" with " + arTehai[nPlayer] + " " + atariHai);
 		return 0;
 	}
 	int score = d["Result"];
@@ -723,10 +711,7 @@ int canRon(int nPlayer, string atariHai)
 	dict d = _saorirequest("MahjongUtil", "machi", arTehai[nPlayer]);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"machi\" in \"canRon\" with " + arTehai[nPlayer])
-		};
+		senderrorlog("warning", "failed \"machi\" in \"canRon\" with " + arTehai[nPlayer]);
 		return 0;
 	}
 	array arMachi = strHaiToArray(d["Result"]);
@@ -766,10 +751,7 @@ int canRon(int nPlayer, string atariHai)
 	dict d = _saorirequest("MahjongUtil", "score", arTehai[nPlayer], atariHai, bafuHai, jifuHai, strDora, isTsumo, isRichi, isIppatsu, isChankan, isRinshan, isFinalTileWin, is1stRound);
 	if (d["head"] == "SAORI/1.0 400 Bad Request")
 	{
-		dAdditionalHeader = ${
-			$("ErrorLevel", "warning"),
-			$("ErrorDescription", "failed \"score\" in \"canRon\" with " + arTehai[nPlayer] + " " + atariHai)
-		};
+		senderrorlog("warning", "failed \"score\" in \"canRon\" with " + arTehai[nPlayer] + " " + atariHai);
 		return 0;
 	}
 	int score = d["Result"];

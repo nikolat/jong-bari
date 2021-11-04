@@ -80,3 +80,16 @@ array _customrequest(dict ref)
 		return ar;
 	}
 }
+senderrorlog(string errorlevel, string errordescription)
+{
+	if (dAdditionalHeader["ErrorLevel"] == nil)
+	{
+		dAdditionalHeader += $("ErrorLevel", errorlevel);
+		dAdditionalHeader += $("ErrorDescription", errordescription);
+	}
+	else
+	{
+		dAdditionalHeader["ErrorLevel"] += _bytechar(1) + errorlevel;
+		dAdditionalHeader["ErrorDescription"] += _bytechar(1) + errordescription;
+	}
+}
