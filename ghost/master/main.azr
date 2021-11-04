@@ -20,14 +20,13 @@ dict dAdditionalHeader;
 array _customrequest(dict ref)
 {
 	dict d = dAdditionalHeader;
-	dAdditionalHeader = $();
+	dAdditionalHeader = ${};
 	array ar;
 	// SHIORIに対するリクエストでない場合
 	if (_strstr(ref["head"], "SHIORI") == -1) {
 		ar	+=	"SHIORI/3.0 400 Bad Request";
 		ar	+=	"Sender: akari";
 		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
 		ar	+=	"";
 		return ar;
 	}
@@ -36,7 +35,6 @@ array _customrequest(dict ref)
 		ar	+=	"SHIORI/3.0 204 No Content";
 		ar	+=	"Sender: akari";
 		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
 		ar	+=	"";
 		return ar;
 	}
@@ -47,7 +45,6 @@ array _customrequest(dict ref)
 		ar	+=	"SHIORI/3.0 200 OK";
 		ar	+=	"Sender: akari";
 		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
 		ar	+=	"";
 		return ar;
 	}
@@ -72,7 +69,6 @@ array _customrequest(dict ref)
 			ar += arKey[i] + ": " + d[arKey[i]];
 		}
 		ar	+=	"";
-		ar	+=	"";
 		return ar;
 	}
 	// 未知のリクエスト
@@ -80,7 +76,6 @@ array _customrequest(dict ref)
 		ar	+=	"SHIORI/3.0 400 Bad Request";
 		ar	+=	"Sender: akari";
 		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
 		ar	+=	"";
 		return ar;
 	}
