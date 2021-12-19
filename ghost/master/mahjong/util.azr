@@ -2206,7 +2206,7 @@ string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, 
 						}
 						else
 						{
-							s += "\f[color,gray]" + convertUnicode(arHai[i][1]) + "\f[color,default]";
+							s += "\f[color,disable]" + convertUnicode(arHai[i][1]) + "\f[color,default]";
 							animNo = "40" + fillzero(i + 1) + "" + ((int)getSurfaceCode(arHai[i][1]) + 50);
 							si += "\i[" + animNo + "]";
 							savedTehai += animNo;
@@ -2248,7 +2248,7 @@ string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, 
 				{
 					if (ASEARCH(arHai[i][1], arKuikae) >= 0)
 					{
-						s += "\f[color,gray]" + convertUnicode(arHai[i][1]) + "\f[color,default]";
+						s += "\f[color,disable]" + convertUnicode(arHai[i][1]) + "\f[color,default]";
 						animNo = "40" + fillzero(i + 1) + "" + ((int)getSurfaceCode(arHai[i][1]) + 50);
 						si += "\i[" + animNo + "]";
 						savedTehai += animNo;
@@ -2335,7 +2335,7 @@ string showHai(string strHai, string tsumoShowing, int showPlayer, int nPlayer, 
 				}
 				else
 				{
-					s += "\f[color,gray]" + convertUnicode(tsumoShowing) + "\f[color,default]";
+					s += "\f[color,disable]" + convertUnicode(tsumoShowing) + "\f[color,default]";
 					animNo = "40" + fillzero(14) + "" + ((int)getSurfaceCode(tsumoShowing) + 50);
 					savedTehai += animNo;
 					si += "\![anim,offset," + animNo + "," + (16 - ((13 - nNormal) * 32)) + ",0]";
@@ -2648,7 +2648,7 @@ string showKawa(int nPlayer, int p, int agariPlayer)
 		}
 		else if (ASEARCH(i, arFuroJunme[p]) >= 0)
 		{
-			s += "\f[color,gray]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
+			s += "\f[color,disable]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
 			animNo = "" + (p + 1) + "1" + fillzero(i) + "" + ((int)getSurfaceCode(arKawa[p][i]) + 50);
 		}
 		else if (agariPlayer >= 0 && p != agariPlayer && p == nPlayer && i == _aryvn(arKawa[p]) - 1)
