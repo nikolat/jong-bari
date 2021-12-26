@@ -81,7 +81,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		{
 			if (!modeEx)
 				s += convertUnicode(wanpaiOmote[i]);
-			animNo = "601" + (i + 1) + getSurfaceCode(wanpaiOmote[i]);
+			animNo = "601" + (i + 1) + "0" + getSurfaceCode(wanpaiOmote[i]);
 			siInfo += "\i[" + animNo + "]";
 			savedTehai += animNo;
 		}
@@ -94,7 +94,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		{
 			if (!modeEx)
 				s += convertUnicode(wanpaiUra[i]);
-			animNo = "600" + (i + 1) + getSurfaceCode(wanpaiUra[i]);
+			animNo = "600" + (i + 1) + "0" + getSurfaceCode(wanpaiUra[i]);
 			siInfo += "\i[" + animNo + "]";
 			savedTehai += animNo;
 		}
@@ -110,7 +110,7 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		{
 			if (!modeEx)
 				s += convertUnicode(wanpaiOmote[i]);
-			animNo = "600" + (i + 1) + getSurfaceCode(wanpaiOmote[i]);
+			animNo = "600" + (i + 1) + "0" + getSurfaceCode(wanpaiOmote[i]);
 			siInfo += "\i[" + animNo + "]";
 			savedTehai += animNo;
 		}
@@ -124,15 +124,21 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 		s += "\_l[260,]\f[color,red]●\f[color,default]x" + kyotaku;
 		s += "\_l[0,80]";
 	}
-	for (int i = 0; i < tsumibou; i++)
+	int n = tsumibou;
+	if (n > 9)
+		n = 9;
+	for (int i = 0; i < n; i++)
 	{
-		animNo = "60001" + (i + 1);
+		animNo = "600001" + (i + 1);
 		siInfo += "\i[" + animNo + "]";
 		savedTehai += animNo;
 	}
-	for (int i = 0; i < kyotaku; i++)
+	n = kyotaku;
+	if (n > 9)
+		n = 9;
+	for (int i = 0; i < n; i++)
 	{
-		animNo = "60002" + (i + 1);
+		animNo = "600002" + (i + 1);
 		siInfo += "\i[" + animNo + "]";
 		savedTehai += animNo;
 	}
@@ -360,11 +366,11 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	}
 	string si;
 	string animNo;
-	animNo = "500001";
+	animNo = "5000001";
 	si += "\![anim,offset," + animNo + ",0,0]";
 	si += "\i[" + animNo + "]";
 	arSavedTehai[3] += animNo;
-	animNo = "500199";
+	animNo = "5001999";
 	si += "\![anim,offset," + animNo + ",0,0]";
 	si += "\i[" + animNo + "]";
 	arSavedTehai[3] += animNo;
