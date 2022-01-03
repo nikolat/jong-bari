@@ -362,7 +362,6 @@ string showScoreResult(int nAgariPlayer, int nFurikomiPlayer, string hai13, stri
 	if (!modeEx)
 	{
 		s += "\![*]\__q[Menu_StartKyoku]次へ\__q";
-		s += " \![*]\__q[Menu_CANCEL]閉じる\__q";
 	}
 	string si;
 	string animNo;

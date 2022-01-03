@@ -2660,9 +2660,15 @@ string showKawa(int nPlayer, int p, int agariPlayer, int isFuroChance)
 		if (isFuroChance && i == n - 1)
 		{
 			if (i == arRichiJunme[p])
+			{
+				s += "\f[color,red]" + convertUnicode(arKawa[p][i]) + "\f[color,default]";
 				animNo = "" + (p + 1) + "2" + fillzero(i) + "" + ((int)getSurfaceCode(arKawa[p][i]) + 100);
+			}
 			else
+			{
+				s += convertUnicode(arKawa[p][i]);
 				animNo = "" + (p + 1) + "1" + fillzero(i) + "" + ((int)getSurfaceCode(arKawa[p][i]) + 100);
+			}
 		}
 		else if ((i == arRichiJunme[p]) && (ASEARCH(i, arFuroJunme[p]) >= 0))
 		{

@@ -3,9 +3,9 @@ ghost/master/akari.dll604e9d9fa66b8ad367d22ccd682a74e4size=889856date=2016-05
 ghost/master/descript.txt18603da14a7e47b6ca7b9fc3eadb6102size=289date=2021-09-22T06:59:47
 ghost/master/icon.ico9266143a2761a3f70a01997a73adde39size=1406date=2021-09-22T06:59:47
 ghost/master/mahjong/ai.azr5f2300a27bcfe65d414d521cde7964a9size=23810date=2021-11-04T17:15:46
-ghost/master/mahjong/score.azr8ff73567647e4446e6fffa721616df1esize=16471date=2021-12-26T21:50:59
+ghost/master/mahjong/score.azr21027942eaca303665141c42b052fb95size=16423date=2022-01-03T10:57:11
 ghost/master/mahjong/shanten.azra6809edf5e68dda08ae19a2a7c6e8a72size=1531date=2021-11-04T17:22:42
-ghost/master/mahjong/util.azr7e3e094da02e366b65d87eb760073197size=92495date=2021-12-26T22:14:07
+ghost/master/mahjong/util.azr5ec3b9c97955c0341070178d6d4a9fd9size=92639date=2022-01-03T10:58:08
 ghost/master/main.azr90cb4d315340b7edc93158f1b8ceee1asize=2289date=2021-11-04T17:27:11
 ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=38400date=2011-05-05T18:38:36
 ghost/master/saori/HandUtil/HandUtil_readme.txt27422edfad98e1d957cc78f815587a2csize=4501date=2011-05-28T14:47:52
@@ -15,7 +15,7 @@ ghost/master/saori/MahjongUtil/readme.txtf4d130f77eb3bc00fce46a5bbae18f96size=
 ghost/master/shiori-event/event.azr106d62fd2e685e24e00303a69078700csize=3218date=2021-09-22T06:59:48
 ghost/master/shiori-event/resource.azrcf3a2022f4ece9580beb9797258487b8size=3817date=2021-09-22T06:59:48
 install.txt11636e41a5a5040796817dfe77801416size=69date=2021-09-22T06:59:48
-readme.txtbf0b6843ab5d6b6b6eeb5240e5f31ee5size=1706date=2021-12-26T22:34:43
+readme.txtcd2c37e01c84839f5b73b1d9af28e6f2size=1706date=2022-01-03T11:01:03
 shell/master/descript.txt31ba902b440d5b1171c41bbe8b91cb6asize=1040date=2021-09-22T07:06:13
 shell/master/menu/menu_background.png48a5fc88903961896fc09bb50f2ce291size=153date=2021-09-22T06:59:48
 shell/master/menu/menu_foreground.png2a82ab6f42c59368e9a3f675105adfa9size=153date=2021-09-22T06:59:48
