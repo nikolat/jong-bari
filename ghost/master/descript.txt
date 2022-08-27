@@ -5,7 +5,7 @@ name,雀々BARIBARI
 sakura.name,雀卓
 kero.name,none
 craftman,Don
-craftmanurl,http://nikolat.herokuapp.com/
+craftmanurl,https://nikolat.github.io/
 homeurl,https://raw.githubusercontent.com/nikolat/jong-bari/main/
 icon,icon.ico
 don't need onmousemove,1
