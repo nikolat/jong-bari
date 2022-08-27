@@ -3,7 +3,7 @@ type,shell
 name,master
 
 craftman,Don
-craftmanurl,http://nikolat.herokuapp.com/
+craftmanurl,https://nikolat.github.io/
 
 readme,readme.txt
 readme.charset,UTF-8
