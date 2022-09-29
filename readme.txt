@@ -1,7 +1,7 @@
 ========================================================================
 【ソフト名称】雀々BARIBARI
 【 制 作 者 】Don
-【 動作環境 】Windows11 21H2 + SSP/2.6.13
+【 動作環境 】Windows11 21H2 + SSP/2.6.14
 【 タ イ プ 】「伺か」用ゴースト
 【 取扱種別 】フリーウェア
 【 配布月日 】2021/06/09
@@ -40,14 +40,14 @@
 □SAORIとして「MahjongUtil.dll」を使用しています。
 
     すくりや
-      http://nikolat.herokuapp.com/
+      https://nikolat.github.io/
 
 □上記以外のテキストファイル、辞書ファイルの類いについて
 
   著作者人格権はDonに帰属します。
 
     すくりや
-      http://nikolat.herokuapp.com/
+      https://nikolat.github.io/
 
   ライセンスは「CC0 1.0 Universal」です。
 
