@@ -237,7 +237,7 @@
 　SAORIサンプルクラス「CSAORI」を使用させていただきました。
 
 　　csaori
-　　　https://github.com/ponapalt/csaori
+　　　https://github.com/ukatech/csaori
 
 　麻雀アプリ「電脳麻将」の開発ブログを参考にさせていただきました。
 
