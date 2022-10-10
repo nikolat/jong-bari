@@ -13,7 +13,7 @@ file,ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36s
 file,ghost/master/saori/HandUtil/HandUtil_readme.txtc6c761a051d6970b022e1aaffe24d11asize=4362date=2012-12-21T00:00:00
 file,ghost/master/saori/MahjongUtil/MahjongUtil.dll35dd69d234c4aea8a4d4050f2d0ad952size=225792date=2012-12-21T00:00:00
 file,ghost/master/saori/MahjongUtil/license.txt9aba8461527f8f2f7c5e01ade95a59a6size=3037date=2012-12-21T00:00:00
-file,ghost/master/saori/MahjongUtil/readme.txtbdf34c835c17e7b34ab6987b6ba21b3asize=8261date=2012-12-21T00:00:00
+file,ghost/master/saori/MahjongUtil/readme.txt73c57655cc7caf3005c247399e4a147dsize=8260date=2012-12-21T00:00:00
 file,ghost/master/shiori-event/event.azr0187b33c03dbbccb99c4811d94d17a51size=3130date=2012-12-21T00:00:00
 file,ghost/master/shiori-event/resource.azrff869a153fd64cfe8228faf47f9ca396size=3721date=2012-12-21T00:00:00
 file,install.txt50a0231560fecd6b630302650d4da875size=65date=2012-12-21T00:00:00
