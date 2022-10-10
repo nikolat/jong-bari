@@ -23,7 +23,7 @@ MahjongUtilは、以下の2.で明記したライセンスに従って利用で�
 2.修正BSDライセンス
 
 Copyright (C) 2021-, Don All rights reserved.
-http://nikolat.herokuapp.com/
+https://nikolat.github.io/
 
 ソースコード形式かバイナリ形式か、変更するかしないかを問わず、
 以下の条件を満たす場合に限り、再頒布および使用が許可されます。
