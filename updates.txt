@@ -17,7 +17,7 @@ file,ghost/master/saori/MahjongUtil/readme.txt73c57655cc7caf3005c247399e4a147d
 file,ghost/master/shiori-event/event.azr0187b33c03dbbccb99c4811d94d17a51size=3130date=2012-12-21T00:00:00
 file,ghost/master/shiori-event/resource.azrff869a153fd64cfe8228faf47f9ca396size=3721date=2012-12-21T00:00:00
 file,install.txt50a0231560fecd6b630302650d4da875size=65date=2012-12-21T00:00:00
-file,readme.txta6daf3778a8009b130dcc38afdd9be26size=1642date=2012-12-21T00:00:00
+file,readme.txt2ae6a79c8d2ba791dd7ee6a3880e5b04size=1642date=2012-12-21T00:00:00
 file,shell/master/descript.txt44e535da942302532ff59e551bda36besize=991date=2012-12-21T00:00:00
 file,shell/master/menu/menu_background.png48a5fc88903961896fc09bb50f2ce291size=153date=2012-12-21T00:00:00
 file,shell/master/menu/menu_foreground.png2a82ab6f42c59368e9a3f675105adfa9size=153date=2012-12-21T00:00:00
