@@ -273,7 +273,23 @@ string OnMahjongGameStart(dict ref)
 	{
 		s += notifyByIndex(i, {"gamestart", dSeki[playerName[i]], pNames[0], pNames[1], pNames[2], pNames[3]});
 	}
+	//Wallet of Unyu から出金
+	string wou_id = "c58b6320-caf8-11ed-a901-0800200c9a66";
+	if (isInstalledPlugin(wou_id)) {
+		s += "\![raiseplugin," + wou_id + ",OnWalletOfUnyu,set," + (-1 * arScore[3]) + ",賭金徴収]";
+	}
 	return s + "\_w[2000]\![raise,startKyoku]\e";
+}
+
+int isInstalledPlugin(string search_id)
+{
+	for (int i = 0; _systemdict["installedplugin"]["Reference" + i] != nil; i++) {
+		string plugin_id = _strsplit(_systemdict["installedplugin"]["Reference" + i], _bytechar(1))[1];
+		if (search_id == plugin_id) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 string Menu_SearchPlayer(dict ref)
@@ -387,6 +403,11 @@ string Menu_EndGame(dict ref)
 	for (int i = 0; sortedIndex[i] != nil; i++)
 	{
 		s += "\_l[" + x + ",]" + (i + 1) + ": " + playerName[sortedIndex[i]] + "\_l[" + (x + 150) + ",]" + arScore[sortedIndex[i]] + "\n";
+	}
+	//Wallet of Unyu に送金
+	string wou_id = "c58b6320-caf8-11ed-a901-0800200c9a66";
+	if (isInstalledPlugin(wou_id)) {
+		s += "\![raiseplugin," + wou_id + ",OnWalletOfUnyu,set," + arScore[3] + ",賭金払い戻し]";
 	}
 	s += "\_q\e";
 	playerName = {};
