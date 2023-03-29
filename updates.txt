@@ -7,7 +7,7 @@ file,ghost/master/icon.ico9266143a2761a3f70a01997a73adde39size=1406date=2012-
 file,ghost/master/mahjong/ai.azrf8b18e622455aeddb3ea222ff8ba4492size=23025date=2012-12-21T00:00:00
 file,ghost/master/mahjong/score.azr41bb818e8b00fdd04013298d6ff16f2esize=15758date=2012-12-21T00:00:00
 file,ghost/master/mahjong/shanten.azr442dcb05f5e51f50eb48ebfe55d9f1e7size=1479date=2012-12-21T00:00:00
-file,ghost/master/mahjong/util.azr652c5e1b4ef4bf03bfdbe09445741c16size=90298date=2012-12-21T00:00:00
+file,ghost/master/mahjong/util.azr6168d08762854f7ff5fd7984aaef7e08size=90534date=2012-12-21T00:00:00
 file,ghost/master/main.azr3505768ca40b5089fcf4746f5f1acc21size=2194date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=38400date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil_readme.txtc6c761a051d6970b022e1aaffe24d11asize=4362date=2012-12-21T00:00:00
