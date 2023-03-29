@@ -354,7 +354,13 @@ string Menu_StartWithoutPlayer(dict ref)
 	bafu = 0;
 	kyoku = 1;
 	oyaIndex = _randselect({0, 1, 2, 3});
-	return startKyoku();
+	//Wallet of Unyu に送金
+	string s;
+	string wou_id = "c58b6320-caf8-11ed-a901-0800200c9a66";
+	if (isInstalledPlugin(wou_id)) {
+		s += "\![raiseplugin," + wou_id + ",OnWalletOfUnyu,set," + (-1 * arScore[3]) + ",賭金徴収]";
+	}
+	return s + startKyoku();
 }
 
 string Menu_StartKyoku(dict ref)
