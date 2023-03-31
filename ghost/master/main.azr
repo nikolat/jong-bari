@@ -23,61 +23,58 @@ array _customrequest(dict ref)
 	array ar;
 	// SHIORIに対するリクエストでない場合
 	if (_strstr(ref["head"], "SHIORI") == -1) {
-		ar	+=	"SHIORI/3.0 400 Bad Request";
-		ar	+=	"Sender: akari";
-		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
+		ar += "SHIORI/3.0 400 Bad Request";
+		ar += "Sender: akari";
+		ar += "Charset: UTF-8";
+		ar += "";
+		return ar;
+	}
+	// 未知のリクエスト
+	if (_strstr(ref["head"], "NOTIFY") == -1 && _strstr(ref["head"], "GET") == -1) {
+		ar += "SHIORI/3.0 400 Bad Request";
+		ar += "Sender: akari";
+		ar += "Charset: UTF-8";
+		ar += "";
 		return ar;
 	}
 	// セキュリティレベル="external"なら即返る
 	if (ref["SecurityLevel"] == "external") {
-		ar	+=	"SHIORI/3.0 204 No Content";
-		ar	+=	"Sender: akari";
-		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
+		ar += "SHIORI/3.0 204 No Content";
+		ar += "Sender: akari";
+		ar += "Charset: UTF-8";
+		ar += "";
 		return ar;
 	}
 	string s = _eventdict[ref["ID"]];
 	if (s == "") s = _fncstr(ref["ID"], ref);
+	dict d = dAdditionalHeader;
+	dAdditionalHeader = ${};
 	// NOTIFY
 	if (_strstr(ref["head"], "NOTIFY") != -1) {
-		ar	+=	"SHIORI/3.0 200 OK";
-		ar	+=	"Sender: akari";
-		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
+		ar += "SHIORI/3.0 204 No Content";
+		ar += "Sender: akari";
+		ar += "Charset: UTF-8";
+		ar += "";
 		return ar;
 	}
 	// GET
 	if (_strstr(ref["head"], "GET") != -1) {
-		if (s == "")
-		{
-			ar	+=	"SHIORI/3.0 204 No Content";
-			ar	+=	"Sender: akari";
-			ar	+=	"Charset: UTF-8";
+		if (s == "") {
+			ar += "SHIORI/3.0 204 No Content";
+			ar += "Sender: akari";
+			ar += "Charset: UTF-8";
 		}
-		else
-		{
-			ar	+=	"SHIORI/3.0 200 OK";
-			ar	+=	"Sender: akari";
-			ar	+=	"Charset: UTF-8";
-			ar	+=	"Value: " + s;
+		else {
+			ar += "SHIORI/3.0 200 OK";
+			ar += "Sender: akari";
+			ar += "Charset: UTF-8";
+			ar += "Value: " + s;
 		}
-		dict d = dAdditionalHeader;
-		dAdditionalHeader = ${};
 		array arKey = _dickeyget(d);
-		for (int i = 0; arKey[i] != nil; i++)
-		{
+		for (int i = 0; arKey[i] != nil; i++) {
 			ar += arKey[i] + ": " + d[arKey[i]];
 		}
-		ar	+=	"";
-		return ar;
-	}
-	// 未知のリクエスト
-	else {
-		ar	+=	"SHIORI/3.0 400 Bad Request";
-		ar	+=	"Sender: akari";
-		ar	+=	"Charset: UTF-8";
-		ar	+=	"";
+		ar += "";
 		return ar;
 	}
 }
