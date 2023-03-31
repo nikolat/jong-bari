@@ -8,7 +8,7 @@ file,ghost/master/mahjong/ai.azrf8b18e622455aeddb3ea222ff8ba4492size=23025dat
 file,ghost/master/mahjong/score.azr41bb818e8b00fdd04013298d6ff16f2esize=15758date=2012-12-21T00:00:00
 file,ghost/master/mahjong/shanten.azr442dcb05f5e51f50eb48ebfe55d9f1e7size=1479date=2012-12-21T00:00:00
 file,ghost/master/mahjong/util.azr6168d08762854f7ff5fd7984aaef7e08size=90534date=2012-12-21T00:00:00
-file,ghost/master/main.azr87c3a5e3742427d87dca417e65c5c6desize=2222date=2012-12-21T00:00:00
+file,ghost/master/main.azrca91aefc161eff6c8d4a7004a240f7ddsize=2222date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=38400date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil_readme.txtc6c761a051d6970b022e1aaffe24d11asize=4362date=2012-12-21T00:00:00
 file,ghost/master/saori/MahjongUtil/MahjongUtil.dll35dd69d234c4aea8a4d4050f2d0ad952size=225792date=2012-12-21T00:00:00
