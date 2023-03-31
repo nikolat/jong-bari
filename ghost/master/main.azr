@@ -29,7 +29,7 @@ array _customrequest(dict ref)
 		ar	+=	"";
 		return ar;
 	}
-	// セキュリティレベル="External"なら即返る
+	// セキュリティレベル="external"なら即返る
 	if (ref["SecurityLevel"] == "external") {
 		ar	+=	"SHIORI/3.0 204 No Content";
 		ar	+=	"Sender: akari";
