@@ -218,7 +218,7 @@ string showBalloon()
 	string s = "\0\_q";
 	string shellName = _systemdict["OnNotifySelfInfo"]["Reference3"];
 	string balloonName = _systemdict["OnNotifySelfInfo"]["Reference5"];
-	if (shellName == "standard" && balloonName == "雀卓用透明バルーン")
+	if (shellName != "master" && balloonName == "雀卓用透明バルーン")
 	{
 		modeEx = 1;
 		s += "\![lock,balloonmove]";
