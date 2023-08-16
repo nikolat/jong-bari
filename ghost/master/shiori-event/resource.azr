@@ -50,9 +50,9 @@ string sakura.portalsites()
 		+ _bytechar(1)
 		+ _bytechar(1)
 		+ _bytechar(2);
-	s += "Disc-2" + _bytechar(1)
-		+ "http://disc2.s56.xrea.com/" + _bytechar(1)
-		+ "http://disc2.s56.xrea.com/image/disc_2.gif" + _bytechar(1)
+	s += "うかフィード" + _bytechar(1)
+		+ "https://feed.ukagaka.net/" + _bytechar(1)
+		+ _bytechar(1)
 		+ _bytechar(2);
 	return s;
 }
