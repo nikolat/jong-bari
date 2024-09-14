@@ -278,6 +278,7 @@ int canAnkan(int nPlayer, string tsumoHai)
 	//リーチ後の場合
 	if (arRichiJunme[nPlayer] >= 0)
 	{
+		//FIXME: tsumoHai のみでなく arAnkanHai すべてのパターンで調査すべき
 		//送りカンの場合
 		if (ASEARCH(tsumoHai, arAnkanHai) == -1)
 			return 0;
@@ -635,9 +636,6 @@ int canChi(int nPlayer, string suteHai)
 	if (getLeftYama() == 0)
 		return 0;
 	if (arRichiJunme[nPlayer] >= 0)
-		return 0;
-	array ak = {countKantsu(0), countKantsu(1), countKantsu(2), countKantsu(3)};
-	if (ak[0] + ak[1] + ak[2] + ak[3] == 4 && ak[0] != 4 && ak[1] != 4 && ak[2] != 4 && ak[3] != 4)
 		return 0;
 	array a = getChiMaterial(arTehai[nPlayer], suteHai);
 	if (_aryvn(a) > 0)

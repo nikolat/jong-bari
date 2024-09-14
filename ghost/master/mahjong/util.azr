@@ -1986,7 +1986,7 @@ setKakan(int nFuroPlayer, string kakanHai)
 setAnkan(int nFuroPlayer, string ankanHai)
 {
 	arTehai[nFuroPlayer] = removeHai(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai);
-	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai, "(", ")");;
+	arTehai[nFuroPlayer] = addFuro(arTehai[nFuroPlayer], ankanHai + ankanHai + ankanHai + ankanHai, "(", ")");
 	arIppatsuChance = {0, 0, 0, 0};
 	arChihouChance = {0, 0, 0, 0};
 	visiblePai += ankanHai + ankanHai + ankanHai + ankanHai;

@@ -487,19 +487,19 @@ array getScoreAddWithPao(int nAgariPlayer, int nFurikomiPlayer, int score, int n
 		array arScoreAdd2;
 		if (nFurikomiPlayer >= 0)
 		{
-			arScoreAdd1 = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score - (paoScore / 2), nTsumibou, nKyotaku, {});
-			arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore / 2, 0, 0, {});
+			arScoreAdd1 = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score - (paoScore / 2), nTsumibou, nKyotaku, nOyaIndex, {});
+			arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore / 2, 0, 0, nOyaIndex, {});
 		}
 		else
 		{
 			if (countYakuman >= 2)
 			{
-				arScoreAdd1 = getScoreAdd(nAgariPlayer, -1, score - paoScore, nTsumibou, nKyotaku, {});
-				arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore, 0, 0, {});
+				arScoreAdd1 = getScoreAdd(nAgariPlayer, -1, score - paoScore, nTsumibou, nKyotaku, nOyaIndex, {});
+				arScoreAdd2 = getScoreAdd(nAgariPlayer, nPaoPlayer, paoScore, 0, 0, nOyaIndex, {});
 			}
 			else
 			{
-				arScoreAdd1 = getScoreAdd(nAgariPlayer, nPaoPlayer, score, nTsumibou, nKyotaku, {});
+				arScoreAdd1 = getScoreAdd(nAgariPlayer, nPaoPlayer, score, nTsumibou, nKyotaku, nOyaIndex, {});
 				arScoreAdd2 = {0, 0, 0, 0};
 			}
 		}
@@ -510,12 +510,12 @@ array getScoreAddWithPao(int nAgariPlayer, int nFurikomiPlayer, int score, int n
 	}
 	else
 	{
-		arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, nTsumibou, nKyotaku, arTenpaiPlayerFlag);
+		arScoreAdd = getScoreAdd(nAgariPlayer, nFurikomiPlayer, score, nTsumibou, nKyotaku, nOyaIndex, arTenpaiPlayerFlag);
 	}
 	return arScoreAdd;
 }
 
-array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, array arTenpaiPlayerFlag)
+array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibou, int nKyotaku, int nOyaIndex, array arTenpaiPlayerFlag)
 {
 	array arScoreAdd = {0, 0, 0, 0};
 	if (_aryvn(arTenpaiPlayerFlag) == 0)
@@ -531,7 +531,7 @@ array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibo
 			{
 				if (nAgariPlayer == i)
 				{
-					if (nAgariPlayer == oyaIndex)
+					if (nAgariPlayer == nOyaIndex)
 					{
 						int nShou = (int)(score / 300) * 100;
 						int nAmari = score % 300;
@@ -559,7 +559,7 @@ array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibo
 				}
 				else
 				{
-					if (nAgariPlayer == oyaIndex)
+					if (nAgariPlayer == nOyaIndex)
 					{
 						int nShou = (int)(score / 300) * 100;
 						int nAmari = score % 300;
@@ -570,7 +570,7 @@ array getScoreAdd(int nAgariPlayer, int nFurikomiPlayer, int score, int nTsumibo
 					}
 					else
 					{
-						if (i == oyaIndex)
+						if (i == nOyaIndex)
 						{
 							int nShou = (int)(score / 200) * 100;
 							int nAmari = score % 200;
