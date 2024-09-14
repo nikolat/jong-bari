@@ -4,10 +4,10 @@ file,ghost/master/CharameL.txt1ef3c5882e75070f972fa6048c5d2438size=233date=20
 file,ghost/master/akari.dll604e9d9fa66b8ad367d22ccd682a74e4size=889856date=2012-12-21T00:00:00
 file,ghost/master/descript.txt738d2362aeecb00ac26a8cbe36c28250size=274date=2012-12-21T00:00:00
 file,ghost/master/icon.ico9266143a2761a3f70a01997a73adde39size=1406date=2012-12-21T00:00:00
-file,ghost/master/mahjong/ai.azrf8b18e622455aeddb3ea222ff8ba4492size=23025date=2012-12-21T00:00:00
-file,ghost/master/mahjong/score.azr41bb818e8b00fdd04013298d6ff16f2esize=15758date=2012-12-21T00:00:00
+file,ghost/master/mahjong/ai.azr4b82fc68c184eb282d5619f0458bf54csize=22928date=2012-12-21T00:00:00
+file,ghost/master/mahjong/score.azr53653733c6ca84dabc82bef985d120c8size=15842date=2012-12-21T00:00:00
 file,ghost/master/mahjong/shanten.azr442dcb05f5e51f50eb48ebfe55d9f1e7size=1479date=2012-12-21T00:00:00
-file,ghost/master/mahjong/util.azr2f5bc246c446a229999366abeaa4a62bsize=90532date=2012-12-21T00:00:00
+file,ghost/master/mahjong/util.azr352228579811ac9e1d3bda7ba1cea5fbsize=90531date=2012-12-21T00:00:00
 file,ghost/master/main.azrbf43b178cb8361f63f65e3e0fd69e6aasize=2296date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=38400date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil_readme.txtc6c761a051d6970b022e1aaffe24d11asize=4362date=2012-12-21T00:00:00
