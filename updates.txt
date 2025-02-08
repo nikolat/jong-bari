@@ -11,9 +11,9 @@ file,ghost/master/mahjong/util.azr352228579811ac9e1d3bda7ba1cea5fbsize=90531d
 file,ghost/master/main.azrbf43b178cb8361f63f65e3e0fd69e6aasize=2296date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil.dlld382e237a4b365a302b281664d9e9d36size=38400date=2012-12-21T00:00:00
 file,ghost/master/saori/HandUtil/HandUtil_readme.txtc6c761a051d6970b022e1aaffe24d11asize=4362date=2012-12-21T00:00:00
-file,ghost/master/saori/MahjongUtil/MahjongUtil.dll35dd69d234c4aea8a4d4050f2d0ad952size=225792date=2012-12-21T00:00:00
+file,ghost/master/saori/MahjongUtil/MahjongUtil.dllccb07c6e3bd917cf5f8a7b7788a3b683size=228352date=2012-12-21T00:00:00
 file,ghost/master/saori/MahjongUtil/license.txt9aba8461527f8f2f7c5e01ade95a59a6size=3037date=2012-12-21T00:00:00
-file,ghost/master/saori/MahjongUtil/readme.txt73c57655cc7caf3005c247399e4a147dsize=8260date=2012-12-21T00:00:00
+file,ghost/master/saori/MahjongUtil/readme.txtddfa25797a53db6612c1bc6808b507c3size=8335date=2012-12-21T00:00:00
 file,ghost/master/shiori-event/event.azr0187b33c03dbbccb99c4811d94d17a51size=3130date=2012-12-21T00:00:00
 file,ghost/master/shiori-event/resource.azr9095e02b193b1a5bc0695afcffb47f7csize=3886date=2012-12-21T00:00:00
 file,install.txt50a0231560fecd6b630302650d4da875size=65date=2012-12-21T00:00:00
